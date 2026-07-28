@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
-
 import '../../../../core/widgets/animated_world_map_background.dart';
+import '../providers/auth_providers.dart';
+import '../../domain/entities/user_entity.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -27,25 +28,38 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
+    print('Attempting login...');
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          Navigator.pushReplacementNamed(context, '/dashboard');
-        }
-      });
+      final success = await ref
+          .read(authControllerProvider.notifier)
+          .login(_emailController.text, _passwordController.text);
+      if (success && mounted) {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<UserEntity?>>(authControllerProvider, (
+      previous,
+      next,
+    ) {
+      next.whenOrNull(
+        error: (error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString().replaceAll('Exception: ', '')),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        },
+      );
+    });
+
+    final authState = ref.watch(authControllerProvider);
+
     const primaryTextColor = Colors.white;
     const secondaryTextColor = Color(0x99FFFFFF);
 
@@ -130,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                     CustomButton(
                       text: 'Login',
                       onPressed: _handleLogin,
-                      isLoading: _isLoading,
+                      isLoading: authState.isLoading,
                     ),
                     const SizedBox(height: 16),
 

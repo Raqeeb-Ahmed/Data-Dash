@@ -1,19 +1,21 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// World map background replicating the exact design from the screenshot:
-/// Dark navy/indigo theme (#07090E) with realistic vector world map continent paths,
-/// glowing purple ambient spheres, and animated multi-color gradient lines.
+/// Animated World Map Background widget with automatic Light & Dark mode adaptation.
+/// Features:
+/// - Light & Dark theme responsive styling.
+/// - Vector world map continent silhouettes with animated glowing line shaders.
+/// - Interactive ambient light spheres that react to mouse/touch movement.
 class AnimatedWorldMapBackground extends StatefulWidget {
   final Widget? child;
   final String? watermarkText;
-  final Color backgroundColor;
+  final Color? backgroundColor;
 
   const AnimatedWorldMapBackground({
     super.key,
     this.child,
     this.watermarkText,
-    this.backgroundColor = const Color(0xFF07090E),
+    this.backgroundColor,
   });
 
   @override
@@ -53,6 +55,24 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    // Theme-dependent colors
+    final baseBgColor = widget.backgroundColor ??
+        (isDarkMode ? const Color(0xFF07090E) : const Color(0xFFF1F5F9));
+
+    final glow1Colors = isDarkMode
+        ? const [Color(0x403B0764), Color(0x201E1B4B), Colors.transparent]
+        : const [Color(0x30C084FC), Color(0x15A855F7), Colors.transparent];
+
+    final glow2Colors = isDarkMode
+        ? const [Color(0x351E293B), Color(0x184F46E5), Colors.transparent]
+        : const [Color(0x3038BDF8), Color(0x150284C7), Colors.transparent];
+
+    final vignetteColors = isDarkMode
+        ? const [Colors.transparent, Color(0x6007090E), Color(0xFF07090E)]
+        : const [Colors.transparent, Color(0x40F1F5F9), Color(0xFFF1F5F9)];
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
@@ -63,14 +83,14 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
             onPointerMove: (event) => _onPointerMove(event.localPosition, size),
             child: Stack(
               children: [
-                // 1. Base Dark Background (#07090E)
+                // 1. Base Canvas Background (Light/Dark Theme adapt)
                 Container(
-                  color: widget.backgroundColor,
+                  color: baseBgColor,
                   width: double.infinity,
                   height: double.infinity,
                 ),
 
-                // 2. Ambient Purple & Blue Radial Light Spheres
+                // 2. Ambient Light Spheres (Interactive)
                 AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
@@ -78,7 +98,7 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
                         math.sin(_controller.value * 2 * math.pi) * 0.08 + 0.92;
                     return Stack(
                       children: [
-                        // Top-Center Purple Glow Behind Map
+                        // Glow 1
                         Positioned(
                           top: -size.height * 0.15 + (_pointerOffset.dy * -15),
                           left: size.width * 0.25 + (_pointerOffset.dx * -15),
@@ -87,22 +107,18 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
                             child: Container(
                               width: size.width * 0.5,
                               height: size.height * 0.5,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
-                                  colors: [
-                                    Color(0x403B0764), // Purple glow
-                                    Color(0x201E1B4B), // Dark indigo
-                                    Colors.transparent,
-                                  ],
-                                  stops: [0.0, 0.55, 1.0],
+                                  colors: glow1Colors,
+                                  stops: const [0.0, 0.55, 1.0],
                                 ),
                               ),
                             ),
                           ),
                         ),
 
-                        // Center-Right Indigo Glow
+                        // Glow 2
                         Positioned(
                           top: size.height * 0.15 + (_pointerOffset.dy * -20),
                           right: size.width * 0.05 + (_pointerOffset.dx * -20),
@@ -111,15 +127,11 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
                             child: Container(
                               width: size.width * 0.45,
                               height: size.height * 0.55,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
-                                  colors: [
-                                    Color(0x351E293B), // Soft slate blue glow
-                                    Color(0x184F46E5), // Indigo hint
-                                    Colors.transparent,
-                                  ],
-                                  stops: [0.0, 0.6, 1.0],
+                                  colors: glow2Colors,
+                                  stops: const [0.0, 0.6, 1.0],
                                 ),
                               ),
                             ),
@@ -143,6 +155,7 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
                         return CustomPaint(
                           painter: DetailedWorldMapPainter(
                             progress: _controller.value,
+                            isDarkMode: isDarkMode,
                           ),
                         );
                       },
@@ -150,25 +163,21 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
                   ),
                 ),
 
-                // 4. Subtle Vignette Overlay for Contrast
+                // 4. Subtle Vignette Overlay
                 IgnorePointer(
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: RadialGradient(
                         center: Alignment.center,
                         radius: 1.15,
-                        colors: [
-                          Colors.transparent,
-                          Color(0x6007090E),
-                          Color(0xFF07090E),
-                        ],
-                        stops: [0.35, 0.8, 1.0],
+                        colors: vignetteColors,
+                        stops: const [0.35, 0.8, 1.0],
                       ),
                     ),
                   ),
                 ),
 
-                // 5. Child Content (Dashboard content)
+                // 5. Child Content
                 if (widget.child != null) Positioned.fill(child: widget.child!),
               ],
             ),
@@ -179,49 +188,64 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
   }
 }
 
-/// CustomPainter rendering realistic continent vector paths & glowing border outlines matching screenshot.
+/// CustomPainter rendering continent vector paths & glowing border outlines adapted to light/dark themes.
 class DetailedWorldMapPainter extends CustomPainter {
   final double progress;
+  final bool isDarkMode;
 
-  DetailedWorldMapPainter({required this.progress});
+  DetailedWorldMapPainter({
+    required this.progress,
+    required this.isDarkMode,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final double w = size.width;
     final double h = size.height;
-
     final Rect rect = Rect.fromLTWH(0, 0, w, h);
+
+    final shaderColors = isDarkMode
+        ? const [
+            Color(0x663B82F6),
+            Color(0x998B5CF6),
+            Color(0x662DD4BF),
+            Color(0x663B82F6),
+          ]
+        : const [
+            Color(0x884F46E5),
+            Color(0xAA7C3AED),
+            Color(0x880284C7),
+            Color(0x884F46E5),
+          ];
+
+    final fillPaintColor = isDarkMode ? const Color(0x2E1E294B) : const Color(0x1864748B);
+    final borderPaintColor = isDarkMode ? const Color(0x35384674) : const Color(0x3094A3B8);
+    final gridLineColor = isDarkMode ? const Color(0x0CFFFFFF) : const Color(0x15000000);
+    final dotColor = isDarkMode ? const Color(0x3B8B5CF6) : const Color(0x406366F1);
 
     // Multi-color glowing outline shader
     final Paint outlineShaderPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment(-1.0 + (progress * 2), -0.5),
         end: Alignment(1.0 + (progress * 2), 0.5),
-        colors: const [
-          Color(0x663B82F6), // Vibrant Blue
-          Color(0x998B5CF6), // Purple
-          Color(0x662DD4BF), // Cyan
-          Color(0x663B82F6), // Blue
-        ],
+        colors: shaderColors,
       ).createShader(rect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
 
-    // Dark Navy Continent Fill Paint
     final Paint fillPaint = Paint()
-      ..color = const Color(0x2E1E294B)
+      ..color = fillPaintColor
       ..style = PaintingStyle.fill;
 
-    // Outer Border Line Paint
     final Paint borderPaint = Paint()
-      ..color = const Color(0x35384674)
+      ..color = borderPaintColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     // Build Detailed World Map Paths
     final Path mapPath = Path();
 
-    // 1. North America Path
+    // 1. North America
     final Path na = Path()
       ..moveTo(w * 0.06, h * 0.12)
       ..cubicTo(w * 0.12, h * 0.05, w * 0.28, h * 0.06, w * 0.32, h * 0.14)
@@ -232,7 +256,7 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(na, Offset.zero);
 
-    // 2. Greenland Path
+    // 2. Greenland
     final Path greenland = Path()
       ..moveTo(w * 0.34, h * 0.05)
       ..cubicTo(w * 0.38, h * 0.03, w * 0.43, h * 0.04, w * 0.44, h * 0.10)
@@ -240,7 +264,7 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(greenland, Offset.zero);
 
-    // 3. South America Path
+    // 3. South America
     final Path sa = Path()
       ..moveTo(w * 0.24, h * 0.46)
       ..cubicTo(w * 0.30, h * 0.48, w * 0.34, h * 0.56, w * 0.30, h * 0.68)
@@ -249,7 +273,7 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(sa, Offset.zero);
 
-    // 4. Europe Path
+    // 4. Europe
     final Path europe = Path()
       ..moveTo(w * 0.46, h * 0.12)
       ..cubicTo(w * 0.52, h * 0.10, w * 0.58, h * 0.14, w * 0.56, h * 0.24)
@@ -257,7 +281,7 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(europe, Offset.zero);
 
-    // 5. Africa Path
+    // 5. Africa
     final Path africa = Path()
       ..moveTo(w * 0.44, h * 0.30)
       ..cubicTo(w * 0.52, h * 0.28, w * 0.60, h * 0.35, w * 0.58, h * 0.48)
@@ -266,7 +290,7 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(africa, Offset.zero);
 
-    // 6. Asia Path
+    // 6. Asia
     final Path asia = Path()
       ..moveTo(w * 0.58, h * 0.12)
       ..cubicTo(w * 0.72, h * 0.08, w * 0.90, h * 0.12, w * 0.94, h * 0.24)
@@ -275,7 +299,7 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(asia, Offset.zero);
 
-    // 7. Australia & Indonesia Path
+    // 7. Australia & Indonesia
     final Path australia = Path()
       ..moveTo(w * 0.76, h * 0.55)
       ..cubicTo(w * 0.84, h * 0.52, w * 0.92, h * 0.58, w * 0.90, h * 0.70)
@@ -283,14 +307,14 @@ class DetailedWorldMapPainter extends CustomPainter {
       ..close();
     mapPath.addPath(australia, Offset.zero);
 
-    // Render Continent Silhouette Fills & Outlines
+    // Draw Map
     canvas.drawPath(mapPath, fillPaint);
     canvas.drawPath(mapPath, borderPaint);
     canvas.drawPath(mapPath, outlineShaderPaint);
 
-    // Render Tech Dots Grid inside Map Path
-    final Paint dotPaint = Paint()
-      ..color = const Color(0x3B8B5CF6)
+    // Tech Dots inside Map
+    final Paint dotsPaint = Paint()
+      ..color = dotColor
       ..style = PaintingStyle.fill;
 
     const double step = 16.0;
@@ -298,14 +322,14 @@ class DetailedWorldMapPainter extends CustomPainter {
       for (double y = 0; y < h; y += step) {
         if (mapPath.contains(Offset(x, y))) {
           final pulse = math.sin((x + y + progress * 120) * 0.04) * 0.5 + 1.6;
-          canvas.drawCircle(Offset(x, y), pulse, dotPaint);
+          canvas.drawCircle(Offset(x, y), pulse, dotsPaint);
         }
       }
     }
 
-    // Render Latitude / Longitude Subtle Curved Grid Lines across background
+    // Grid lines
     final Paint gridLinePaint = Paint()
-      ..color = const Color(0x0CFFFFFF)
+      ..color = gridLineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -321,6 +345,6 @@ class DetailedWorldMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant DetailedWorldMapPainter oldDelegate) {
-    return oldDelegate.progress != progress;
+    return oldDelegate.progress != progress || oldDelegate.isDarkMode != isDarkMode;
   }
 }

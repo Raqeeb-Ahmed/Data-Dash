@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
+import '../providers/navigation_provider.dart';
 
-class HomeDashboardPage extends StatelessWidget {
-  final Function(int) onTabChange;
-
-  const HomeDashboardPage({super.key, required this.onTabChange});
+class HomeDashboardPage extends ConsumerWidget {
+  const HomeDashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const primaryTextColor = Colors.white;
-    const secondaryTextColor = Color(0xFF94A3B8);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final primaryTextColor = isDarkMode
+        ? Colors.white
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -48,7 +53,7 @@ class HomeDashboardPage extends StatelessWidget {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () => onTabChange(4), // Open staff leaderboard
+                      onTap: () => ref.read(navigationProvider.notifier).state = 8, // Open staff leaderboard
                       child: const CircleAvatar(
                         radius: 20,
                         backgroundColor: AppColors.primary,
@@ -73,8 +78,9 @@ class HomeDashboardPage extends StatelessWidget {
                   children: [
                     // Card 1: Total Bookings (Interactive)
                     _buildInteractiveCard(
+                      context: context,
                       title: 'Total Bookings',
-                      onTap: () => onTabChange(1), // Navigate to Records/Search
+                      onTap: () => ref.read(navigationProvider.notifier).state = 2, // Navigate to Records/Search
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -112,8 +118,9 @@ class HomeDashboardPage extends StatelessWidget {
 
                     // Card 2: Total Handlers (Interactive)
                     _buildInteractiveCard(
+                      context: context,
                       title: 'Active Agents',
-                      onTap: () => onTabChange(4), // Navigate to Staff
+                      onTap: () => ref.read(navigationProvider.notifier).state = 8, // Navigate to Staff
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -126,6 +133,7 @@ class HomeDashboardPage extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
+
                           // Small avatar stack
                           Row(
                             children: List.generate(4, (index) {
@@ -168,9 +176,10 @@ class HomeDashboardPage extends StatelessWidget {
 
                     // Card 3: Global Reach (Interactive)
                     _buildInteractiveCard(
+                      context: context,
                       title: 'Global Reach',
                       onTap: () =>
-                          onTabChange(1), // Navigate to Destinations/Records
+                          ref.read(navigationProvider.notifier).state = 2, // Navigate to Destinations/Records
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -206,8 +215,9 @@ class HomeDashboardPage extends StatelessWidget {
 
                     // Card 4: Net Profit (Interactive)
                     _buildInteractiveCard(
+                      context: context,
                       title: 'Net Profit',
-                      onTap: () => onTabChange(3), // Navigate to Analytics
+                      onTap: () => ref.read(navigationProvider.notifier).state = 1, // Navigate to Analytics
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -246,12 +256,18 @@ class HomeDashboardPage extends StatelessWidget {
 
                 // Universal Search Interactive Card
                 GestureDetector(
-                  onTap: () => onTabChange(1), // Navigate to Search/Records tab
+                  onTap: () => ref.read(navigationProvider.notifier).state = 2, // Navigate to Search/Records tab
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0x660F172A),
+                      color: isDarkMode
+                          ? const Color(0x660F172A)
+                          : Colors.white.withValues(alpha: 0.88),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0x15FFFFFF)),
+                      border: Border.all(
+                        color: isDarkMode
+                            ? const Color(0x15FFFFFF)
+                            : const Color(0x1F000000),
+                      ),
                     ),
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -277,9 +293,15 @@ class HomeDashboardPage extends StatelessWidget {
                         Container(
                           height: 42,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
+                            color: isDarkMode
+                                ? const Color(0xFF1E293B)
+                                : Colors.grey[100],
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF334155)),
+                            border: Border.all(
+                              color: isDarkMode
+                                  ? const Color(0xFF334155)
+                                  : Colors.grey[300]!,
+                            ),
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
@@ -319,7 +341,7 @@ class HomeDashboardPage extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () => onTabChange(1), // Navigate to Records
+                      onPressed: () => ref.read(navigationProvider.notifier).state = 2, // Navigate to Records
                       child: const Text(
                         'View All',
                         style: TextStyle(color: AppColors.primary),
@@ -333,11 +355,31 @@ class HomeDashboardPage extends StatelessWidget {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _buildDestinationCard('Uzbekistan', '29', '🇺🇿'),
-                      _buildDestinationCard('Malaysia', '1364', '🇲🇾'),
-                      _buildDestinationCard('Thailand', '670', '🇹🇭'),
-                      _buildDestinationCard('Indonesia', '236', '🇮🇩'),
-                      _buildDestinationCard('Singapore', '160', '🇸🇬'),
+                      _buildDestinationCard(
+                        context,
+                        'Uzbekistan',
+                        '29',
+                        '🇺🇿',
+                      ),
+                      _buildDestinationCard(
+                        context,
+                        'Malaysia',
+                        '1364',
+                        '🇲🇾',
+                      ),
+                      _buildDestinationCard(context, 'Thailand', '670', '🇹🇭'),
+                      _buildDestinationCard(
+                        context,
+                        'Indonesia',
+                        '236',
+                        '🇮🇩',
+                      ),
+                      _buildDestinationCard(
+                        context,
+                        'Singapore',
+                        '160',
+                        '🇸🇬',
+                      ),
                     ],
                   ),
                 ),
@@ -351,17 +393,25 @@ class HomeDashboardPage extends StatelessWidget {
   }
 
   Widget _buildInteractiveCard({
+    required BuildContext context,
     required String title,
     required Widget child,
     required VoidCallback onTap,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0x660F172A),
+          color: isDarkMode
+              ? const Color(0x660F172A)
+              : Colors.white.withValues(alpha: 0.88),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0x15FFFFFF)),
+          border: Border.all(
+            color: isDarkMode
+                ? const Color(0x15FFFFFF)
+                : const Color(0x1F000000),
+          ),
         ),
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -369,8 +419,10 @@ class HomeDashboardPage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
+              style: TextStyle(
+                color: isDarkMode
+                    ? const Color(0xFF94A3B8)
+                    : AppColors.textSecondaryLight,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -383,14 +435,24 @@ class HomeDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDestinationCard(String country, String count, String flag) {
+  Widget _buildDestinationCard(
+    BuildContext context,
+    String country,
+    String count,
+    String flag,
+  ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 130,
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
-        color: const Color(0x660F172A),
+        color: isDarkMode
+            ? const Color(0x660F172A)
+            : Colors.white.withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0x15FFFFFF)),
+        border: Border.all(
+          color: isDarkMode ? const Color(0x15FFFFFF) : const Color(0x1F000000),
+        ),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -403,15 +465,20 @@ class HomeDashboardPage extends StatelessWidget {
             country,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isDarkMode ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
           Text(
             '$count Bookings',
-            style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+            style: TextStyle(
+              fontSize: 11,
+              color: isDarkMode
+                  ? const Color(0xFF94A3B8)
+                  : AppColors.textSecondaryLight,
+            ),
           ),
         ],
       ),

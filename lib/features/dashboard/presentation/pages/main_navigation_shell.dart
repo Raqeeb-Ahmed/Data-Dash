@@ -1,51 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../analytics/presentation/pages/analytics_page.dart';
 import '../../../employee/presentation/pages/employee_leaderboard_page.dart';
+import '../../presentation/providers/navigation_provider.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import 'home_dashboard_page.dart';
+import 'hotels_page.dart';
+import 'insurance_page.dart';
+import 'marketing_page.dart';
 import 'records_dashboard_page.dart';
 import 'services_grid_page.dart';
+import 'tickets_page.dart';
+import 'umrah_page.dart';
 
-class MainNavigationShell extends StatefulWidget {
+class MainNavigationShell extends ConsumerStatefulWidget {
   const MainNavigationShell({super.key});
 
   @override
-  State<MainNavigationShell> createState() => _MainNavigationShellState();
+  ConsumerState<MainNavigationShell> createState() => _MainNavigationShellState();
 }
 
-class _MainNavigationShellState extends State<MainNavigationShell> {
-  int _selectedIndex = 0;
-
+class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   List<Widget> get _pages => [
-    HomeDashboardPage(
-      onTabChange: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
-    ),
-    const RecordsDashboardPage(),
-    const ServicesGridPage(),
-    const AnalyticsPage(),
-    // const EmployeeLeaderboardPage(),
-  ];
+        const HomeDashboardPage(),
+        const AnalyticsPage(),
+        const RecordsDashboardPage(),
+        const TicketsPage(),
+        const UmrahPage(),
+        const HotelsPage(),
+        const InsurancePage(),
+        const MarketingPage(),
+        const EmployeeLeaderboardPage(),
+        const ServicesGridPage(),
+      ];
 
   final List<String> _titles = [
-    'Overview',
-    'Records Dashboard',
-    'Services',
+    'Home',
     'Analytics',
-    'Employees Leaderboard',
+    'Admin Dashboard',
+    'Tickets',
+    'Umrah',
+    'Hotels',
+    'Insurance',
+    'Marketing',
+    'Employees',
+    'Services Grid',
   ];
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(navigationProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _titles[_selectedIndex],
+          _titles[selectedIndex],
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -56,9 +67,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           IconButton(
             icon: const Icon(Icons.search_outlined),
             onPressed: () {
-              setState(() {
-                _selectedIndex = 1; // switch to records/search
-              });
+              ref.read(navigationProvider.notifier).state = 2; // switch to Admin Dashboard (Records)
             },
           ),
         ],
@@ -67,69 +76,85 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         child: Column(
           children: [
             UserAccountsDrawerHeader(
-              decoration: const BoxDecoration(color: AppColors.primary),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, Color(0xFF4F46E5)],
+                ),
+              ),
               currentAccountPicture: const CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(Icons.person, color: AppColors.primary, size: 40),
+                child: Icon(Icons.flash_on, color: AppColors.primary, size: 36),
               ),
               accountName: const Text(
-                'Admin User',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                'DATADASH ADMIN',
+                style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.8),
               ),
-              accountEmail: const Text('admin@gmail.com'),
+              accountEmail: const Text('admin@ostravel.com'),
             ),
-            ListTile(
-              leading: const Icon(Icons.dashboard_outlined),
-              title: const Text('Overview'),
-              selected: _selectedIndex == 0,
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _selectedIndex = 0);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.receipt_long_outlined),
-              title: const Text('All Bookings'),
-              selected: _selectedIndex == 1,
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _selectedIndex = 1);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.grid_view_outlined),
-              title: const Text('Services Menu'),
-              selected: _selectedIndex == 2,
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _selectedIndex = 2);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart_outlined),
-              title: const Text('Performance Analytics'),
-              selected: _selectedIndex == 3,
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _selectedIndex = 3);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people_alt_outlined),
-              title: const Text('Employees'),
-              selected: _selectedIndex == 4,
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _selectedIndex = 4);
-              },
+
+            // Navigation Sidebar List (All 9 Navbar Pages)
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _buildSidebarItem(
+                    index: 0,
+                    icon: Icons.home_outlined,
+                    title: 'Home',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 1,
+                    icon: Icons.bar_chart_outlined,
+                    title: 'Analytics',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 2,
+                    icon: Icons.dashboard_outlined,
+                    title: 'Admin Dashboard',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 3,
+                    icon: Icons.flight_takeoff_outlined,
+                    title: 'Tickets',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 4,
+                    icon: Icons.mosque_outlined,
+                    title: 'Umrah',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 5,
+                    icon: Icons.hotel_outlined,
+                    title: 'Hotels',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 6,
+                    icon: Icons.verified_user_outlined,
+                    title: 'Insurance',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 7,
+                    icon: Icons.campaign_outlined,
+                    title: 'Marketing',
+                    selectedIndex: selectedIndex,
+                  ),
+                  _buildSidebarItem(
+                    index: 8,
+                    icon: Icons.people_alt_outlined,
+                    title: 'Employees',
+                    selectedIndex: selectedIndex,
+                  ),
+                ],
+              ),
             ),
             const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Settings'),
-              onTap: () {},
-            ),
-            const Spacer(),
             ListTile(
               leading: const Icon(
                 Icons.logout_outlined,
@@ -137,25 +162,25 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               ),
               title: const Text(
                 'Logout',
-                style: TextStyle(color: AppColors.error),
+                style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold),
               ),
-              onTap: () {
-                Navigator.pop(context); // close drawer
-                // Go back to login screen
-                Navigator.pushReplacementNamed(context, '/login');
+              onTap: () async {
+                Navigator.pop(context); // Close drawer
+                await ref.read(authControllerProvider.notifier).logout();
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(context, '/login');
+                }
               },
             ),
             const SizedBox(height: 16),
           ],
         ),
       ),
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: IndexedStack(index: selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex > 4 ? 0 : selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          ref.read(navigationProvider.notifier).state = index;
         },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
@@ -169,19 +194,19 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            activeIcon: Icon(Icons.receipt_long),
-            label: 'Records',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_outlined),
-            activeIcon: Icon(Icons.grid_view),
-            label: 'Services',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart_outlined),
             activeIcon: Icon(Icons.bar_chart),
             label: 'Analytics',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.flight_takeoff_outlined),
+            activeIcon: Icon(Icons.flight_takeoff),
+            label: 'Tickets',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people_alt_outlined),
@@ -190,6 +215,33 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSidebarItem({
+    required int index,
+    required IconData icon,
+    required String title,
+    required int selectedIndex,
+  }) {
+    final isSelected = selectedIndex == index;
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? AppColors.primary : null,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? AppColors.primary : null,
+        ),
+      ),
+      selected: isSelected,
+      onTap: () {
+        Navigator.pop(context); // Close drawer
+        ref.read(navigationProvider.notifier).state = index;
+      },
     );
   }
 }
