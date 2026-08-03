@@ -17,8 +17,12 @@ class _TicketsPageState extends State<TicketsPage> {
   final int _perPage = 10;
 
   final List<String> _employees = [
-    'All Employees', 'hammad@os.com', 'sameer@os.com',
-    'noorul.fhade@os.com', 'muqtaba@os.com', 'waqahat@os.com',
+    'All Employees',
+    'hammad@os.com',
+    'sameer@os.com',
+    'noorul.fhade@os.com',
+    'muqtaba@os.com',
+    'waqahat@os.com',
   ];
 
   final List<Map<String, dynamic>> _allBookings = _generateTicketBookings();
@@ -26,12 +30,15 @@ class _TicketsPageState extends State<TicketsPage> {
   List<Map<String, dynamic>> get _filtered {
     return _allBookings.where((b) {
       final q = _searchQuery.toLowerCase();
-      final matchSearch = q.isEmpty ||
+      final matchSearch =
+          q.isEmpty ||
           (b['pnr'] as String).toLowerCase().contains(q) ||
           (b['passenger'] as String).toLowerCase().contains(q) ||
           (b['employee'] as String).toLowerCase().contains(q) ||
           (b['route'] as String).toLowerCase().contains(q);
-      final matchEmp = _selectedEmployee == 'All Employees' || b['employee'] == _selectedEmployee;
+      final matchEmp =
+          _selectedEmployee == 'All Employees' ||
+          b['employee'] == _selectedEmployee;
       return matchSearch && matchEmp;
     }).toList();
   }
@@ -47,17 +54,26 @@ class _TicketsPageState extends State<TicketsPage> {
   int get _totalPages => (_filtered.length / _perPage).ceil();
 
   // Computed stats
-  double get _totalEarnings => _allBookings.fold(0, (s, b) => s + (b['price'] as double));
-  double get _totalPayable => _allBookings.fold(0, (s, b) => s + (b['payable'] as double));
-  double get _totalProfit => _allBookings.fold(0, (s, b) => s + (b['profit'] as double));
+  double get _totalEarnings =>
+      _allBookings.fold(0, (s, b) => s + (b['price'] as double));
+  double get _totalPayable =>
+      _allBookings.fold(0, (s, b) => s + (b['payable'] as double));
+  double get _totalProfit =>
+      _allBookings.fold(0, (s, b) => s + (b['profit'] as double));
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primary = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondary = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
-    final cardBg = isDarkMode ? const Color(0x880F172A) : Colors.white.withValues(alpha: 0.92);
-    final borderColor = isDarkMode ? const Color(0x18FFFFFF) : const Color(0x1F000000);
+    final secondary = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
+    final cardBg = isDarkMode
+        ? const Color(0x880F172A)
+        : Colors.white.withValues(alpha: 0.92);
+    final borderColor = isDarkMode
+        ? const Color(0x18FFFFFF)
+        : const Color(0x1F000000);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -83,12 +99,20 @@ class _TicketsPageState extends State<TicketsPage> {
                               ),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
+                            child: const Icon(
+                              Icons.flight_takeoff,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Text(
                             'Ticket Bookings',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primary),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: primary,
+                            ),
                           ),
                         ],
                       ),
@@ -118,11 +142,30 @@ class _TicketsPageState extends State<TicketsPage> {
                   child: DropdownButton<String>(
                     value: _selectedEmployee,
                     isExpanded: true,
-                    dropdownColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                    dropdownColor: isDarkMode
+                        ? const Color(0xFF1E293B)
+                        : Colors.white,
                     style: TextStyle(fontSize: 12, color: primary),
-                    icon: Icon(Icons.keyboard_arrow_down, size: 16, color: secondary),
-                    items: _employees.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 12)))).toList(),
-                    onChanged: (v) => setState(() { _selectedEmployee = v!; _currentPage = 0; }),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 16,
+                      color: secondary,
+                    ),
+                    items: _employees
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(
+                              e,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() {
+                      _selectedEmployee = v!;
+                      _currentPage = 0;
+                    }),
                   ),
                 ),
               ),
@@ -189,7 +232,14 @@ class _TicketsPageState extends State<TicketsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Monthly Financials', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primary)),
+                    Text(
+                      'Monthly Financials',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: primary,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     SizedBox(
                       height: 160,
@@ -199,21 +249,41 @@ class _TicketsPageState extends State<TicketsPage> {
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
-                            getDrawingHorizontalLine: (_) => FlLine(color: borderColor, strokeWidth: 0.5),
+                            getDrawingHorizontalLine: (_) =>
+                                FlLine(color: borderColor, strokeWidth: 0.5),
                           ),
                           titlesData: FlTitlesData(
-                            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            leftTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 reservedSize: 28,
                                 getTitlesWidget: (value, meta) {
-                                  const months = ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul'];
+                                  const months = [
+                                    'Sep',
+                                    'Nov',
+                                    'Jan',
+                                    'Mar',
+                                    'May',
+                                    'Jul',
+                                  ];
                                   final i = value.toInt();
                                   if (i < months.length) {
-                                    return Text(months[i], style: TextStyle(fontSize: 8, color: secondary));
+                                    return Text(
+                                      months[i],
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        color: secondary,
+                                      ),
+                                    );
                                   }
                                   return const Text('');
                                 },
@@ -256,7 +326,14 @@ class _TicketsPageState extends State<TicketsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Top 10 Destinations', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primary)),
+                    Text(
+                      'Top 10 Destinations',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: primary,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 150,
@@ -265,16 +342,116 @@ class _TicketsPageState extends State<TicketsPage> {
                           sectionsSpace: 2,
                           centerSpaceRadius: 30,
                           sections: [
-                            PieChartSectionData(value: 24, title: 'ISB 24%', color: const Color(0xFF6366F1), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 13, title: 'KHI 13%', color: const Color(0xFF0EA5E9), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 10, title: 'DXB 10%', color: const Color(0xFF10B981), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 9, title: 'JED 9%', color: const Color(0xFFF59E0B), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 9, title: 'DMM 9%', color: const Color(0xFFEC4899), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 8, title: 'RUH 8%', color: const Color(0xFF8B5CF6), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 7, title: 'LHE 7%', color: const Color(0xFFEF4444), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 7, title: 'BGX 7%', color: const Color(0xFF14B8A6), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 6, title: 'JUL 6%', color: const Color(0xFFF97316), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
-                            PieChartSectionData(value: 5, title: 'DOH 5%', color: const Color(0xFF64748B), radius: 14, titleStyle: const TextStyle(fontSize: 7, color: Colors.white, fontWeight: FontWeight.bold)),
+                            PieChartSectionData(
+                              value: 24,
+                              title: 'ISB 24%',
+                              color: const Color(0xFF6366F1),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 13,
+                              title: 'KHI 13%',
+                              color: const Color(0xFF0EA5E9),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 10,
+                              title: 'DXB 10%',
+                              color: const Color(0xFF10B981),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 9,
+                              title: 'JED 9%',
+                              color: const Color(0xFFF59E0B),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 9,
+                              title: 'DMM 9%',
+                              color: const Color(0xFFEC4899),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 8,
+                              title: 'RUH 8%',
+                              color: const Color(0xFF8B5CF6),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 7,
+                              title: 'LHE 7%',
+                              color: const Color(0xFFEF4444),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 7,
+                              title: 'BGX 7%',
+                              color: const Color(0xFF14B8A6),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 6,
+                              title: 'JUL 6%',
+                              color: const Color(0xFFF97316),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            PieChartSectionData(
+                              value: 5,
+                              title: 'DOH 5%',
+                              color: const Color(0xFF64748B),
+                              radius: 14,
+                              titleStyle: const TextStyle(
+                                fontSize: 7,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -301,12 +478,16 @@ class _TicketsPageState extends State<TicketsPage> {
                       child: TextField(
                         style: TextStyle(fontSize: 12, color: primary),
                         decoration: InputDecoration(
-                          hintText: 'Search by PNR, passenger, employee, route...',
+                          hintText:
+                              'Search by PNR, passenger, employee, route...',
                           hintStyle: TextStyle(fontSize: 12, color: secondary),
                           border: InputBorder.none,
                           isDense: true,
                         ),
-                        onChanged: (v) => setState(() { _searchQuery = v; _currentPage = 0; }),
+                        onChanged: (v) => setState(() {
+                          _searchQuery = v;
+                          _currentPage = 0;
+                        }),
                       ),
                     ),
                   ],
@@ -328,8 +509,18 @@ class _TicketsPageState extends State<TicketsPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Employee Leaderboard', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primary)),
-                        Text('Sort by: Bookings', style: TextStyle(fontSize: 10, color: secondary)),
+                        Text(
+                          'Employee Leaderboard',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: primary,
+                          ),
+                        ),
+                        Text(
+                          'Sort by: Bookings',
+                          style: TextStyle(fontSize: 10, color: secondary),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -337,7 +528,9 @@ class _TicketsPageState extends State<TicketsPage> {
                     _leaderboardHeader(secondary),
                     const Divider(height: 12, thickness: 0.3),
                     // Rows
-                    ..._employeeLeaderboardData().map((e) => _leaderboardRow(e, primary, secondary, isDarkMode)),
+                    ..._employeeLeaderboardData().map(
+                      (e) => _leaderboardRow(e, primary, secondary, isDarkMode),
+                    ),
                   ],
                 ),
               ),
@@ -357,8 +550,18 @@ class _TicketsPageState extends State<TicketsPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Bookings (${_filtered.length})', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primary)),
-                        Text('Click row to see details', style: TextStyle(fontSize: 10, color: secondary)),
+                        Text(
+                          'Bookings (${_filtered.length})',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: primary,
+                          ),
+                        ),
+                        Text(
+                          'Click row to see details',
+                          style: TextStyle(fontSize: 10, color: secondary),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -366,7 +569,14 @@ class _TicketsPageState extends State<TicketsPage> {
                     ..._paged.asMap().entries.map((entry) {
                       final i = entry.key;
                       final b = entry.value;
-                      return _buildBookingRow(b, _currentPage * _perPage + i + 1, isDarkMode, primary, secondary, borderColor);
+                      return _buildBookingRow(
+                        b,
+                        _currentPage * _perPage + i + 1,
+                        isDarkMode,
+                        primary,
+                        secondary,
+                        borderColor,
+                      );
                     }),
 
                     // Pagination
@@ -375,15 +585,43 @@ class _TicketsPageState extends State<TicketsPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _paginateBtn('<<', _currentPage > 0, () => setState(() => _currentPage = 0), isDarkMode, secondary),
+                          _paginateBtn(
+                            '<<',
+                            _currentPage > 0,
+                            () => setState(() => _currentPage = 0),
+                            isDarkMode,
+                            secondary,
+                          ),
                           const SizedBox(width: 4),
-                          _paginateBtn('<', _currentPage > 0, () => setState(() => _currentPage--), isDarkMode, secondary),
+                          _paginateBtn(
+                            '<',
+                            _currentPage > 0,
+                            () => setState(() => _currentPage--),
+                            isDarkMode,
+                            secondary,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Page ${_currentPage + 1} of $_totalPages', style: TextStyle(fontSize: 11, color: secondary)),
+                          Text(
+                            'Page ${_currentPage + 1} of $_totalPages',
+                            style: TextStyle(fontSize: 11, color: secondary),
+                          ),
                           const SizedBox(width: 8),
-                          _paginateBtn('>', _currentPage < _totalPages - 1, () => setState(() => _currentPage++), isDarkMode, secondary),
+                          _paginateBtn(
+                            '>',
+                            _currentPage < _totalPages - 1,
+                            () => setState(() => _currentPage++),
+                            isDarkMode,
+                            secondary,
+                          ),
                           const SizedBox(width: 4),
-                          _paginateBtn('>>', _currentPage < _totalPages - 1, () => setState(() => _currentPage = _totalPages - 1), isDarkMode, secondary),
+                          _paginateBtn(
+                            '>>',
+                            _currentPage < _totalPages - 1,
+                            () =>
+                                setState(() => _currentPage = _totalPages - 1),
+                            isDarkMode,
+                            secondary,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -406,11 +644,21 @@ class _TicketsPageState extends State<TicketsPage> {
 
   // ── Helpers ──
 
-  Widget _gradientCard({required List<Color> colors, required String label, required String value, required String sub, required IconData icon}) {
+  Widget _gradientCard({
+    required List<Color> colors,
+    required String label,
+    required String value,
+    required String sub,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+          colors: colors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -419,12 +667,29 @@ class _TicketsPageState extends State<TicketsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: const TextStyle(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
               Icon(icon, size: 16, color: Colors.white70),
             ],
           ),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 4),
           Text(sub, style: const TextStyle(fontSize: 9, color: Colors.white54)),
         ],
@@ -436,8 +701,18 @@ class _TicketsPageState extends State<TicketsPage> {
     return BarChartGroupData(
       x: x,
       barRods: [
-        BarChartRodData(toY: earnings, color: const Color(0xFF6366F1), width: 8, borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
-        BarChartRodData(toY: profit, color: const Color(0xFF10B981), width: 8, borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
+        BarChartRodData(
+          toY: earnings,
+          color: const Color(0xFF6366F1),
+          width: 8,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+        ),
+        BarChartRodData(
+          toY: profit,
+          color: const Color(0xFF10B981),
+          width: 8,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+        ),
       ],
     );
   }
@@ -445,9 +720,16 @@ class _TicketsPageState extends State<TicketsPage> {
   Widget _legendDot(String label, Color color) {
     return Row(
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.white60)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: Colors.white60),
+        ),
       ],
     );
   }
@@ -455,34 +737,125 @@ class _TicketsPageState extends State<TicketsPage> {
   Widget _leaderboardHeader(Color secondary) {
     return Row(
       children: [
-        Expanded(flex: 3, child: Text('EMPLOYEE', style: TextStyle(fontSize: 8, color: secondary, fontWeight: FontWeight.bold))),
-        Expanded(flex: 1, child: Text('BOOKINGS', style: TextStyle(fontSize: 8, color: secondary, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-        Expanded(flex: 2, child: Text('EARNINGS', style: TextStyle(fontSize: 8, color: secondary, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
-        Expanded(flex: 2, child: Text('PROFIT', style: TextStyle(fontSize: 8, color: secondary, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+        Expanded(
+          flex: 3,
+          child: Text(
+            'EMPLOYEE',
+            style: TextStyle(
+              fontSize: 8,
+              color: secondary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Text(
+            'BOOKINGS',
+            style: TextStyle(
+              fontSize: 8,
+              color: secondary,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            'EARNINGS',
+            style: TextStyle(
+              fontSize: 8,
+              color: secondary,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            'PROFIT',
+            style: TextStyle(
+              fontSize: 8,
+              color: secondary,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _leaderboardRow(Map<String, dynamic> e, Color primary, Color secondary, bool isDarkMode) {
+  Widget _leaderboardRow(
+    Map<String, dynamic> e,
+    Color primary,
+    Color secondary,
+    bool isDarkMode,
+  ) {
     final pct = (e['bookings'] as int) / 400.0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Expanded(flex: 3, child: Text(e['email'] as String, style: TextStyle(fontSize: 10, color: primary, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
-          Expanded(flex: 1, child: Text('${e['bookings']}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF6366F1)), textAlign: TextAlign.center)),
-          Expanded(flex: 2, child: Text(_formatM(e['earnings'] as double), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF10B981)), textAlign: TextAlign.right)),
+          Expanded(
+            flex: 3,
+            child: Text(
+              e['email'] as String,
+              style: TextStyle(
+                fontSize: 10,
+                color: primary,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              '${e['bookings']}',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6366F1),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              _formatM(e['earnings'] as double),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF10B981),
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
           Expanded(
             flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(_formatM(e['profit'] as double), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF6366F1)), textAlign: TextAlign.right),
+                Text(
+                  _formatM(e['profit'] as double),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6366F1),
+                  ),
+                  textAlign: TextAlign.right,
+                ),
                 const SizedBox(height: 3),
                 LinearProgressIndicator(
                   value: pct.clamp(0.0, 1.0),
                   backgroundColor: const Color(0x226366F1),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF6366F1),
+                  ),
                   minHeight: 3,
                 ),
               ],
@@ -493,7 +866,14 @@ class _TicketsPageState extends State<TicketsPage> {
     );
   }
 
-  Widget _buildBookingRow(Map<String, dynamic> b, int rowNum, bool isDarkMode, Color primary, Color secondary, Color borderColor) {
+  Widget _buildBookingRow(
+    Map<String, dynamic> b,
+    int rowNum,
+    bool isDarkMode,
+    Color primary,
+    Color secondary,
+    Color borderColor,
+  ) {
     Color statusColor;
     Color statusBg;
     final status = b['status'] as String;
@@ -515,7 +895,9 @@ class _TicketsPageState extends State<TicketsPage> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0x330F172A) : Colors.white.withValues(alpha: 0.95),
+        color: isDarkMode
+            ? const Color(0x330F172A)
+            : Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: borderColor),
       ),
@@ -525,17 +907,45 @@ class _TicketsPageState extends State<TicketsPage> {
           // Row 1: Num + PNR + Status + Actions
           Row(
             children: [
-              Text('#$rowNum ', style: TextStyle(fontSize: 10, color: secondary, fontWeight: FontWeight.bold)),
+              Text(
+                '#$rowNum ',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: secondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: const Color(0x226366F1), borderRadius: BorderRadius.circular(4)),
-                child: Text(b['pnr'] as String, style: const TextStyle(fontSize: 9, color: Color(0xFF6366F1), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                decoration: BoxDecoration(
+                  color: const Color(0x226366F1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  b['pnr'] as String,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Color(0xFF6366F1),
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(4)),
-                child: Text(status, style: TextStyle(fontSize: 9, color: statusColor, fontWeight: FontWeight.bold)),
+                decoration: BoxDecoration(
+                  color: statusBg,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(width: 6),
               _actionIcon(Icons.visibility_outlined, const Color(0xFF0EA5E9)),
@@ -551,10 +961,22 @@ class _TicketsPageState extends State<TicketsPage> {
             children: [
               Icon(Icons.person_outline, size: 12, color: secondary),
               const SizedBox(width: 4),
-              Expanded(child: Text(b['passenger'] as String, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primary))),
+              Expanded(
+                child: Text(
+                  b['passenger'] as String,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: primary,
+                  ),
+                ),
+              ),
               Icon(Icons.work_outline, size: 11, color: secondary),
               const SizedBox(width: 3),
-              Text(b['employee'] as String, style: TextStyle(fontSize: 10, color: secondary)),
+              Text(
+                b['employee'] as String,
+                style: TextStyle(fontSize: 10, color: secondary),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -563,11 +985,21 @@ class _TicketsPageState extends State<TicketsPage> {
             children: [
               Icon(Icons.flight, size: 11, color: const Color(0xFF6366F1)),
               const SizedBox(width: 4),
-              Text(b['route'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF6366F1))),
+              Text(
+                b['route'] as String,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6366F1),
+                ),
+              ),
               const Spacer(),
               Icon(Icons.calendar_today, size: 10, color: secondary),
               const SizedBox(width: 4),
-              Text(b['date'] as String, style: TextStyle(fontSize: 10, color: secondary)),
+              Text(
+                b['date'] as String,
+                style: TextStyle(fontSize: 10, color: secondary),
+              ),
             ],
           ),
           const Divider(height: 12, thickness: 0.3),
@@ -575,9 +1007,24 @@ class _TicketsPageState extends State<TicketsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _finCell('Price', 'PKR ${_formatM(b['price'] as double)}', primary, secondary),
-              _finCell('Payable', 'PKR ${_formatM(b['payable'] as double)}', const Color(0xFFF59E0B), secondary),
-              _finCell('Profit', 'PKR ${_formatM(b['profit'] as double)}', const Color(0xFF10B981), secondary),
+              _finCell(
+                'Price',
+                'PKR ${_formatM(b['price'] as double)}',
+                primary,
+                secondary,
+              ),
+              _finCell(
+                'Payable',
+                'PKR ${_formatM(b['payable'] as double)}',
+                const Color(0xFFF59E0B),
+                secondary,
+              ),
+              _finCell(
+                'Profit',
+                'PKR ${_formatM(b['profit'] as double)}',
+                const Color(0xFF10B981),
+                secondary,
+              ),
             ],
           ),
         ],
@@ -588,32 +1035,63 @@ class _TicketsPageState extends State<TicketsPage> {
   Widget _actionIcon(IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Icon(icon, size: 12, color: color),
     );
   }
 
-  Widget _finCell(String label, String value, Color valueColor, Color labelColor) {
+  Widget _finCell(
+    String label,
+    String value,
+    Color valueColor,
+    Color labelColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: 9, color: labelColor)),
-        Text(value, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: valueColor)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _paginateBtn(String label, bool enabled, VoidCallback onTap, bool isDarkMode, Color secondary) {
+  Widget _paginateBtn(
+    String label,
+    bool enabled,
+    VoidCallback onTap,
+    bool isDarkMode,
+    Color secondary,
+  ) {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: enabled ? (isDarkMode ? const Color(0x330F172A) : Colors.white) : Colors.transparent,
+          color: enabled
+              ? (isDarkMode ? const Color(0x330F172A) : Colors.white)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(5),
-          border: Border.all(color: enabled ? const Color(0x18FFFFFF) : Colors.transparent),
+          border: Border.all(
+            color: enabled ? const Color(0x18FFFFFF) : Colors.transparent,
+          ),
         ),
-        child: Text(label, style: TextStyle(fontSize: 11, color: enabled ? secondary : Colors.grey)),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: enabled ? secondary : Colors.grey,
+          ),
+        ),
       ),
     );
   }
@@ -627,24 +1105,85 @@ class _TicketsPageState extends State<TicketsPage> {
 
 // ── Employee Leaderboard Data ──
 List<Map<String, dynamic>> _employeeLeaderboardData() => [
-  {'email': 'hammad@os.com', 'bookings': 395, 'earnings': 60033188.0, 'profit': 3215196.0},
-  {'email': 'sameer@os.com', 'bookings': 209, 'earnings': 39011929.0, 'profit': 919711.0},
-  {'email': 'noorul.fhade@os.com', 'bookings': 176, 'earnings': 27454665.0, 'profit': 1517490.0},
-  {'email': 'muqtaba@os.com', 'bookings': 10, 'earnings': 16080.0, 'profit': 16080.0},
-  {'email': 'waqahat@os.com', 'bookings': 2, 'earnings': 4000.0, 'profit': 4000.0},
+  {
+    'email': 'hammad@os.com',
+    'bookings': 395,
+    'earnings': 60033188.0,
+    'profit': 3215196.0,
+  },
+  {
+    'email': 'sameer@os.com',
+    'bookings': 209,
+    'earnings': 39011929.0,
+    'profit': 919711.0,
+  },
+  {
+    'email': 'noorul.fhade@os.com',
+    'bookings': 176,
+    'earnings': 27454665.0,
+    'profit': 1517490.0,
+  },
+  {
+    'email': 'muqtaba@os.com',
+    'bookings': 10,
+    'earnings': 16080.0,
+    'profit': 16080.0,
+  },
+  {
+    'email': 'waqahat@os.com',
+    'bookings': 2,
+    'earnings': 4000.0,
+    'profit': 4000.0,
+  },
 ];
 
 // ── Mock Ticket Bookings ──
 List<Map<String, dynamic>> _generateTicketBookings() {
   final passengers = [
-    'Muhammad Usman Aslam', 'Shahid Bashir', 'Kamwal Kamran', 'Simal Kamran',
-    'Ali Abdullah', 'Muhammad Talha Riaz', 'Sadaqat Hussain', 'Liaqat Ali',
-    'Seema/Mrs', 'Syed Abdullah Anwar', 'Ayesha Noor', 'Bilal Raza',
-    'Fatima Khan', 'Hamid Shah', 'Sara Ahmed',
+    'Muhammad Usman Aslam',
+    'Shahid Bashir',
+    'Kamwal Kamran',
+    'Simal Kamran',
+    'Ali Abdullah',
+    'Muhammad Talha Riaz',
+    'Sadaqat Hussain',
+    'Liaqat Ali',
+    'Seema/Mrs',
+    'Syed Abdullah Anwar',
+    'Ayesha Noor',
+    'Bilal Raza',
+    'Fatima Khan',
+    'Hamid Shah',
+    'Sara Ahmed',
   ];
-  final employees = ['noorul.fhade@os.com', 'hammad@os.com', 'sameer@os.com', 'muqtaba@os.com'];
-  final routes = ['ISB → AM', 'ISB → DXB', 'LHE → BKK', 'KHI → JED', 'ISB → LHR', 'EPS → KUL', 'ISB → BEI', 'CMF → LHE'];
-  final pnrs = ['5R2FSS', '2RM.KW', '2RM.OE', '2RM.OE', 'EI287KA', 'MFMHID', 'FI93LS', 'AIFVKZ', 'HGK49IJ', '20OBGP'];
+  final employees = [
+    'noorul.fhade@os.com',
+    'hammad@os.com',
+    'sameer@os.com',
+    'muqtaba@os.com',
+  ];
+  final routes = [
+    'ISB → AM',
+    'ISB → DXB',
+    'LHE → BKK',
+    'KHI → JED',
+    'ISB → LHR',
+    'EPS → KUL',
+    'ISB → BEI',
+    'CMF → LHE',
+  ];
+  final pnrs = [
+    '5R2FSS',
+    '2RM.KW',
+    '2RM.OE',
+    '2RM.OE',
+    'EI287KA',
+    'MFMHID',
+    'FI93LS',
+    'AIFVKZ',
+    'HGK49IJ',
+    '20OBGP',
+  ];
   final statuses = ['Booked', 'Booked', 'Booked', 'Pending', 'Cancelled'];
 
   return List.generate(79, (i) {

@@ -14,6 +14,8 @@ import 'services_grid_page.dart';
 import 'tickets_page.dart';
 import 'umrah_page.dart';
 
+import 'universal_search_page.dart';
+
 class MainNavigationShell extends ConsumerStatefulWidget {
   const MainNavigationShell({super.key});
 
@@ -33,6 +35,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
         const MarketingPage(),
         const EmployeeLeaderboardPage(),
         const ServicesGridPage(),
+        const UniversalSearchPage(),
       ];
 
   final List<String> _titles = [
@@ -46,6 +49,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     'Marketing',
     'Employees',
     'Services Grid',
+    'Universal Search',
   ];
 
   @override
@@ -67,7 +71,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           IconButton(
             icon: const Icon(Icons.search_outlined),
             onPressed: () {
-              ref.read(navigationProvider.notifier).state = 2; // switch to Admin Dashboard (Records)
+              ref.read(navigationProvider.notifier).state = 10; // switch to Universal Search Page
             },
           ),
         ],

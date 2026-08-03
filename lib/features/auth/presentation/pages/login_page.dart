@@ -18,8 +18,8 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'admin@gmail.com');
+  final _passwordController = TextEditingController(text: '123456');
 
   @override
   void dispose() {
@@ -35,7 +35,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           .read(authControllerProvider.notifier)
           .login(_emailController.text, _passwordController.text);
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        final user = ref.read(authControllerProvider).value;
+        if (user != null && user.role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else {
+          Navigator.pushReplacementNamed(context, '/employee-dashboard');
+        }
       }
     }
   }
@@ -146,7 +151,55 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       onPressed: _handleLogin,
                       isLoading: authState.isLoading,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+
+                    // Quick Login Selector
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Quick Login: ',
+                          style: TextStyle(color: secondaryTextColor, fontSize: 12),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _emailController.text = 'admin@gmail.com';
+                              _passwordController.text = '123456';
+                            });
+                          },
+                          child: const Text(
+                            'Admin',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '|',
+                          style: TextStyle(color: secondaryTextColor),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _emailController.text = 'employee@gmail.com';
+                              _passwordController.text = '123456';
+                            });
+                          },
+                          child: const Text(
+                            'Employee',
+                            style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
 
                     // Sign Up Redirect
                     Row(

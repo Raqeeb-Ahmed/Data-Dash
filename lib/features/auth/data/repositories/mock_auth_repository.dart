@@ -29,6 +29,7 @@ class MockAuthRepository implements AuthRepository {
       email: email,
       displayName: displayName,
       photoUrl: null,
+      role: email.toLowerCase().contains('admin') ? 'admin' : 'employee',
     );
     
     _authStateController.add(_currentUser);
@@ -52,6 +53,7 @@ class MockAuthRepository implements AuthRepository {
       email: email,
       displayName: displayName,
       photoUrl: null,
+      role: email.toLowerCase().contains('admin') ? 'admin' : 'employee',
     );
     
     _authStateController.add(_currentUser);

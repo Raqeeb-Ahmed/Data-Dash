@@ -1,165 +1,346 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../providers/employee_provider.dart';
 
-class EmployeeLeaderboardPage extends StatelessWidget {
+class EmployeeLeaderboardPage extends ConsumerStatefulWidget {
   const EmployeeLeaderboardPage({super.key});
 
   @override
+  ConsumerState<EmployeeLeaderboardPage> createState() =>
+      _EmployeeLeaderboardPageState();
+}
+
+class _EmployeeLeaderboardPageState
+    extends ConsumerState<EmployeeLeaderboardPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final employees = ref.watch(employeeListProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     final primaryTextColor = isDarkMode
-        ? AppColors.textPrimaryDark
+        ? Colors.white
         : AppColors.textPrimaryLight;
     final secondaryTextColor = isDarkMode
-        ? AppColors.textSecondaryDark
+        ? const Color(0xFF94A3B8)
         : AppColors.textSecondaryLight;
-
-    // Mock data for leaderboard
-    final employees = [
-      {
-        'rank': '1',
-        'name': 'Zainab',
-        'bookings': '1,245',
-        'profit': '12.4M PKR',
-        'initials': 'Z',
-        'color': Colors.indigo,
-      },
-      {
-        'rank': '2',
-        'name': 'Hamza',
-        'bookings': '984',
-        'profit': '8.2M PKR',
-        'initials': 'H',
-        'color': Colors.green,
-      },
-      {
-        'rank': '3',
-        'name': 'Bilal',
-        'bookings': '823',
-        'profit': '5.1M PKR',
-        'initials': 'B',
-        'color': Colors.amber,
-      },
-      {
-        'rank': '4',
-        'name': 'Sara',
-        'bookings': '720',
-        'profit': '4.3M PKR',
-        'initials': 'S',
-        'color': Colors.pink,
-      },
-    ];
+    final cardBg = isDarkMode
+        ? const Color(0x770B0F19)
+        : Colors.white.withValues(alpha: 0.90);
+    final borderColor = isDarkMode
+        ? const Color(0x18FFFFFF)
+        : const Color(0x1F000000);
 
     return Scaffold(
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        itemCount: employees.length,
-        itemBuilder: (context, index) {
-          final emp = employees[index];
-          final rank = emp['rank'] as String;
-
-          Color rankBadgeColor;
-          if (rank == '1') {
-            rankBadgeColor = Colors.amber; // Gold
-          } else if (rank == '2') {
-            rankBadgeColor = Colors.grey[400]!; // Silver
-          } else if (rank == '3') {
-            rankBadgeColor = Colors.brown[300]!; // Bronze
-          } else {
-            rankBadgeColor = Colors.transparent;
-          }
-
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppConstants.defaultBorderRadius,
-              ),
-              side: BorderSide(
-                color: isDarkMode
-                    ? AppColors.borderDark
-                    : AppColors.borderLight,
-              ),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
-              leading: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Rank number / Medal
-                  SizedBox(
-                    width: 24,
-                    child: rank == '1' || rank == '2' || rank == '3'
-                        ? Icon(
-                            Icons.emoji_events,
-                            color: rankBadgeColor,
-                            size: 20,
-                          )
-                        : Text(
-                            rank,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: secondaryTextColor,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // ──── HEADER ────
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4F46E5),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 8),
-
-                  // Initials Avatar
-                  CircleAvatar(
-                    backgroundColor: emp['color'] as Color,
-                    radius: 20,
-                    child: Text(
-                      emp['initials'] as String,
-                      style: const TextStyle(
-                        color: Colors.white,
+                  child: const Icon(
+                    Icons.people_alt_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Manage Employees',
+                      style: TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: primaryTextColor,
                       ),
                     ),
-                  ),
-                ],
+                    Text(
+                      'OS Travel — add and manage your agency\'s employee logins',
+                      style: TextStyle(fontSize: 11, color: secondaryTextColor),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ──── NEW EMPLOYEE FORM CARD ────
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardBg,
+                border: Border.all(color: borderColor),
+                borderRadius: BorderRadius.circular(12),
               ),
-              title: Text(
-                emp['name'] as String,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: primaryTextColor,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.person_add_alt_1_outlined,
+                          color: Color(0xFF10B981),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'New Employee',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: primaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Inputs Row
+                    Row(
+                      children: [
+                        // Email Input
+                        Expanded(
+                          child: TextFormField(
+                            controller: _emailController,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: primaryTextColor,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Employee email',
+                              hintStyle: TextStyle(
+                                fontSize: 12,
+                                color: secondaryTextColor,
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Email is required';
+                              }
+                              final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                              if (!regex.hasMatch(v)) {
+                                return 'Enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Password Input
+                        Expanded(
+                          child: TextFormField(
+                            controller: _passwordController,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: primaryTextColor,
+                            ),
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              hintText: 'Temp password (min 6)',
+                              hintStyle: TextStyle(
+                                fontSize: 12,
+                                color: secondaryTextColor,
+                              ),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return 'Password is required';
+                              }
+                              if (v.length < 6) {
+                                return 'Min 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Create Button
+                    ElevatedButton(
+                      onPressed: _createEmployee,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Create Employee',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              subtitle: Text(
-                '${emp['bookings']} Bookings completed',
-                style: TextStyle(fontSize: 12, color: secondaryTextColor),
+            ),
+            const SizedBox(height: 20),
+
+            // ──── EMPLOYEES LIST CARD ────
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardBg,
+                border: Border.all(color: borderColor),
+                borderRadius: BorderRadius.circular(12),
               ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    emp['profit'] as String,
-                    style: const TextStyle(
+                    'Employees (${employees.length})',
+                    style: TextStyle(
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: AppColors.success,
+                      color: primaryTextColor,
                     ),
                   ),
-                  const Text(
-                    'Net Profit',
-                    style: TextStyle(fontSize: 10, color: Colors.grey),
-                  ),
+                  const SizedBox(height: 12),
+
+                  // Employee Listing items
+                  ...employees.map((emp) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? const Color(0x330F172A)
+                            : Colors.white,
+                        border: Border.all(color: borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                emp.email,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Text(
+                                    'EMPLOYEE',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: emp.isEnabled
+                                          ? secondaryTextColor
+                                          : Colors.redAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if (!emp.isEnabled) ...[
+                                    Text(
+                                      ' · DISABLED',
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: emp.isEnabled,
+                            activeThumbColor: const Color(0xFF10B981),
+                            onChanged: (v) {
+                              ref
+                                  .read(employeeListProvider.notifier)
+                                  .toggleEmployeeAccess(emp.email);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 ],
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
+  }
+
+  void _createEmployee() {
+    if (_formKey.currentState!.validate()) {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+
+      ref.read(employeeListProvider.notifier).addEmployee(email, password);
+
+      _emailController.clear();
+      _passwordController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Employee login created successfully!'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    }
   }
 }

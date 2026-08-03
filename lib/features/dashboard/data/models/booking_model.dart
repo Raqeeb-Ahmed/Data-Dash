@@ -7,7 +7,7 @@ class BookingModel {
   final String destination;
   final DateTime dateCreated;
   final String status; // 'Approved' | 'Processing' | 'Rejected'
-  final String paymentStatus; // 'Paid' | 'Unpaid'
+  final String paymentStatus; // 'Paid' | 'Unpaid' | 'Partially Paid'
   final String employeeId;
   final String employeeName;
   
@@ -16,6 +16,33 @@ class BookingModel {
   final double receivedAmount;
   final double payableAmount; // amount left to receive (or pay to vendor)
   final double netProfit;
+
+  // Visa specific details (nullable)
+  final String? passportExpiryDate;
+  final String? visaType;
+  final double? embassyFee;
+  final String? vendorName;
+  final String? vendorContact;
+  final double? vendorFee;
+  final String? sentToEmbassyDate;
+  final String? receivedFromEmbassyDate;
+  final String? remarks;
+  final String? email;
+  final String? reference;
+
+  // New Ticket specific details (nullable)
+  final String? fromDestination;
+  final String? returnDate;
+  final int? travellersAdults;
+  final int? travellersChildren;
+  final int? travellersInfants;
+  final String? cabinClass;
+  final String? cnic;
+  final String? pnr;
+  final String? vendor;
+  final String? airlinePreference;
+  final String? promoCode;
+  final String? notes;
 
   BookingModel({
     required this.id,
@@ -33,6 +60,29 @@ class BookingModel {
     required this.receivedAmount,
     required this.payableAmount,
     required this.netProfit,
+    this.passportExpiryDate,
+    this.visaType,
+    this.embassyFee,
+    this.vendorName,
+    this.vendorContact,
+    this.vendorFee,
+    this.sentToEmbassyDate,
+    this.receivedFromEmbassyDate,
+    this.remarks,
+    this.email,
+    this.reference,
+    this.fromDestination,
+    this.returnDate,
+    this.travellersAdults,
+    this.travellersChildren,
+    this.travellersInfants,
+    this.cabinClass,
+    this.cnic,
+    this.pnr,
+    this.vendor,
+    this.airlinePreference,
+    this.promoCode,
+    this.notes,
   });
 
   Map<String, dynamic> toJson() {
@@ -52,6 +102,29 @@ class BookingModel {
       'receivedAmount': receivedAmount,
       'payableAmount': payableAmount,
       'netProfit': netProfit,
+      if (passportExpiryDate != null) 'passportExpiryDate': passportExpiryDate,
+      if (visaType != null) 'visaType': visaType,
+      if (embassyFee != null) 'embassyFee': embassyFee,
+      if (vendorName != null) 'vendorName': vendorName,
+      if (vendorContact != null) 'vendorContact': vendorContact,
+      if (vendorFee != null) 'vendorFee': vendorFee,
+      if (sentToEmbassyDate != null) 'sentToEmbassyDate': sentToEmbassyDate,
+      if (receivedFromEmbassyDate != null) 'receivedFromEmbassyDate': receivedFromEmbassyDate,
+      if (remarks != null) 'remarks': remarks,
+      if (email != null) 'email': email,
+      if (reference != null) 'reference': reference,
+      if (fromDestination != null) 'fromDestination': fromDestination,
+      if (returnDate != null) 'returnDate': returnDate,
+      if (travellersAdults != null) 'travellersAdults': travellersAdults,
+      if (travellersChildren != null) 'travellersChildren': travellersChildren,
+      if (travellersInfants != null) 'travellersInfants': travellersInfants,
+      if (cabinClass != null) 'cabinClass': cabinClass,
+      if (cnic != null) 'cnic': cnic,
+      if (pnr != null) 'pnr': pnr,
+      if (vendor != null) 'vendor': vendor,
+      if (airlinePreference != null) 'airlinePreference': airlinePreference,
+      if (promoCode != null) 'promoCode': promoCode,
+      if (notes != null) 'notes': notes,
     };
   }
 
@@ -74,6 +147,29 @@ class BookingModel {
       receivedAmount: (json['receivedAmount'] ?? 0.0).toDouble(),
       payableAmount: (json['payableAmount'] ?? 0.0).toDouble(),
       netProfit: (json['netProfit'] ?? 0.0).toDouble(),
+      passportExpiryDate: json['passportExpiryDate'],
+      visaType: json['visaType'],
+      embassyFee: json['embassyFee'] != null ? (json['embassyFee'] as num).toDouble() : null,
+      vendorName: json['vendorName'],
+      vendorContact: json['vendorContact'],
+      vendorFee: json['vendorFee'] != null ? (json['vendorFee'] as num).toDouble() : null,
+      sentToEmbassyDate: json['sentToEmbassyDate'],
+      receivedFromEmbassyDate: json['receivedFromEmbassyDate'],
+      remarks: json['remarks'],
+      email: json['email'],
+      reference: json['reference'],
+      fromDestination: json['fromDestination'],
+      returnDate: json['returnDate'],
+      travellersAdults: json['travellersAdults'] != null ? (json['travellersAdults'] as num).toInt() : null,
+      travellersChildren: json['travellersChildren'] != null ? (json['travellersChildren'] as num).toInt() : null,
+      travellersInfants: json['travellersInfants'] != null ? (json['travellersInfants'] as num).toInt() : null,
+      cabinClass: json['cabinClass'],
+      cnic: json['cnic'],
+      pnr: json['pnr'],
+      vendor: json['vendor'],
+      airlinePreference: json['airlinePreference'],
+      promoCode: json['promoCode'],
+      notes: json['notes'],
     );
   }
 

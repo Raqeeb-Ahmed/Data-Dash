@@ -4,6 +4,7 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/dashboard/presentation/pages/main_navigation_shell.dart';
+import 'features/dashboard/presentation/pages/employee_navigation_shell.dart';
 
 void main() {
   // Ensure Flutter bindings are initialized
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginPage(),
         '/dashboard': (context) => const MainNavigationShell(),
+        '/employee-dashboard': (context) => const EmployeeNavigationShell(),
       },
     );
   }
