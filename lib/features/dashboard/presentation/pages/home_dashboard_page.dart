@@ -339,7 +339,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                       GestureDetector(
                         onTap: () =>
                             ref.read(navigationProvider.notifier).state =
-                                2, // Navigate to Search/Records tab
+                                10, // Navigate to Search/Records tab
                         child: Container(
                           decoration: BoxDecoration(
                             color: isDarkMode
