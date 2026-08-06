@@ -532,6 +532,7 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: TextField(
+                                    textAlignVertical: TextAlignVertical.center,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: primary,
@@ -544,6 +545,15 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
                                         color: secondary,
                                       ),
                                       border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      disabledBorder: InputBorder.none,
+                                      filled: false,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            vertical: 10,
+                                          ),
+
                                       isDense: true,
                                     ),
                                     onChanged: (v) {

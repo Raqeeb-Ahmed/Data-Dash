@@ -44,10 +44,18 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     final stats = ref.watch(insuranceStatsProvider);
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryTextColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
-    final cardBg = isDarkMode ? const Color(0x770B0F19) : Colors.white.withValues(alpha: 0.90);
-    final borderColor = isDarkMode ? const Color(0x18FFFFFF) : const Color(0x1F000000);
+    final primaryTextColor = isDarkMode
+        ? Colors.white
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
+    final cardBg = isDarkMode
+        ? const Color(0x770B0F19)
+        : Colors.white.withValues(alpha: 0.90);
+    final borderColor = isDarkMode
+        ? const Color(0x18FFFFFF)
+        : const Color(0x1F000000);
 
     final displayedList = filteredList.take(_itemsToShow).toList();
 
@@ -59,7 +67,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   children: [
                     // ──── HEADER ────
                     _buildHeader(primaryTextColor, secondaryTextColor),
@@ -70,15 +81,35 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                     const SizedBox(height: 16),
 
                     // ──── SEARCH & DATE FILTERS ROW ────
-                    _buildSearchAndFilters(cardBg, borderColor, primaryTextColor, secondaryTextColor, isDarkMode, filter),
+                    _buildSearchAndFilters(
+                      cardBg,
+                      borderColor,
+                      primaryTextColor,
+                      secondaryTextColor,
+                      isDarkMode,
+                      filter,
+                    ),
                     const SizedBox(height: 14),
 
                     // ──── BOOKINGS BY COMPANY CHIPS ────
-                    _buildCompanyChips(primaryTextColor, secondaryTextColor, isDarkMode, filter, borderColor),
+                    _buildCompanyChips(
+                      primaryTextColor,
+                      secondaryTextColor,
+                      isDarkMode,
+                      filter,
+                      borderColor,
+                    ),
                     const SizedBox(height: 14),
 
                     // ──── CHARTS ────
-                    _buildChartsSection(cardBg, borderColor, primaryTextColor, secondaryTextColor, isDarkMode, filteredList),
+                    _buildChartsSection(
+                      cardBg,
+                      borderColor,
+                      primaryTextColor,
+                      secondaryTextColor,
+                      isDarkMode,
+                      filteredList,
+                    ),
                     const SizedBox(height: 14),
 
                     // ──── RECORDS TABLE LIST ────
@@ -113,7 +144,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             color: const Color(0xFF0D9488),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(Icons.domain_verification, color: Colors.white, size: 22),
+          child: const Icon(
+            Icons.domain_verification,
+            color: Colors.white,
+            size: 22,
+          ),
         ),
         const SizedBox(width: 12),
         Column(
@@ -121,7 +156,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           children: [
             Text(
               'Medical Insurance Records',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+              ),
             ),
             Text(
               'Manage travel coverages, premium payables, and client profiles',
@@ -141,7 +180,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           child: _statCard(
             title: 'Total Received',
             amount: stats.totalReceived,
-            gradient: const [Color(0xFF5B21B6), Color(0xFF4C1D95)], // Purple theme
+            gradient: const [
+              Color(0xFF5B21B6),
+              Color(0xFF4C1D95),
+            ], // Purple theme
             icon: Icons.account_balance_wallet_outlined,
           ),
         ),
@@ -150,7 +192,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           child: _statCard(
             title: 'Total Payable',
             amount: stats.totalPayable,
-            gradient: const [Color(0xFF991B1B), Color(0xFF7F1D1D)], // Crimson/Red theme
+            gradient: const [
+              Color(0xFF991B1B),
+              Color(0xFF7F1D1D),
+            ], // Crimson/Red theme
             icon: Icons.money_off_outlined,
           ),
         ),
@@ -159,7 +204,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           child: _statCard(
             title: 'Total Profit',
             amount: stats.totalProfit,
-            gradient: const [Color(0xFF065F46), Color(0xFF064E3B)], // Green theme
+            gradient: const [
+              Color(0xFF065F46),
+              Color(0xFF064E3B),
+            ], // Green theme
             icon: Icons.trending_up,
           ),
         ),
@@ -191,7 +239,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 8, color: Colors.white70, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 8,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Icon(icon, size: 12, color: Colors.white70),
             ],
@@ -199,7 +251,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           const SizedBox(height: 6),
           Text(
             amount.toStringAsFixed(2),
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -236,7 +292,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                 child: Container(
                   height: 38,
                   decoration: BoxDecoration(
-                    color: isDarkMode ? const Color(0x33000000) : Colors.grey.withValues(alpha: 0.1),
+                    color: isDarkMode
+                        ? const Color(0x33000000)
+                        : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: borderColor),
                   ),
@@ -248,15 +306,30 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          style: TextStyle(fontSize: 11, color: primaryTextColor),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: primaryTextColor,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Search by name, passport, company...',
-                            hintStyle: TextStyle(fontSize: 11, color: secondaryTextColor),
+                            hintStyle: TextStyle(
+                              fontSize: 11,
+                              color: secondaryTextColor,
+                            ),
                             border: InputBorder.none,
+                            filled: false,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                            ),
                             isDense: true,
                           ),
                           onChanged: (v) {
-                            ref.read(insuranceFilterProvider.notifier).updateSearchQuery(v);
+                            ref
+                                .read(insuranceFilterProvider.notifier)
+                                .updateSearchQuery(v);
                             setState(() {
                               _itemsToShow = 10;
                             });
@@ -282,13 +355,20 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
-                            color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                            color: isDarkMode
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
                             border: Border.all(color: borderColor),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            filter.fromDate == null ? 'dd/mm/yyyy' : _formatDate(filter.fromDate!),
-                            style: TextStyle(fontSize: 10, color: secondaryTextColor),
+                            filter.fromDate == null
+                                ? 'dd/mm/yyyy'
+                                : _formatDate(filter.fromDate!),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: secondaryTextColor,
+                            ),
                           ),
                         ),
                       ),
@@ -305,13 +385,20 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
-                            color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                            color: isDarkMode
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
                             border: Border.all(color: borderColor),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            filter.toDate == null ? 'dd/mm/yyyy' : _formatDate(filter.toDate!),
-                            style: TextStyle(fontSize: 10, color: secondaryTextColor),
+                            filter.toDate == null
+                                ? 'dd/mm/yyyy'
+                                : _formatDate(filter.toDate!),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: secondaryTextColor,
+                            ),
                           ),
                         ),
                       ),
@@ -327,22 +414,37 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: ['All Time', 'Today', 'This Week', 'This Month'].map((filterName) {
+              children: ['All Time', 'Today', 'This Week', 'This Month'].map((
+                filterName,
+              ) {
                 final isSelected = filter.selectedDateFilter == filterName;
                 return GestureDetector(
                   onTap: () {
-                    ref.read(insuranceFilterProvider.notifier).updateDateFilter(filterName);
-                    ref.read(insuranceFilterProvider.notifier).updateCustomDateRange(null, null);
+                    ref
+                        .read(insuranceFilterProvider.notifier)
+                        .updateDateFilter(filterName);
+                    ref
+                        .read(insuranceFilterProvider.notifier)
+                        .updateCustomDateRange(null, null);
                     setState(() {
                       _itemsToShow = 10;
                     });
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF2563EB) : (isDarkMode ? const Color(0xFF1E293B) : Colors.white),
-                      border: Border.all(color: isSelected ? Colors.transparent : borderColor),
+                      color: isSelected
+                          ? const Color(0xFF2563EB)
+                          : (isDarkMode
+                                ? const Color(0xFF1E293B)
+                                : Colors.white),
+                      border: Border.all(
+                        color: isSelected ? Colors.transparent : borderColor,
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -350,7 +452,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                       style: TextStyle(
                         fontSize: 10,
                         color: isSelected ? Colors.white : primaryTextColor,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -383,7 +487,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     if (picked != null) {
       final from = isFrom ? picked : activeFilter.fromDate;
       final to = isFrom ? activeFilter.toDate : picked;
-      ref.read(insuranceFilterProvider.notifier).updateCustomDateRange(from, to);
+      ref
+          .read(insuranceFilterProvider.notifier)
+          .updateCustomDateRange(from, to);
       ref.read(insuranceFilterProvider.notifier).updateDateFilter('Custom');
       setState(() {
         _itemsToShow = 10;
@@ -406,16 +512,26 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           padding: const EdgeInsets.only(left: 4, bottom: 6),
           child: Text(
             'Bookings by Company',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryTextColor),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: primaryTextColor,
+            ),
           ),
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _companyChip('All Companies', filter.selectedCompany == 'All Companies', isDarkMode, borderColor),
+              _companyChip(
+                'All Companies',
+                filter.selectedCompany == 'All Companies',
+                isDarkMode,
+                borderColor,
+              ),
               ..._companies.map((c) {
-                final isSelected = filter.selectedCompany.toLowerCase() == c.toLowerCase();
+                final isSelected =
+                    filter.selectedCompany.toLowerCase() == c.toLowerCase();
                 return _companyChip(c, isSelected, isDarkMode, borderColor);
               }),
             ],
@@ -425,7 +541,12 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     );
   }
 
-  Widget _companyChip(String label, bool isSelected, bool isDarkMode, Color borderColor) {
+  Widget _companyChip(
+    String label,
+    bool isSelected,
+    bool isDarkMode,
+    Color borderColor,
+  ) {
     return GestureDetector(
       onTap: () {
         ref.read(insuranceFilterProvider.notifier).updateCompany(label);
@@ -437,15 +558,21 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
         margin: const EdgeInsets.only(right: 6),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2563EB) : (isDarkMode ? const Color(0x33FFFFFF) : Colors.white),
-          border: Border.all(color: isSelected ? Colors.transparent : borderColor),
+          color: isSelected
+              ? const Color(0xFF2563EB)
+              : (isDarkMode ? const Color(0x33FFFFFF) : Colors.white),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : borderColor,
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 10,
-            color: isSelected ? Colors.white : (isDarkMode ? Colors.white70 : Colors.black87),
+            color: isSelected
+                ? Colors.white
+                : (isDarkMode ? Colors.white70 : Colors.black87),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -482,7 +609,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Text(
                 'Monthly Financials',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryTextColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
               ),
               const SizedBox(height: 14),
               SizedBox(
@@ -493,12 +624,19 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                     gridData: FlGridData(
                       show: true,
                       drawVerticalLine: false,
-                      getDrawingHorizontalLine: (_) => FlLine(color: borderColor, strokeWidth: 0.5),
+                      getDrawingHorizontalLine: (_) =>
+                          FlLine(color: borderColor, strokeWidth: 0.5),
                     ),
                     titlesData: FlTitlesData(
-                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -510,7 +648,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Text(
                                   monthsKeys[i],
-                                  style: TextStyle(fontSize: 9, color: secondaryTextColor),
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: secondaryTextColor,
+                                  ),
                                 ),
                               );
                             }
@@ -533,19 +674,25 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                             toY: pay,
                             color: const Color(0xFFEF4444),
                             width: 6,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2),
+                            ),
                           ),
                           BarChartRodData(
                             toY: prof,
                             color: const Color(0xFF10B981),
                             width: 6,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2),
+                            ),
                           ),
                           BarChartRodData(
                             toY: rec,
                             color: const Color(0xFF2563EB),
                             width: 6,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2),
+                            ),
                           ),
                         ],
                       );
@@ -582,7 +729,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Text(
                 'Top Companies',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryTextColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
               ),
               const SizedBox(height: 14),
               if (companyList.isEmpty)
@@ -625,28 +776,41 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                             final entry = companyList[idx];
                             final pct = filteredList.isEmpty
                                 ? '0'
-                                : (entry.value / filteredList.length * 100).toStringAsFixed(0);
+                                : (entry.value / filteredList.length * 100)
+                                      .toStringAsFixed(0);
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 2.0,
+                              ),
                               child: Row(
                                 children: [
                                   Container(
                                     width: 8,
                                     height: 8,
-                                    decoration: BoxDecoration(color: _getCompanyColor(idx), shape: BoxShape.circle),
+                                    decoration: BoxDecoration(
+                                      color: _getCompanyColor(idx),
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
                                       entry.key,
-                                      style: TextStyle(fontSize: 9, color: primaryTextColor, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: primaryTextColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '$pct%',
-                                    style: TextStyle(fontSize: 9, color: secondaryTextColor),
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: secondaryTextColor,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -715,7 +879,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Text(
                 'Insurance Records (${displayedList.length})',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryTextColor),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
               ),
               Text(
                 'Showing ${displayedList.length} of $totalCount',
@@ -738,7 +906,15 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             ...displayedList.asMap().entries.map((entry) {
               final idx = entry.key + 1;
               final b = entry.value;
-              return _buildBookingRow(context, b, idx, isDarkMode, primaryTextColor, secondaryTextColor, borderColor);
+              return _buildBookingRow(
+                context,
+                b,
+                idx,
+                isDarkMode,
+                primaryTextColor,
+                secondaryTextColor,
+                borderColor,
+              );
             }),
 
             // Load More button if total list exceeds shown items
@@ -756,11 +932,19 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       elevation: 0,
                     ),
-                    child: const Text('Load More', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: const Text(
+                      'Load More',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -794,7 +978,14 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           // Row Header: Index + ID + Actions
           Row(
             children: [
-              Text('#$idx', style: TextStyle(fontSize: 10, color: secondaryColor, fontWeight: FontWeight.bold)),
+              Text(
+                '#$idx',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: secondaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -804,24 +995,37 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                 ),
                 child: Text(
                   b.id,
-                  style: const TextStyle(fontSize: 9, color: Color(0xFF2563EB), fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Color(0xFF2563EB),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const Spacer(),
               // Actions
               GestureDetector(
                 onTap: () => _openViewModal(context, b),
-                child: _actionIcon(Icons.visibility_outlined, const Color(0xFF0EA5E9)),
+                child: _actionIcon(
+                  Icons.visibility_outlined,
+                  const Color(0xFF0EA5E9),
+                ),
               ),
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => _openEditModal(context, b),
-                child: _actionIcon(Icons.edit_outlined, const Color(0xFF10B981)),
+                child: _actionIcon(
+                  Icons.edit_outlined,
+                  const Color(0xFF10B981),
+                ),
               ),
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => _confirmDeleteDialog(context, b),
-                child: _actionIcon(Icons.delete_outline, const Color(0xFFEF4444)),
+                child: _actionIcon(
+                  Icons.delete_outline,
+                  const Color(0xFFEF4444),
+                ),
               ),
             ],
           ),
@@ -835,12 +1039,20 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
               Expanded(
                 child: Text(
                   b.insuredName,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
                 ),
               ),
               Text(
                 'Passport: ${b.passportNumber}',
-                style: TextStyle(fontSize: 10, color: secondaryColor, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: secondaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -852,16 +1064,30 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.business_outlined, size: 11, color: secondaryColor),
+                  Icon(
+                    Icons.business_outlined,
+                    size: 11,
+                    color: secondaryColor,
+                  ),
                   const SizedBox(width: 4),
-                  Text(b.company, style: TextStyle(fontSize: 10, color: secondaryColor, fontWeight: FontWeight.w600)),
+                  Text(
+                    b.company,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: secondaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
               Row(
                 children: [
                   Icon(Icons.flight_land, size: 11, color: secondaryColor),
                   const SizedBox(width: 4),
-                  Text(b.travelCountry, style: TextStyle(fontSize: 10, color: secondaryColor)),
+                  Text(
+                    b.travelCountry,
+                    style: TextStyle(fontSize: 10, color: secondaryColor),
+                  ),
                 ],
               ),
             ],
@@ -875,9 +1101,16 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
               const SizedBox(),
               Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 10, color: secondaryColor),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 10,
+                    color: secondaryColor,
+                  ),
                   const SizedBox(width: 4),
-                  Text(_formatDate(b.dateCreated), style: TextStyle(fontSize: 9, color: secondaryColor)),
+                  Text(
+                    _formatDate(b.dateCreated),
+                    style: TextStyle(fontSize: 9, color: secondaryColor),
+                  ),
                 ],
               ),
             ],
@@ -888,9 +1121,24 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _finCell('Received Amount', b.receivedAmount, const Color(0xFF10B981), secondaryColor),
-              _finCell('Payable Amount', b.payableAmount, const Color(0xFFEF4444), secondaryColor),
-              _finCell('Net Profit', b.netProfit, const Color(0xFF2563EB), secondaryColor),
+              _finCell(
+                'Received Amount',
+                b.receivedAmount,
+                const Color(0xFF10B981),
+                secondaryColor,
+              ),
+              _finCell(
+                'Payable Amount',
+                b.payableAmount,
+                const Color(0xFFEF4444),
+                secondaryColor,
+              ),
+              _finCell(
+                'Net Profit',
+                b.netProfit,
+                const Color(0xFF2563EB),
+                secondaryColor,
+              ),
             ],
           ),
         ],
@@ -901,7 +1149,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
   Widget _actionIcon(IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Icon(icon, size: 13, color: color),
     );
   }
@@ -913,7 +1164,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
         Text(label, style: TextStyle(fontSize: 8, color: labelColor)),
         Text(
           'PKR ${val.toStringAsFixed(2)}',
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: valColor),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: valColor,
+          ),
         ),
       ],
     );
@@ -925,7 +1180,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
   void _openViewModal(BuildContext context, InsuranceBookingModel b) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
+    final secondaryColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
     final modalBg = isDarkMode ? const Color(0xFF1E293B) : Colors.white;
 
     showDialog(
@@ -933,35 +1190,91 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: modalBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           contentPadding: const EdgeInsets.all(20),
           title: const Row(
             children: [
               Icon(Icons.verified_user, color: Color(0xFF2563EB)),
               SizedBox(width: 8),
-              Text('Insurance policy details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                'Insurance policy details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ],
           ),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _viewDetailRow('Policy Ref ID', b.id, primaryColor, secondaryColor),
-                _viewDetailRow('Insurance Company', b.company, primaryColor, secondaryColor),
-                _viewDetailRow('Insured Passenger Name', b.insuredName, primaryColor, secondaryColor),
-                _viewDetailRow('Passport Number', b.passportNumber, primaryColor, secondaryColor),
-                _viewDetailRow('Destination Country', b.travelCountry, primaryColor, secondaryColor),
-                _viewDetailRow('Received Amount', 'PKR ${b.receivedAmount.toStringAsFixed(2)}', const Color(0xFF10B981), secondaryColor),
-                _viewDetailRow('Payable Amount', 'PKR ${b.payableAmount.toStringAsFixed(2)}', const Color(0xFFEF4444), secondaryColor),
-                _viewDetailRow('Net Profit', 'PKR ${b.netProfit.toStringAsFixed(2)}', const Color(0xFF2563EB), secondaryColor),
-                _viewDetailRow('Policy Booking Date', _formatDate(b.dateCreated), primaryColor, secondaryColor),
+                _viewDetailRow(
+                  'Policy Ref ID',
+                  b.id,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Insurance Company',
+                  b.company,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Insured Passenger Name',
+                  b.insuredName,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Passport Number',
+                  b.passportNumber,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Destination Country',
+                  b.travelCountry,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Received Amount',
+                  'PKR ${b.receivedAmount.toStringAsFixed(2)}',
+                  const Color(0xFF10B981),
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Payable Amount',
+                  'PKR ${b.payableAmount.toStringAsFixed(2)}',
+                  const Color(0xFFEF4444),
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Net Profit',
+                  'PKR ${b.netProfit.toStringAsFixed(2)}',
+                  const Color(0xFF2563EB),
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Policy Booking Date',
+                  _formatDate(b.dateCreated),
+                  primaryColor,
+                  secondaryColor,
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
             ),
           ],
         );
@@ -969,7 +1282,12 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     );
   }
 
-  Widget _viewDetailRow(String label, String val, Color valColor, Color labelColor) {
+  Widget _viewDetailRow(
+    String label,
+    String val,
+    Color valColor,
+    Color labelColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Column(
@@ -979,7 +1297,11 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           const SizedBox(height: 2),
           Text(
             val,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: valColor),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: valColor,
+            ),
           ),
           const Divider(height: 8, thickness: 0.2),
         ],
@@ -995,7 +1317,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     final nameCtrl = TextEditingController(text: b.insuredName);
     final passportCtrl = TextEditingController(text: b.passportNumber);
     final countryCtrl = TextEditingController(text: b.travelCountry);
-    final receivedCtrl = TextEditingController(text: b.receivedAmount.toString());
+    final receivedCtrl = TextEditingController(
+      text: b.receivedAmount.toString(),
+    );
     final payableCtrl = TextEditingController(text: b.payableAmount.toString());
 
     String selectedCompany = b.company;
@@ -1021,12 +1345,17 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
 
             return AlertDialog(
               backgroundColor: modalBg,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               title: const Row(
                 children: [
                   Icon(Icons.edit, color: Color(0xFF2563EB)),
                   SizedBox(width: 8),
-                  Text('Edit Insurance Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    'Edit Insurance Booking',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ],
               ),
               content: SingleChildScrollView(
@@ -1041,7 +1370,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: DropdownButtonFormField<String>(
-                        initialValue: _companies.contains(selectedCompany) ? selectedCompany : _companies.first,
+                        initialValue: _companies.contains(selectedCompany)
+                            ? selectedCompany
+                            : _companies.first,
                         decoration: const InputDecoration(
                           labelText: 'Insurance Company',
                           labelStyle: TextStyle(fontSize: 11),
@@ -1050,7 +1381,15 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                           border: OutlineInputBorder(),
                         ),
                         items: _companies
-                            .map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 11))))
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c,
+                                child: Text(
+                                  c,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (v) {
                           if (v != null) {
@@ -1078,17 +1417,29 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                           }
                         },
                         style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               'Booking Date: ${_formatDate(selectedDate)}',
-                              style: const TextStyle(fontSize: 11, color: Colors.blueAccent),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.blueAccent,
+                              ),
                             ),
-                            const Icon(Icons.calendar_today, size: 14, color: Colors.blueAccent),
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: Colors.blueAccent,
+                            ),
                           ],
                         ),
                       ),
@@ -1096,9 +1447,21 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
 
                     Row(
                       children: [
-                        Expanded(child: _inputField('Received (PKR)', receivedCtrl, isNum: true)),
+                        Expanded(
+                          child: _inputField(
+                            'Received (PKR)',
+                            receivedCtrl,
+                            isNum: true,
+                          ),
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: _inputField('Payable (PKR)', payableCtrl, isNum: true)),
+                        Expanded(
+                          child: _inputField(
+                            'Payable (PKR)',
+                            payableCtrl,
+                            isNum: true,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -1116,11 +1479,18 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                         children: [
                           const Text(
                             'Computed Profit:',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
                             'PKR ${computedProfit.toStringAsFixed(2)}',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2563EB),
+                            ),
                           ),
                         ],
                       ),
@@ -1131,7 +1501,10 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -1141,15 +1514,22 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                       travelCountry: countryCtrl.text,
                       company: selectedCompany,
                       dateCreated: selectedDate,
-                      receivedAmount: double.tryParse(receivedCtrl.text) ?? b.receivedAmount,
-                      payableAmount: double.tryParse(payableCtrl.text) ?? b.payableAmount,
+                      receivedAmount:
+                          double.tryParse(receivedCtrl.text) ??
+                          b.receivedAmount,
+                      payableAmount:
+                          double.tryParse(payableCtrl.text) ?? b.payableAmount,
                       netProfit: computedProfit,
                     );
-                    ref.read(insuranceBookingsProvider.notifier).updateBooking(updated);
+                    ref
+                        .read(insuranceBookingsProvider.notifier)
+                        .updateBooking(updated);
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Insurance booking updated successfully!'),
+                        content: Text(
+                          'Insurance booking updated successfully!',
+                        ),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );
@@ -1157,9 +1537,14 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
-                  child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Save Changes',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             );
@@ -1169,12 +1554,18 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     );
   }
 
-  Widget _inputField(String label, TextEditingController ctrl, {bool isNum = false}) {
+  Widget _inputField(
+    String label,
+    TextEditingController ctrl, {
+    bool isNum = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: TextField(
         controller: ctrl,
-        keyboardType: isNum ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+        keyboardType: isNum
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         style: const TextStyle(fontSize: 12),
         decoration: InputDecoration(
           labelText: label,
@@ -1197,12 +1588,17 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: modalBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.red),
               SizedBox(width: 8),
-              Text('Confirm Delete', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                'Confirm Delete',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ],
           ),
           content: Text(
@@ -1216,7 +1612,9 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             ),
             ElevatedButton(
               onPressed: () {
-                ref.read(insuranceBookingsProvider.notifier).deleteBooking(b.id);
+                ref
+                    .read(insuranceBookingsProvider.notifier)
+                    .deleteBooking(b.id);
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -1228,9 +1626,14 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
               ),
-              child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Delete',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
@@ -1243,8 +1646,17 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 
-  Map<String, Map<String, double>> _computeMonthlyFinancials(List<InsuranceBookingModel> list) {
-    final months = ['Sep 2025', 'Oct 2025', 'Nov 2025', 'Dec 2025', 'Feb 2026', 'Mar 2026'];
+  Map<String, Map<String, double>> _computeMonthlyFinancials(
+    List<InsuranceBookingModel> list,
+  ) {
+    final months = [
+      'Sep 2025',
+      'Oct 2025',
+      'Nov 2025',
+      'Dec 2025',
+      'Feb 2026',
+      'Mar 2026',
+    ];
     Map<String, Map<String, double>> data = {};
     for (var m in months) {
       data[m] = {'received': 0.0, 'payable': 0.0, 'profit': 0.0};
@@ -1280,13 +1692,16 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
     return data;
   }
 
-  Map<String, int> _computeCompanyDistribution(List<InsuranceBookingModel> list) {
+  Map<String, int> _computeCompanyDistribution(
+    List<InsuranceBookingModel> list,
+  ) {
     Map<String, int> counts = {};
     for (var b in list) {
       final name = b.company.toUpperCase();
       counts[name] = (counts[name] ?? 0) + 1;
     }
-    final sortedEntries = counts.entries.toList()..sort((e1, e2) => e2.value.compareTo(e1.value));
+    final sortedEntries = counts.entries.toList()
+      ..sort((e1, e2) => e2.value.compareTo(e1.value));
     return Map.fromEntries(sortedEntries);
   }
 }

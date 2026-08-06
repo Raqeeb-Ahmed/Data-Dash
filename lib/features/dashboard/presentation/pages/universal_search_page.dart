@@ -112,7 +112,7 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
 
               // ──── SEARCH INPUT ────
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Container(
                   height: 42,
                   decoration: BoxDecoration(
@@ -140,6 +140,13 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
                               color: secondaryTextColor,
                             ),
                             border: InputBorder.none,
+                            filled: false,
+                            enabledBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                            ),
                             isDense: true,
                           ),
                           onChanged: (v) {
@@ -162,20 +169,30 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Filter Pills
-                    Row(
-                      children: [
-                        _buildFilterPill('All Records', 'all', isDarkMode),
-                        const SizedBox(width: 6),
-                        _buildFilterPill('Visas', 'visa', isDarkMode),
-                        const SizedBox(width: 6),
-                        _buildFilterPill('Tickets', 'ticket', isDarkMode),
-                        const SizedBox(width: 6),
-                        _buildFilterPill('Umrah', 'umrah', isDarkMode),
-                        const SizedBox(width: 6),
-                        _buildFilterPill('Insurance', 'insurance', isDarkMode),
-                      ],
+                    // Filter Pills (Scrollable horizontally on mobile)
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildFilterPill('All Records', 'all', isDarkMode),
+                            const SizedBox(width: 6),
+                            _buildFilterPill('Visas', 'visa', isDarkMode),
+                            const SizedBox(width: 6),
+                            _buildFilterPill('Tickets', 'ticket', isDarkMode),
+                            const SizedBox(width: 6),
+                            _buildFilterPill('Umrah', 'umrah', isDarkMode),
+                            const SizedBox(width: 6),
+                            _buildFilterPill(
+                              'Insurance',
+                              'insurance',
+                              isDarkMode,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 12),
                     // Stats
                     Text(
                       'Found ${totalResults.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} results',
@@ -344,6 +361,8 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
       ).replaceAllMapped(numberFormat, (Match m) => '${m[1]},');
     }
 
+    final isMobile = MediaQuery.of(context).size.width < 650;
+
     return GestureDetector(
       onTap: () => _showDetailsModal(context, r, isDarkMode),
       child: Container(
@@ -354,118 +373,250 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
           border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Row(
-          children: [
-          // Category Icon Circle
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: iconColor, size: 18),
-          ),
-          const SizedBox(width: 12),
-
-          // Name and Travel Details
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  r.name,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 1,
+        child: isMobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top section: Category Icon, Name/Details, Status
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: iconColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(icon, color: iconColor, size: 18),
                       ),
-                      decoration: BoxDecoration(
-                        color: iconColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: TextStyle(
-                          fontSize: 7,
-                          color: iconColor,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              r.name,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 1,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: iconColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: Text(
+                                    badgeText,
+                                    style: TextStyle(
+                                      fontSize: 7,
+                                      color: iconColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    r.details,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: secondaryColor,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          r.status.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 8,
+                            color: statusText,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    color: secondaryColor.withValues(alpha: 0.15),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          _buildAmountColumn(
+                            'PAYABLE',
+                            formatNum(r.payable),
+                            isDarkMode ? Colors.white70 : Colors.black87,
+                          ),
+                          const SizedBox(width: 16),
+                          _buildAmountColumn(
+                            'RECEIVED',
+                            formatNum(r.received),
+                            const Color(0xFF10B981),
+                          ),
+                          const SizedBox(width: 16),
+                          _buildAmountColumn(
+                            'PROFIT',
+                            formatNum(r.profit),
+                            const Color(0xFF06B6D4),
+                          ),
+                        ],
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: secondaryColor,
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  // Category Icon Circle
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      r.details,
-                      style: TextStyle(fontSize: 10, color: secondaryColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+                    child: Icon(icon, color: iconColor, size: 18),
+                  ),
+                  const SizedBox(width: 12),
 
-          // Status Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusBg,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              r.status.toUpperCase(),
-              style: TextStyle(
-                fontSize: 8,
-                color: statusText,
-                fontWeight: FontWeight.bold,
+                  // Name and Travel Details
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          r.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: iconColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                badgeText,
+                                style: TextStyle(
+                                  fontSize: 7,
+                                  color: iconColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              r.details,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: secondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Status Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      r.status.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: statusText,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+
+                  // Financial Columns
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _buildAmountColumn(
+                          'PAYABLE',
+                          formatNum(r.payable),
+                          isDarkMode ? Colors.white70 : Colors.black87,
+                        ),
+                        const SizedBox(width: 12),
+                        _buildAmountColumn(
+                          'RECEIVED',
+                          formatNum(r.received),
+                          const Color(0xFF10B981),
+                        ),
+                        const SizedBox(width: 12),
+                        _buildAmountColumn(
+                          'PROFIT',
+                          formatNum(r.profit),
+                          const Color(0xFF06B6D4),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  // Navigation Button
+                  Icon(Icons.chevron_right, size: 16, color: secondaryColor),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Financial Columns
-          Expanded(
-            flex: 2,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _buildAmountColumn(
-                  'PAYABLE',
-                  formatNum(r.payable),
-                  isDarkMode ? Colors.white70 : Colors.black87,
-                ),
-                const SizedBox(width: 12),
-                _buildAmountColumn(
-                  'RECEIVED',
-                  formatNum(r.received),
-                  const Color(0xFF10B981),
-                ),
-                const SizedBox(width: 12),
-                _buildAmountColumn(
-                  'PROFIT',
-                  formatNum(r.profit),
-                  const Color(0xFF06B6D4),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          // Navigation Button
-          Icon(Icons.chevron_right, size: 16, color: secondaryColor),
-        ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildAmountColumn(String label, String value, Color color) {
     return Column(
@@ -504,61 +655,64 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
     Color borderColor,
     bool isDarkMode,
   ) {
+    final isMobile = MediaQuery.of(context).size.width < 650;
+    final Widget entryInfoText = Text(
+      'Showing $from to $to of $total entries',
+      style: TextStyle(fontSize: 10, color: secondaryColor),
+    );
+
+    final Widget paginationControlRow = Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Prev Button
+        _buildPaginationButton(
+          child: Icon(
+            Icons.chevron_left,
+            size: 12,
+            color: _currentPage > 1 ? primaryColor : Colors.grey,
+          ),
+          onTap: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+          borderColor: borderColor,
+        ),
+        const SizedBox(width: 4),
+        // Page Numbers
+        ..._buildPageNumbers(totalPages, cardBg, borderColor, primaryColor),
+        const SizedBox(width: 4),
+        // Next Button
+        _buildPaginationButton(
+          child: Icon(
+            Icons.chevron_right,
+            size: 12,
+            color: _currentPage < totalPages ? primaryColor : Colors.grey,
+          ),
+          onTap: _currentPage < totalPages
+              ? () => setState(() => _currentPage++)
+              : null,
+          borderColor: borderColor,
+        ),
+      ],
+    );
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cardBg,
         border: Border(top: BorderSide(color: borderColor)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Showing $from to $to of $total entries',
-            style: TextStyle(fontSize: 10, color: secondaryColor),
-          ),
-          // Pagination numbers Row
-          Row(
-            children: [
-              // Prev Button
-              _buildPaginationButton(
-                child: Icon(
-                  Icons.chevron_left,
-                  size: 12,
-                  color: _currentPage > 1 ? primaryColor : Colors.grey,
-                ),
-                onTap: _currentPage > 1
-                    ? () => setState(() => _currentPage--)
-                    : null,
-                borderColor: borderColor,
-              ),
-              const SizedBox(width: 4),
-
-              // Page Numbers
-              ..._buildPageNumbers(
-                totalPages,
-                cardBg,
-                borderColor,
-                primaryColor,
-              ),
-
-              const SizedBox(width: 4),
-              // Next Button
-              _buildPaginationButton(
-                child: Icon(
-                  Icons.chevron_right,
-                  size: 12,
-                  color: _currentPage < totalPages ? primaryColor : Colors.grey,
-                ),
-                onTap: _currentPage < totalPages
-                    ? () => setState(() => _currentPage++)
-                    : null,
-                borderColor: borderColor,
-              ),
-            ],
-          ),
-        ],
-      ),
+      child: isMobile
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                entryInfoText,
+                const SizedBox(height: 8),
+                paginationControlRow,
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [entryInfoText, paginationControlRow],
+            ),
     );
   }
 
@@ -623,26 +777,41 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
     );
   }
 
-  void _showDetailsModal(BuildContext context, SearchResultModel r, bool isDarkMode) {
+  void _showDetailsModal(
+    BuildContext context,
+    SearchResultModel r,
+    bool isDarkMode,
+  ) {
     final primaryColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
+    final secondaryColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
     final dialogBg = isDarkMode ? const Color(0xFF0F172A) : Colors.white;
-    final borderColor = isDarkMode ? const Color(0x18FFFFFF) : const Color(0x1F000000);
-    
+    final borderColor = isDarkMode
+        ? const Color(0x18FFFFFF)
+        : const Color(0x1F000000);
+
     Color statusColor;
-    if (r.status.toLowerCase() == 'approved' || r.status.toLowerCase() == 'confirmed' || r.status.toLowerCase() == 'active') {
+    if (r.status.toLowerCase() == 'approved' ||
+        r.status.toLowerCase() == 'confirmed' ||
+        r.status.toLowerCase() == 'active') {
       statusColor = const Color(0xFF10B981);
-    } else if (r.status.toLowerCase() == 'pending' || r.status.toLowerCase() == 'booked' || r.status.toLowerCase() == 'processing') {
+    } else if (r.status.toLowerCase() == 'pending' ||
+        r.status.toLowerCase() == 'booked' ||
+        r.status.toLowerCase() == 'processing') {
       statusColor = const Color(0xFFEAB308);
     } else {
       statusColor = const Color(0xFFEF4444);
     }
 
-    final dateStr = '${r.date.year}-${r.date.month.toString().padLeft(2, '0')}-${r.date.day.toString().padLeft(2, '0')}';
-    
+    final dateStr =
+        '${r.date.year}-${r.date.month.toString().padLeft(2, '0')}-${r.date.day.toString().padLeft(2, '0')}';
+
     // Extracting details for the modal columns
     String destination = r.details.split('•').last.trim();
-    String vendor = r.type == 'insurance' ? r.details.split('•')[1].trim() : 'HILAL';
+    String vendor = r.type == 'insurance'
+        ? r.details.split('•')[1].trim()
+        : 'HILAL';
     if (r.type == 'ticket') {
       destination = r.details;
       vendor = 'Airline Booking';
@@ -653,7 +822,10 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
       builder: (ctx) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: Container(
             width: 440,
             padding: const EdgeInsets.all(20),
@@ -671,10 +843,20 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildModalDetailItem('DATE ADDED', dateStr, secondaryColor, primaryColor),
+                        child: _buildModalDetailItem(
+                          'DATE ADDED',
+                          dateStr,
+                          secondaryColor,
+                          primaryColor,
+                        ),
                       ),
                       Expanded(
-                        child: _buildModalDetailItem('STATUS', r.status.toUpperCase(), secondaryColor, statusColor),
+                        child: _buildModalDetailItem(
+                          'STATUS',
+                          r.status.toUpperCase(),
+                          secondaryColor,
+                          statusColor,
+                        ),
                       ),
                     ],
                   ),
@@ -684,17 +866,32 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildModalDetailItem('DESTINATION / ROUTE', destination, secondaryColor, primaryColor),
+                        child: _buildModalDetailItem(
+                          'DESTINATION / ROUTE',
+                          destination,
+                          secondaryColor,
+                          primaryColor,
+                        ),
                       ),
                       Expanded(
-                        child: _buildModalDetailItem('VENDOR / INFO', vendor, secondaryColor, primaryColor),
+                        child: _buildModalDetailItem(
+                          'VENDOR / INFO',
+                          vendor,
+                          secondaryColor,
+                          primaryColor,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
                   // Row 3: Agent / Info
-                  _buildModalDetailItem('AGENT / INFO', 'Tourism', secondaryColor, primaryColor),
+                  _buildModalDetailItem(
+                    'AGENT / INFO',
+                    'Tourism',
+                    secondaryColor,
+                    primaryColor,
+                  ),
                   const SizedBox(height: 20),
 
                   // ── INTERNAL FINANCIALS ──
@@ -763,7 +960,13 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Close', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -775,18 +978,32 @@ class _UniversalSearchPageState extends ConsumerState<UniversalSearchPage> {
     );
   }
 
-  Widget _buildModalDetailItem(String label, String value, Color labelColor, Color valueColor) {
+  Widget _buildModalDetailItem(
+    String label,
+    String value,
+    Color labelColor,
+    Color valueColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 8, color: labelColor, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          style: TextStyle(
+            fontSize: 8,
+            color: labelColor,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
         const SizedBox(height: 3),
         Text(
           value,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: valueColor),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
         ),
       ],
     );

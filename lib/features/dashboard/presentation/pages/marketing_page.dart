@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
@@ -160,81 +161,104 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
       return c.countryName.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
+    final isMobile = MediaQuery.of(context).size.width < 650;
+
+    final Widget headerTitleColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Customers by Country',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: primaryColor,
+          ),
+        ),
+        Text(
+          'View customer groups by country and launch email campaigns',
+          style: TextStyle(fontSize: 11, color: secondaryColor),
+        ),
+      ],
+    );
+
+    final Widget searchBox = Container(
+      width: isMobile ? double.infinity : 180,
+      height: 34,
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          Icon(Icons.search, size: 14, color: secondaryColor),
+          const SizedBox(width: 6),
+          Expanded(
+            child: TextField(
+              textAlignVertical: TextAlignVertical.center,
+              controller: _searchController,
+              style: TextStyle(fontSize: 11, color: primaryColor),
+              decoration: InputDecoration(
+                hintText: 'Search countries...',
+                hintStyle: TextStyle(fontSize: 11, color: secondaryColor),
+                border: InputBorder.none,
+                filled: false,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                isDense: true,
+              ),
+              onChanged: (v) {
+                setState(() {
+                  _searchQuery = v;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final int crossAxisCount = isMobile
+        ? 2
+        : (MediaQuery.of(context).size.width >= 900 ? 4 : 3);
+    final double childAspectRatio = isMobile ? 1.8 : 2.2;
+
     return Column(
       children: [
         // Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Customers by Country',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                    ),
-                  ),
-                  Text(
-                    'View customer groups by country and launch email campaigns',
-                    style: TextStyle(fontSize: 11, color: secondaryColor),
-                  ),
-                ],
-              ),
-              // Search Input
-              Container(
-                width: 180,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: borderColor),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
+          child: isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.search, size: 14, color: secondaryColor),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        style: TextStyle(fontSize: 11, color: primaryColor),
-                        decoration: InputDecoration(
-                          hintText: 'Search countries...',
-                          hintStyle: TextStyle(
-                            fontSize: 11,
-                            color: secondaryColor,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                        onChanged: (v) {
-                          setState(() {
-                            _searchQuery = v;
-                          });
-                        },
-                      ),
-                    ),
+                    headerTitleColumn,
+                    const SizedBox(height: 10),
+                    searchBox,
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: headerTitleColumn),
+                    const SizedBox(width: 16),
+                    searchBox,
                   ],
                 ),
-              ),
-            ],
-          ),
         ),
 
         // Grid of Country Cards (Two Columns responsive)
         Expanded(
           child: GridView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              childAspectRatio: 2.1,
+              childAspectRatio: childAspectRatio,
             ),
             itemCount: filteredCountries.length,
             itemBuilder: (context, idx) {
@@ -279,20 +303,27 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(flag, style: const TextStyle(fontSize: 16)),
-                  const SizedBox(width: 6),
-                  Text(
-                    c.countryName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(flag, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        c.countryName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 6),
               GestureDetector(
                 onTap: () {
                   setState(() {
@@ -388,11 +419,14 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
             children: [
               Text(flag, style: const TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
-              Text(
-                '${c.countryName} Customers Preview',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+              Expanded(
+                child: Text(
+                  '${c.countryName} Customers Preview',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -429,13 +463,18 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            cust.email,
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: secondaryColor,
+                          Expanded(
+                            child: Text(
+                              cust.email,
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: secondaryColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             cust.phone,
                             style: TextStyle(
@@ -454,7 +493,16 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close', style: TextStyle(color: Colors.grey)),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF6366F1),
+              ),
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -517,57 +565,104 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
           (cust) => _selectedCustomerIds.contains(cust.id),
         );
 
+    final isMobile = MediaQuery.of(context).size.width < 650;
+    final Widget backButton = OutlinedButton.icon(
+      onPressed: () {
+        setState(() {
+          _selectedCountry = null;
+        });
+      },
+      icon: const Icon(Icons.arrow_back, size: 14, color: Colors.blueAccent),
+      label: const Text(
+        'Back',
+        style: TextStyle(fontSize: 12, color: Colors.blueAccent),
+      ),
+      style: OutlinedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        side: BorderSide(color: borderColor),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+    );
+
+    final Widget headingText = RichText(
+      text: TextSpan(
+        style: TextStyle(
+          fontSize: 14,
+          color: primaryColor.withValues(alpha: 0.7),
+        ),
+        children: [
+          const TextSpan(text: 'Send Email to Customers in '),
+          TextSpan(
+            text: c.countryName,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.blueAccent,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final List<Widget> rangeInputs = [
+      const Text(
+        'From:',
+        style: TextStyle(fontSize: 11, color: Colors.white70),
+      ),
+      const SizedBox(width: 4),
+      SizedBox(
+        width: 50,
+        height: 30,
+        child: TextField(
+          controller: _rangeFromController,
+          keyboardType: TextInputType.number,
+          style: TextStyle(fontSize: 11, color: primaryColor),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(vertical: 6),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
+          ),
+          onChanged: (v) {
+            setState(() {});
+          },
+        ),
+      ),
+      const SizedBox(width: 8),
+      const Text('To:', style: TextStyle(fontSize: 11, color: Colors.white70)),
+      const SizedBox(width: 4),
+      SizedBox(
+        width: 50,
+        height: 30,
+        child: TextField(
+          controller: _rangeToController,
+          keyboardType: TextInputType.number,
+          style: TextStyle(fontSize: 11, color: primaryColor),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(vertical: 6),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
+          ),
+          onChanged: (v) {
+            setState(() {});
+          },
+        ),
+      ),
+    ];
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       children: [
         // Back Button & Heading
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            OutlinedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _selectedCountry = null;
-                });
-              },
-              icon: const Icon(
-                Icons.arrow_back,
-                size: 14,
-                color: Colors.blueAccent,
+        isMobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [backButton, const SizedBox(height: 10), headingText],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [backButton, headingText],
               ),
-              label: const Text(
-                'Back',
-                style: TextStyle(fontSize: 12, color: Colors.blueAccent),
-              ),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                side: BorderSide(color: borderColor),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                const Text(
-                  'Send Email to Customers in ',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
-                ),
-                Text(
-                  c.countryName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
         const SizedBox(height: 14),
 
         // Composition Fields Card
@@ -670,9 +765,13 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    _attachedFileName,
-                    style: TextStyle(fontSize: 11, color: secondaryColor),
+                  Expanded(
+                    child: Text(
+                      _attachedFileName,
+                      style: TextStyle(fontSize: 11, color: secondaryColor),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ],
               ),
@@ -746,294 +845,272 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
             border: Border.all(color: borderColor),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
-            children: [
-              Checkbox(
-                value: _showAll,
-                onChanged: (v) {
-                  if (v != null) {
-                    setState(() {
-                      _showAll = v;
-                    });
-                  }
-                },
-              ),
-              const Text(
-                'Show All',
-                style: TextStyle(fontSize: 11, color: Colors.white70),
-              ),
-              const Spacer(),
-              if (!_showAll) ...[
-                const Text(
-                  'From:',
-                  style: TextStyle(fontSize: 11, color: Colors.white70),
-                ),
-                const SizedBox(width: 4),
-                SizedBox(
-                  width: 50,
-                  height: 30,
-                  child: TextField(
-                    controller: _rangeFromController,
-                    keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: 11, color: primaryColor),
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    onChanged: (v) {
-                      setState(() {});
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'To:',
-                  style: TextStyle(fontSize: 11, color: Colors.white70),
-                ),
-                const SizedBox(width: 4),
-                SizedBox(
-                  width: 50,
-                  height: 30,
-                  child: TextField(
-                    controller: _rangeToController,
-                    keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: 11, color: primaryColor),
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    onChanged: (v) {
-                      setState(() {});
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                '(Displaying $from - $to of ${c.customerCount})',
-                style: TextStyle(fontSize: 11, color: secondaryColor),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Customer Selection Table Card
-        Container(
-          decoration: BoxDecoration(
-            color: cardBg,
-            border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header title showing selection count
-              Text(
-                'Customers (${c.customerCount} total, ${_selectedCustomerIds.length} selected)',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Table
-              Table(
-                columnWidths: const {
-                  0: FixedColumnWidth(40), // Checkbox
-                  1: FixedColumnWidth(30), // Index
-                  2: FlexColumnWidth(3), // Name
-                  3: FlexColumnWidth(3), // Email
-                  4: FlexColumnWidth(2), // Phone
-                },
-                border: TableBorder(
-                  horizontalInside: BorderSide(color: borderColor, width: 0.3),
-                  bottom: BorderSide(color: borderColor, width: 0.5),
-                ),
-                children: [
-                  // Table Header Row
-                  TableRow(
-                    decoration: BoxDecoration(
-                      color: isDarkMode
-                          ? const Color(0x11FFFFFF)
-                          : Colors.grey.withValues(alpha: 0.05),
-                    ),
-                    children: [
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Checkbox(
-                          value: allSelected,
+          child: isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _showAll,
                           onChanged: (v) {
                             if (v != null) {
                               setState(() {
-                                if (v) {
-                                  for (var cust in displayedCustomers) {
-                                    _selectedCustomerIds.add(cust.id);
-                                  }
-                                } else {
-                                  for (var cust in displayedCustomers) {
-                                    _selectedCustomerIds.remove(cust.id);
-                                  }
-                                }
+                                _showAll = v;
                               });
                             }
                           },
                         ),
-                      ),
-                      const TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            '#',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
-                            ),
-                          ),
+                        const Text(
+                          'Show All',
+                          style: TextStyle(fontSize: 11, color: Colors.white70),
                         ),
-                      ),
-                      const TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            'Name',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
-                            ),
-                          ),
+                        const Spacer(),
+                        Text(
+                          '(Displaying $from - $to of ${c.customerCount})',
+                          style: TextStyle(fontSize: 11, color: secondaryColor),
                         ),
-                      ),
-                      const TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            'Email',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            'Phone',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
-                      ),
+                      ],
+                    ),
+                    if (!_showAll) ...[
+                      const SizedBox(height: 8),
+                      Row(children: rangeInputs),
                     ],
-                  ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Checkbox(
+                      value: _showAll,
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() {
+                            _showAll = v;
+                          });
+                        }
+                      },
+                    ),
+                    const Text(
+                      'Show All',
+                      style: TextStyle(fontSize: 11, color: Colors.white70),
+                    ),
+                    const Spacer(),
+                    if (!_showAll) ...[
+                      ...rangeInputs,
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      '(Displaying $from - $to of ${c.customerCount})',
+                      style: TextStyle(fontSize: 11, color: secondaryColor),
+                    ),
+                  ],
+                ),
+        ),
+        const SizedBox(height: 14),
 
-                  // Table Body rows
-                  ...displayedCustomers.asMap().entries.map((entry) {
-                    final idx = (_showAll ? 0 : from - 1) + entry.key + 1;
-                    final cust = entry.value;
-                    final isChecked = _selectedCustomerIds.contains(cust.id);
-                    return TableRow(
+        // Customer Selection Table Card
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final double tableWidth = constraints.maxWidth < 500
+                ? 550
+                : constraints.maxWidth;
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: tableWidth,
+                child: Table(
+                  columnWidths: const {
+                    0: FixedColumnWidth(40), // Checkbox
+                    1: FixedColumnWidth(30), // Index
+                    2: FlexColumnWidth(3), // Name
+                    3: FlexColumnWidth(4), // Email
+                    4: FlexColumnWidth(2), // Phone
+                  },
+                  border: TableBorder(
+                    horizontalInside: BorderSide(
+                      color: borderColor,
+                      width: 0.3,
+                    ),
+                    bottom: BorderSide(color: borderColor, width: 0.5),
+                  ),
+                  children: [
+                    // Table Header Row
+                    TableRow(
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? const Color(0x11FFFFFF)
+                            : Colors.grey.withValues(alpha: 0.05),
+                      ),
                       children: [
                         TableCell(
                           verticalAlignment: TableCellVerticalAlignment.middle,
                           child: Checkbox(
-                            value: isChecked,
+                            value: allSelected,
                             onChanged: (v) {
                               if (v != null) {
                                 setState(() {
                                   if (v) {
-                                    _selectedCustomerIds.add(cust.id);
+                                    for (var cust in displayedCustomers) {
+                                      _selectedCustomerIds.add(cust.id);
+                                    }
                                   } else {
-                                    _selectedCustomerIds.remove(cust.id);
+                                    for (var cust in displayedCustomers) {
+                                      _selectedCustomerIds.remove(cust.id);
+                                    }
                                   }
                                 });
                               }
                             },
                           ),
                         ),
-                        TableCell(
+                        const TableCell(
                           verticalAlignment: TableCellVerticalAlignment.middle,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: EdgeInsets.symmetric(vertical: 8),
                             child: Text(
-                              '$idx',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: secondaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          verticalAlignment: TableCellVerticalAlignment.middle,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              cust.name,
+                              '#',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: primaryColor,
+                                color: Colors.white70,
                               ),
                             ),
                           ),
                         ),
-                        TableCell(
+                        const TableCell(
                           verticalAlignment: TableCellVerticalAlignment.middle,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: EdgeInsets.symmetric(vertical: 8),
                             child: Text(
-                              cust.email,
+                              'Name',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: secondaryColor,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
                               ),
                             ),
                           ),
                         ),
-                        TableCell(
+                        const TableCell(
                           verticalAlignment: TableCellVerticalAlignment.middle,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: EdgeInsets.symmetric(vertical: 8),
                             child: Text(
-                              cust.phone,
+                              'Email',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: secondaryColor,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const TableCell(
+                          verticalAlignment: TableCellVerticalAlignment.middle,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Phone',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
                               ),
                             ),
                           ),
                         ),
                       ],
-                    );
-                  }),
-                ],
+                    ),
+                    // Table Body rows
+                    ...displayedCustomers.asMap().entries.map((entry) {
+                      final idx = (_showAll ? 0 : from - 1) + entry.key + 1;
+                      final cust = entry.value;
+                      final isChecked = _selectedCustomerIds.contains(cust.id);
+                      return TableRow(
+                        children: [
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Checkbox(
+                              value: isChecked,
+                              onChanged: (v) {
+                                if (v != null) {
+                                  setState(() {
+                                    if (v) {
+                                      _selectedCustomerIds.add(cust.id);
+                                    } else {
+                                      _selectedCustomerIds.remove(cust.id);
+                                    }
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                '$idx',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                cust.name,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                cust.email,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                cust.phone,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ],
     );

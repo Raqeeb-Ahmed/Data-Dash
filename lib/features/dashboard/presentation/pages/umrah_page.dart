@@ -58,10 +58,18 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     final stats = ref.watch(umrahStatsProvider);
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryTextColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
-    final cardBg = isDarkMode ? const Color(0x770B0F19) : Colors.white.withValues(alpha: 0.90);
-    final borderColor = isDarkMode ? const Color(0x18FFFFFF) : const Color(0x1F000000);
+    final primaryTextColor = isDarkMode
+        ? Colors.white
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
+    final cardBg = isDarkMode
+        ? const Color(0x770B0F19)
+        : Colors.white.withValues(alpha: 0.90);
+    final borderColor = isDarkMode
+        ? const Color(0x18FFFFFF)
+        : const Color(0x1F000000);
 
     // Pagination calculations
     final int totalPages = (filteredList.length / _perPage).ceil();
@@ -70,7 +78,9 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     }
     final int startIdx = _currentPage * _perPage;
     final int endIdx = (startIdx + _perPage).clamp(0, filteredList.length);
-    final displayedList = filteredList.isEmpty ? <UmrahBookingModel>[] : filteredList.sublist(startIdx, endIdx);
+    final displayedList = filteredList.isEmpty
+        ? <UmrahBookingModel>[]
+        : filteredList.sublist(startIdx, endIdx);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -80,10 +90,20 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   children: [
                     // ──── HEADER ────
-                    _buildHeader(primaryTextColor, secondaryTextColor, filter, isDarkMode, cardBg, borderColor),
+                    _buildHeader(
+                      primaryTextColor,
+                      secondaryTextColor,
+                      filter,
+                      isDarkMode,
+                      cardBg,
+                      borderColor,
+                    ),
                     const SizedBox(height: 14),
 
                     // ──── STATS CARDS (TOTAL RECEIVED, PAYABLE, PROFIT, BOOKINGS) ────
@@ -91,11 +111,25 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     const SizedBox(height: 14),
 
                     // ──── CHARTS ROW (MONTHLY FINANCIALS & TOP VENDORS) ────
-                    _buildChartsSection(cardBg, borderColor, primaryTextColor, secondaryTextColor, isDarkMode, filteredList),
+                    _buildChartsSection(
+                      cardBg,
+                      borderColor,
+                      primaryTextColor,
+                      secondaryTextColor,
+                      isDarkMode,
+                      filteredList,
+                    ),
                     const SizedBox(height: 14),
 
                     // ──── SEARCH BAR & DROP FILTER DROPDOWNS ────
-                    _buildFilterSection(cardBg, borderColor, primaryTextColor, secondaryTextColor, isDarkMode, filter),
+                    _buildFilterSection(
+                      cardBg,
+                      borderColor,
+                      primaryTextColor,
+                      secondaryTextColor,
+                      isDarkMode,
+                      filter,
+                    ),
                     const SizedBox(height: 14),
 
                     // ──── TABLE ────
@@ -130,150 +164,221 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     Color cardBg,
     Color borderColor,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final isMobile = MediaQuery.of(context).size.width < 650;
+    final Widget headerTitles = Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.mosque_outlined, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Umrah Bookings Dashboard',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
-                    ),
-                    Text(
-                      'Pilgrim lists, transport, vendor payables & profit analytics',
-                      style: TextStyle(fontSize: 11, color: secondaryColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            // Quick date filter dropdown
-            Container(
-              height: 34,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: cardBg,
-                border: Border.all(color: borderColor),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: filter.selectedDateFilter,
-                  dropdownColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
-                  style: TextStyle(fontSize: 12, color: primaryColor, fontWeight: FontWeight.w600),
-                  icon: Icon(Icons.keyboard_arrow_down, size: 14, color: secondaryColor),
-                  items: _quickDateFilters
-                      .map((f) => DropdownMenuItem(
-                            value: f,
-                            child: Text(f),
-                          ))
-                      .toList(),
-                  onChanged: (v) {
-                    if (v != null) {
-                      ref.read(umrahFilterProvider.notifier).updateDateFilter(v);
-                      ref.read(umrahFilterProvider.notifier).updateCustomDateRange(null, null);
-                      setState(() {
-                        _currentPage = 0;
-                      });
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-
-        // Custom Date Range picker
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: cardBg,
-            border: Border.all(color: borderColor),
+            color: const Color(0xFFF59E0B),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Row(
+          child: const Icon(
+            Icons.mosque_outlined,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.calendar_month, size: 14, color: secondaryColor),
-              const SizedBox(width: 6),
               Text(
-                'Custom Range:',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectCustomDate(isFrom: true),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-                            border: Border.all(color: borderColor),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            filter.fromDate == null ? 'dd/mm/yyyy' : _formatDate(filter.fromDate!),
-                            style: TextStyle(fontSize: 11, color: secondaryColor),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6),
-                      child: Text('to', style: TextStyle(fontSize: 11)),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectCustomDate(isFrom: false),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-                            border: Border.all(color: borderColor),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            filter.toDate == null ? 'dd/mm/yyyy' : _formatDate(filter.toDate!),
-                            style: TextStyle(fontSize: 11, color: secondaryColor),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (filter.fromDate != null || filter.toDate != null) ...[
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () {
-                          ref.read(umrahFilterProvider.notifier).updateCustomDateRange(null, null);
-                          ref.read(umrahFilterProvider.notifier).updateDateFilter('All Time');
-                        },
-                        child: const Icon(Icons.cancel, size: 16, color: Colors.redAccent),
-                      ),
-                    ],
-                  ],
+                'umrah Bookings Dashboard',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
                 ),
+              ),
+              Text(
+                'Pilgrim lists, transport, vendor payables & profit analytics',
+                style: TextStyle(fontSize: 10, color: secondaryColor),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ),
         ),
+      ],
+    );
+    final Widget dateDropdown = Container(
+      height: 34,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: cardBg,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(8),
+      ),
+
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: filter.selectedDateFilter,
+          dropdownColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
+          style: TextStyle(
+            fontSize: 12,
+            color: primaryColor,
+            fontWeight: FontWeight.w600,
+          ),
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            size: 14,
+            color: secondaryColor,
+          ),
+          items: _quickDateFilters
+              .map((f) => DropdownMenuItem(value: f, child: Text(f)))
+              .toList(),
+          onChanged: (v) {
+            if (v != null) {
+              ref.read(umrahFilterProvider.notifier).updateDateFilter(v);
+              ref
+                  .read(umrahFilterProvider.notifier)
+                  .updateCustomDateRange(null, null);
+              setState(() {
+                _currentPage = 0;
+              });
+            }
+          },
+        ),
+      ),
+    );
+
+    final List<Widget> customRangeContent = [
+      Expanded(
+        child: GestureDetector(
+          onTap: () => _selectCustomDate(isFrom: true),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+              border: Border.all(color: borderColor),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              filter.fromDate == null
+                  ? 'dd/mm/yyyy'
+                  : _formatDate(filter.fromDate!),
+              style: TextStyle(fontSize: 11, color: secondaryColor),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 6),
+        child: Text('to', style: TextStyle(fontSize: 11)),
+      ),
+
+      Expanded(
+        child: GestureDetector(
+          onTap: () => _selectCustomDate(isFrom: false),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+              border: Border.all(color: borderColor),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              filter.toDate == null
+                  ? 'dd/mm/yyyy'
+                  : _formatDate(filter.toDate!),
+              style: TextStyle(fontSize: 11, color: secondaryColor),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+      if (filter.fromDate != null || filter.toDate != null) ...[
+        const SizedBox(width: 6),
+        GestureDetector(
+          onTap: () {
+            ref
+                .read(umrahFilterProvider.notifier)
+                .updateCustomDateRange(null, null);
+            ref.read(umrahFilterProvider.notifier).updateDateFilter('All Time');
+          },
+          child: const Icon(Icons.cancel, size: 16, color: Colors.redAccent),
+        ),
+      ],
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (isMobile) ...[
+          headerTitles,
+          const SizedBox(height: 10),
+          Align(alignment: Alignment.centerLeft, child: dateDropdown),
+        ] else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: headerTitles),
+                  const SizedBox(width: 16),
+                  dateDropdown,
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  border: Border.all(color: cardBg),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: isMobile
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month,
+                                size: 14,
+                                color: secondaryColor,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Custom Range:',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(children: customRangeContent),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_month,
+                            size: 14,
+                            color: secondaryColor,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Custom Range:',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(child: Row(children: customRangeContent)),
+                        ],
+                      ),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -309,13 +414,16 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
 
   // ── Metrics Row (TOTAL RECEIVED, PAYABLE, PROFIT, BOOKINGS) ──
   Widget _buildStatsGrid(bool isDarkMode, UmrahStats stats) {
+    final double width = MediaQuery.of(context).size.width;
+    final int crossAxisCount = width >= 768 ? 4 : 2;
+    final double childAspectRatio = width > 768 ? 2.5 : 1.8;
     return GridView.count(
-      crossAxisCount: 2,
+      crossAxisCount: crossAxisCount,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
-      childAspectRatio: 2.1,
+      childAspectRatio: childAspectRatio,
       children: [
         _statCard(
           title: 'TOTAL RECEIVED',
@@ -378,10 +486,22 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(fontSize: 8, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 8,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
               ),
+              const SizedBox(width: 4),
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -392,11 +512,19 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
               ),
             ],
           ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -432,7 +560,11 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
             children: [
               Text(
                 'Monthly Financials',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryTextColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
               ),
               const SizedBox(height: 14),
               SizedBox(
@@ -443,12 +575,19 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     gridData: FlGridData(
                       show: true,
                       drawVerticalLine: false,
-                      getDrawingHorizontalLine: (_) => FlLine(color: borderColor, strokeWidth: 0.5),
+                      getDrawingHorizontalLine: (_) =>
+                          FlLine(color: borderColor, strokeWidth: 0.5),
                     ),
                     titlesData: FlTitlesData(
-                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -460,7 +599,10 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Text(
                                   monthsKeys[i],
-                                  style: TextStyle(fontSize: 9, color: secondaryTextColor),
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: secondaryTextColor,
+                                  ),
                                 ),
                               );
                             }
@@ -483,19 +625,25 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                             toY: pay,
                             color: const Color(0xFFEF4444),
                             width: 6,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2),
+                            ),
                           ),
                           BarChartRodData(
                             toY: prof,
                             color: const Color(0xFF10B981),
                             width: 6,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2),
+                            ),
                           ),
                           BarChartRodData(
                             toY: rec,
                             color: const Color(0xFF2563EB),
                             width: 6,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2),
+                            ),
                           ),
                         ],
                       );
@@ -532,7 +680,11 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
             children: [
               Text(
                 'Top Vendors',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryTextColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
               ),
               const SizedBox(height: 14),
               if (vendorList.isEmpty)
@@ -569,40 +721,50 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: List.generate(
-                          vendorList.length.clamp(0, 5),
-                          (idx) {
-                            final entry = vendorList[idx];
-                            final pct = filteredList.isEmpty
-                                ? '0'
-                                : (entry.value / filteredList.length * 100).toStringAsFixed(0);
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(color: _getVendorColor(idx), shape: BoxShape.circle),
+                        children: List.generate(vendorList.length.clamp(0, 5), (
+                          idx,
+                        ) {
+                          final entry = vendorList[idx];
+                          final pct = filteredList.isEmpty
+                              ? '0'
+                              : (entry.value / filteredList.length * 100)
+                                    .toStringAsFixed(0);
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: _getVendorColor(idx),
+                                    shape: BoxShape.circle,
                                   ),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      entry.key,
-                                      style: TextStyle(fontSize: 9, color: primaryTextColor, fontWeight: FontWeight.bold),
-                                      overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    entry.key,
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: primaryTextColor,
+                                      fontWeight: FontWeight.bold,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$pct%',
-                                    style: TextStyle(fontSize: 9, color: secondaryTextColor),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$pct%',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: secondaryTextColor,
                                   ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       ),
                     ),
                   ],
@@ -661,7 +823,9 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           Container(
             height: 38,
             decoration: BoxDecoration(
-              color: isDarkMode ? const Color(0x33000000) : Colors.grey.withValues(alpha: 0.1),
+              color: isDarkMode
+                  ? const Color(0x33000000)
+                  : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: borderColor),
             ),
@@ -676,12 +840,22 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     style: TextStyle(fontSize: 12, color: primaryTextColor),
                     decoration: InputDecoration(
                       hintText: 'Search by name, passport, phone...',
-                      hintStyle: TextStyle(fontSize: 12, color: secondaryTextColor),
+                      hintStyle: TextStyle(
+                        fontSize: 12,
+                        color: secondaryTextColor,
+                      ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       isDense: true,
                     ),
                     onChanged: (v) {
-                      ref.read(umrahFilterProvider.notifier).updateSearchQuery(v);
+                      ref
+                          .read(umrahFilterProvider.notifier)
+                          .updateSearchQuery(v);
                       setState(() {
                         _currentPage = 0;
                       });
@@ -709,18 +883,28 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     child: DropdownButton<String>(
                       value: filter.selectedVendor,
                       isExpanded: true,
-                      dropdownColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
+                      dropdownColor: isDarkMode
+                          ? const Color(0xFF0F172A)
+                          : Colors.white,
                       style: TextStyle(fontSize: 11, color: primaryTextColor),
-                      icon: Icon(Icons.keyboard_arrow_down, size: 14, color: secondaryTextColor),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 14,
+                        color: secondaryTextColor,
+                      ),
                       items: _vendors
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e, overflow: TextOverflow.ellipsis),
-                              ))
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e, overflow: TextOverflow.ellipsis),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) {
                         if (v != null) {
-                          ref.read(umrahFilterProvider.notifier).updateVendor(v);
+                          ref
+                              .read(umrahFilterProvider.notifier)
+                              .updateVendor(v);
                           setState(() {
                             _currentPage = 0;
                           });
@@ -744,18 +928,28 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     child: DropdownButton<String>(
                       value: filter.selectedEmployee,
                       isExpanded: true,
-                      dropdownColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
+                      dropdownColor: isDarkMode
+                          ? const Color(0xFF0F172A)
+                          : Colors.white,
                       style: TextStyle(fontSize: 11, color: primaryTextColor),
-                      icon: Icon(Icons.keyboard_arrow_down, size: 14, color: secondaryTextColor),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 14,
+                        color: secondaryTextColor,
+                      ),
                       items: _employees
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e, overflow: TextOverflow.ellipsis),
-                              ))
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e, overflow: TextOverflow.ellipsis),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) {
                         if (v != null) {
-                          ref.read(umrahFilterProvider.notifier).updateEmployee(v);
+                          ref
+                              .read(umrahFilterProvider.notifier)
+                              .updateEmployee(v);
                           setState(() {
                             _currentPage = 0;
                           });
@@ -799,7 +993,11 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
             children: [
               Text(
                 'Umrah Bookings (${displayedList.length})',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryTextColor),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
               ),
               Text(
                 'Total $totalCount records',
@@ -822,7 +1020,15 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
             ...displayedList.asMap().entries.map((entry) {
               final idx = startIdx() + entry.key + 1;
               final b = entry.value;
-              return _buildBookingRow(context, b, idx, isDarkMode, primaryTextColor, secondaryTextColor, borderColor);
+              return _buildBookingRow(
+                context,
+                b,
+                idx,
+                isDarkMode,
+                primaryTextColor,
+                secondaryTextColor,
+                borderColor,
+              );
             }),
 
             // Pagination Controls
@@ -841,15 +1047,27 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
-                      disabledBackgroundColor: Colors.grey.withValues(alpha: 0.1),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      disabledBackgroundColor: Colors.grey.withValues(
+                        alpha: 0.1,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       minimumSize: Size.zero,
                     ),
-                    child: const Text('Previous', style: TextStyle(color: Colors.white, fontSize: 11)),
+                    child: const Text(
+                      'Previous',
+                      style: TextStyle(color: Colors.white, fontSize: 11),
+                    ),
                   ),
                   Text(
                     'Page ${_currentPage + 1} of $totalPages',
-                    style: TextStyle(fontSize: 11, color: secondaryTextColor, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: secondaryTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: _currentPage < totalPages - 1
@@ -861,11 +1079,19 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
-                      disabledBackgroundColor: Colors.grey.withValues(alpha: 0.1),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      disabledBackgroundColor: Colors.grey.withValues(
+                        alpha: 0.1,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       minimumSize: Size.zero,
                     ),
-                    child: const Text('Next', style: TextStyle(color: Colors.white, fontSize: 11)),
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(color: Colors.white, fontSize: 11),
+                    ),
                   ),
                 ],
               ),
@@ -904,7 +1130,14 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           // Header: Index + ID + Actions
           Row(
             children: [
-              Text('#$idx', style: TextStyle(fontSize: 10, color: secondaryColor, fontWeight: FontWeight.bold)),
+              Text(
+                '#$idx',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: secondaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -914,24 +1147,37 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                 ),
                 child: Text(
                   b.id,
-                  style: const TextStyle(fontSize: 9, color: Color(0xFFF59E0B), fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Color(0xFFF59E0B),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const Spacer(),
               // Actions: See, Edit, Delete
               GestureDetector(
                 onTap: () => _openViewModal(context, b),
-                child: _actionIcon(Icons.visibility_outlined, const Color(0xFF0EA5E9)),
+                child: _actionIcon(
+                  Icons.visibility_outlined,
+                  const Color(0xFF0EA5E9),
+                ),
               ),
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => _openEditModal(context, b),
-                child: _actionIcon(Icons.edit_outlined, const Color(0xFF10B981)),
+                child: _actionIcon(
+                  Icons.edit_outlined,
+                  const Color(0xFF10B981),
+                ),
               ),
               const SizedBox(width: 6),
               GestureDetector(
                 onTap: () => _confirmDeleteDialog(context, b),
-                child: _actionIcon(Icons.delete_outline, const Color(0xFFEF4444)),
+                child: _actionIcon(
+                  Icons.delete_outline,
+                  const Color(0xFFEF4444),
+                ),
               ),
             ],
           ),
@@ -945,12 +1191,20 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
               Expanded(
                 child: Text(
                   b.customerName,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
                 ),
               ),
               Text(
                 'Passport: ${b.passportNumber}',
-                style: TextStyle(fontSize: 10, color: secondaryColor, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: secondaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -961,18 +1215,41 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.phone_outlined, size: 11, color: secondaryColor),
                   const SizedBox(width: 4),
-                  Text(b.customerPhone, style: TextStyle(fontSize: 10, color: secondaryColor)),
+                  Text(
+                    b.customerPhone,
+                    style: TextStyle(fontSize: 10, color: secondaryColor),
+                  ),
                 ],
               ),
-              Row(
-                children: [
-                  Icon(Icons.business_center_outlined, size: 11, color: secondaryColor),
-                  const SizedBox(width: 4),
-                  Text(b.vendorName, style: TextStyle(fontSize: 10, color: secondaryColor, fontWeight: FontWeight.w600)),
-                ],
+              const SizedBox(width: 8),
+              FittedBox(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Icon(
+                      Icons.business_center_outlined,
+                      size: 11,
+                      color: secondaryColor,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        b.vendorName,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: secondaryColor,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -982,18 +1259,36 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.badge_outlined, size: 11, color: secondaryColor),
-                  const SizedBox(width: 4),
-                  Text(b.employeeEmail, style: TextStyle(fontSize: 9, color: secondaryColor)),
-                ],
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.badge_outlined, size: 11, color: secondaryColor),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        b.employeeEmail,
+                        style: TextStyle(fontSize: 9, color: secondaryColor),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 10, color: secondaryColor),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 10,
+                    color: secondaryColor,
+                  ),
                   const SizedBox(width: 4),
-                  Text(_formatDate(b.dateCreated), style: TextStyle(fontSize: 9, color: secondaryColor)),
+                  Text(
+                    _formatDate(b.dateCreated),
+                    style: TextStyle(fontSize: 9, color: secondaryColor),
+                  ),
                 ],
               ),
             ],
@@ -1004,9 +1299,32 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _finCell('Payable', b.payableAmount, const Color(0xFFEF4444), secondaryColor),
-              _finCell('Received', b.receivedAmount, const Color(0xFF10B981), secondaryColor),
-              _finCell('Profit', b.netProfit, const Color(0xFF2563EB), secondaryColor),
+              Expanded(
+                child: _finCell(
+                  'Payable',
+                  b.payableAmount,
+                  const Color(0xFFEF4444),
+                  secondaryColor,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _finCell(
+                  'Received',
+                  b.receivedAmount,
+                  const Color(0xFF10B981),
+                  secondaryColor,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _finCell(
+                  'Profit',
+                  b.netProfit,
+                  const Color(0xFF2563EB),
+                  secondaryColor,
+                ),
+              ),
             ],
           ),
         ],
@@ -1017,7 +1335,10 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
   Widget _actionIcon(IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Icon(icon, size: 13, color: color),
     );
   }
@@ -1027,9 +1348,17 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: 8, color: labelColor)),
-        Text(
-          'PKR ${_formatCurrency(val)}',
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: valColor),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'PKR ${_formatCurrency(val)}',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: valColor,
+            ),
+          ),
         ),
       ],
     );
@@ -1039,7 +1368,9 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
   void _openViewModal(BuildContext context, UmrahBookingModel b) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
+    final secondaryColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
     final modalBg = isDarkMode ? const Color(0xFF1E293B) : Colors.white;
 
     showDialog(
@@ -1047,37 +1378,103 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: modalBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           contentPadding: const EdgeInsets.all(20),
           title: const Row(
             children: [
               Icon(Icons.mosque, color: Color(0xFFF59E0B)),
               SizedBox(width: 8),
-              Text('Umrah Booking details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                'Umrah Booking details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ],
           ),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _viewDetailRow('Booking Ref ID', b.id, primaryColor, secondaryColor),
-                _viewDetailRow('Customer Name', b.customerName, primaryColor, secondaryColor),
-                _viewDetailRow('Customer Phone', b.customerPhone, primaryColor, secondaryColor),
-                _viewDetailRow('Passport Number', b.passportNumber, primaryColor, secondaryColor),
-                _viewDetailRow('Vendor Name', b.vendorName, primaryColor, secondaryColor),
-                _viewDetailRow('Handler Employee', b.employeeEmail, primaryColor, secondaryColor),
-                _viewDetailRow('Payable (PKR)', _formatCurrency(b.payableAmount), const Color(0xFFEF4444), secondaryColor),
-                _viewDetailRow('Received (PKR)', _formatCurrency(b.receivedAmount), const Color(0xFF10B981), secondaryColor),
-                _viewDetailRow('Net Profit (PKR)', _formatCurrency(b.netProfit), const Color(0xFF2563EB), secondaryColor),
-                _viewDetailRow('Booking Date', _formatDate(b.dateCreated), primaryColor, secondaryColor),
-                _viewDetailRow('Status', b.status, const Color(0xFFF59E0B), secondaryColor),
+                _viewDetailRow(
+                  'Booking Ref ID',
+                  b.id,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Customer Name',
+                  b.customerName,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Customer Phone',
+                  b.customerPhone,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Passport Number',
+                  b.passportNumber,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Vendor Name',
+                  b.vendorName,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Handler Employee',
+                  b.employeeEmail,
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Payable (PKR)',
+                  _formatCurrency(b.payableAmount),
+                  const Color(0xFFEF4444),
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Received (PKR)',
+                  _formatCurrency(b.receivedAmount),
+                  const Color(0xFF10B981),
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Net Profit (PKR)',
+                  _formatCurrency(b.netProfit),
+                  const Color(0xFF2563EB),
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Booking Date',
+                  _formatDate(b.dateCreated),
+                  primaryColor,
+                  secondaryColor,
+                ),
+                _viewDetailRow(
+                  'Status',
+                  b.status,
+                  const Color(0xFFF59E0B),
+                  secondaryColor,
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFF59E0B))),
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFF59E0B),
+                ),
+              ),
             ),
           ],
         );
@@ -1085,7 +1482,12 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     );
   }
 
-  Widget _viewDetailRow(String label, String val, Color valColor, Color labelColor) {
+  Widget _viewDetailRow(
+    String label,
+    String val,
+    Color valColor,
+    Color labelColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Column(
@@ -1095,7 +1497,11 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           const SizedBox(height: 2),
           Text(
             val,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: valColor),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: valColor,
+            ),
           ),
           const Divider(height: 8, thickness: 0.2),
         ],
@@ -1111,7 +1517,9 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     final nameCtrl = TextEditingController(text: b.customerName);
     final phoneCtrl = TextEditingController(text: b.customerPhone);
     final passportCtrl = TextEditingController(text: b.passportNumber);
-    final receivedCtrl = TextEditingController(text: b.receivedAmount.toString());
+    final receivedCtrl = TextEditingController(
+      text: b.receivedAmount.toString(),
+    );
     final payableCtrl = TextEditingController(text: b.payableAmount.toString());
 
     String selectedVendor = b.vendorName;
@@ -1138,12 +1546,17 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
 
             return AlertDialog(
               backgroundColor: modalBg,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               title: const Row(
                 children: [
                   Icon(Icons.edit, color: Color(0xFFF59E0B)),
                   SizedBox(width: 8),
-                  Text('Edit Umrah Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    'Edit Umrah Booking',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ],
               ),
               content: SingleChildScrollView(
@@ -1168,7 +1581,15 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                         ),
                         items: _vendors
                             .where((v) => v != 'All Vendors')
-                            .map((v) => DropdownMenuItem(value: v, child: Text(v, style: const TextStyle(fontSize: 11))))
+                            .map(
+                              (v) => DropdownMenuItem(
+                                value: v,
+                                child: Text(
+                                  v,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (v) {
                           if (v != null) {
@@ -1194,7 +1615,15 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                         ),
                         items: _employees
                             .where((e) => e != 'All Employees')
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 11))))
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(
+                                  e,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (v) {
                           if (v != null) {
@@ -1222,17 +1651,29 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                           }
                         },
                         style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               'Booking Date: ${_formatDate(selectedDate)}',
-                              style: const TextStyle(fontSize: 11, color: Colors.blueAccent),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.blueAccent,
+                              ),
                             ),
-                            const Icon(Icons.calendar_today, size: 14, color: Colors.blueAccent),
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: Colors.blueAccent,
+                            ),
                           ],
                         ),
                       ),
@@ -1240,9 +1681,21 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
 
                     Row(
                       children: [
-                        Expanded(child: _inputField('Received (PKR)', receivedCtrl, isNum: true)),
+                        Expanded(
+                          child: _inputField(
+                            'Received (PKR)',
+                            receivedCtrl,
+                            isNum: true,
+                          ),
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: _inputField('Payable (PKR)', payableCtrl, isNum: true)),
+                        Expanded(
+                          child: _inputField(
+                            'Payable (PKR)',
+                            payableCtrl,
+                            isNum: true,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -1260,11 +1713,18 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                         children: [
                           const Text(
                             'Computed Profit:',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
                             'PKR ${_formatCurrency(computedProfit)}',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFF59E0B),
+                            ),
                           ),
                         ],
                       ),
@@ -1275,7 +1735,10 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -1286,11 +1749,16 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                       vendorName: selectedVendor,
                       employeeEmail: selectedEmployee,
                       dateCreated: selectedDate,
-                      receivedAmount: double.tryParse(receivedCtrl.text) ?? b.receivedAmount,
-                      payableAmount: double.tryParse(payableCtrl.text) ?? b.payableAmount,
+                      receivedAmount:
+                          double.tryParse(receivedCtrl.text) ??
+                          b.receivedAmount,
+                      payableAmount:
+                          double.tryParse(payableCtrl.text) ?? b.payableAmount,
                       netProfit: computedProfit,
                     );
-                    ref.read(umrahBookingsProvider.notifier).updateBooking(updated);
+                    ref
+                        .read(umrahBookingsProvider.notifier)
+                        .updateBooking(updated);
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -1302,9 +1770,14 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
-                  child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Save Changes',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             );
@@ -1314,12 +1787,18 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     );
   }
 
-  Widget _inputField(String label, TextEditingController ctrl, {bool isNum = false}) {
+  Widget _inputField(
+    String label,
+    TextEditingController ctrl, {
+    bool isNum = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: TextField(
         controller: ctrl,
-        keyboardType: isNum ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+        keyboardType: isNum
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         style: const TextStyle(fontSize: 12),
         decoration: InputDecoration(
           labelText: label,
@@ -1342,12 +1821,17 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: modalBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.red),
               SizedBox(width: 8),
-              Text('Confirm Delete', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                'Confirm Delete',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ],
           ),
           content: Text(
@@ -1373,9 +1857,14 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
               ),
-              child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Delete',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
@@ -1395,7 +1884,9 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
     return intVal.toString().replaceAllMapped(reg, (Match m) => '${m[1]},');
   }
 
-  Map<String, Map<String, double>> _computeMonthlyFinancials(List<UmrahBookingModel> list) {
+  Map<String, Map<String, double>> _computeMonthlyFinancials(
+    List<UmrahBookingModel> list,
+  ) {
     final months = ['Sep 2025', 'Dec 2025', 'Jan 2026', 'Feb 2026', 'Jun 2026'];
     Map<String, Map<String, double>> data = {};
     for (var m in months) {
@@ -1436,7 +1927,8 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
       final name = b.vendorName.toUpperCase();
       counts[name] = (counts[name] ?? 0) + 1;
     }
-    final sortedEntries = counts.entries.toList()..sort((e1, e2) => e2.value.compareTo(e1.value));
+    final sortedEntries = counts.entries.toList()
+      ..sort((e1, e2) => e2.value.compareTo(e1.value));
     return Map.fromEntries(sortedEntries);
   }
 }

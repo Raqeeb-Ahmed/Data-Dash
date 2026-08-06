@@ -89,9 +89,10 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                               Text(
                                 'Hotel Bookings Admin Dashboard 🏨',
                                 style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryTextColor),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryTextColor,
+                                ),
                               ),
                               Text(
                                 'Worldwide room reservations & lodgings',
@@ -381,10 +382,17 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                         color: secondaryTextColor,
                       ),
                       border: InputBorder.none,
+                      filled: false,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       isDense: true,
                     ),
                     onChanged: (v) {
-                      ref.read(hotelFilterProvider.notifier).updateSearchQuery(v);
+                      ref
+                          .read(hotelFilterProvider.notifier)
+                          .updateSearchQuery(v);
                       setState(() {
                         _itemsToShow = 10;
                       });
@@ -405,8 +413,12 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                     final isSelected = filter.selectedDateFilter == filterName;
                     return GestureDetector(
                       onTap: () {
-                        ref.read(hotelFilterProvider.notifier).updateDateFilter(filterName);
-                        ref.read(hotelFilterProvider.notifier).updateCustomDateRange(null, null);
+                        ref
+                            .read(hotelFilterProvider.notifier)
+                            .updateDateFilter(filterName);
+                        ref
+                            .read(hotelFilterProvider.notifier)
+                            .updateCustomDateRange(null, null);
                         setState(() {
                           _itemsToShow = 10;
                         });
@@ -513,7 +525,9 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          filter.toDate == null ? 'End Date' : _formatDate(filter.toDate!),
+                          filter.toDate == null
+                              ? 'End Date'
+                              : _formatDate(filter.toDate!),
                           style: TextStyle(
                             fontSize: 11,
                             color: secondaryTextColor,
@@ -534,8 +548,12 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                 IconButton(
                   icon: const Icon(Icons.close, size: 16, color: Colors.red),
                   onPressed: () {
-                    ref.read(hotelFilterProvider.notifier).updateCustomDateRange(null, null);
-                    ref.read(hotelFilterProvider.notifier).updateDateFilter('All');
+                    ref
+                        .read(hotelFilterProvider.notifier)
+                        .updateCustomDateRange(null, null);
+                    ref
+                        .read(hotelFilterProvider.notifier)
+                        .updateDateFilter('All');
                     setState(() {
                       _itemsToShow = 10;
                     });
@@ -1459,7 +1477,9 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                           double.tryParse(payableCtrl.text) ?? b.payableAmount,
                       profit: computedProfit,
                     );
-                    ref.read(hotelBookingsProvider.notifier).updateBooking(updated);
+                    ref
+                        .read(hotelBookingsProvider.notifier)
+                        .updateBooking(updated);
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -1580,7 +1600,9 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
   }
 
   // Group bookings by month to draw in charts
-  Map<String, Map<String, double>> _computeMonthlyFinancials(List<HotelBookingModel> bookingsList) {
+  Map<String, Map<String, double>> _computeMonthlyFinancials(
+    List<HotelBookingModel> bookingsList,
+  ) {
     final months = ['Oct 2025', 'Dec 2025', 'Feb 2026', 'Apr 2026', 'Jul 2026'];
     Map<String, Map<String, double>> data = {};
     for (var m in months) {
@@ -1628,6 +1650,4 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
       ..sort((e1, e2) => e2.value.compareTo(e1.value));
     return Map.fromEntries(sortedEntries);
   }
-
-
 }
