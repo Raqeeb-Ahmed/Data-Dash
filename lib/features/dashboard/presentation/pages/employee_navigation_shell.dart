@@ -61,290 +61,347 @@ class _EmployeeNavigationShellState
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(authControllerProvider).value;
     final bool isMobile = MediaQuery.of(context).size.width < 800;
-
-    if (isMobile) {
-      // ── NATIVE MOBILE APP LAYOUT ──
-      return Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: isDarkMode ? const Color(0xFF070B13) : Colors.grey[50],
-        appBar: AppBar(
-          backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
-          elevation: 1,
-          leading: IconButton(
-            icon: Icon(
-              Icons.menu,
-              color: isDarkMode ? Colors.white : Colors.black87,
-            ),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
+    final Widget content = isMobile
+        ? Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: isDarkMode
+                ? const Color(0xFF070B13)
+                : Colors.grey[50],
+            appBar: AppBar(
+              backgroundColor: isDarkMode
+                  ? const Color(0xFF0F172A)
+                  : Colors.white,
+              elevation: 1,
+              leading: IconButton(
+                icon: Icon(
+                  Icons.menu,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
-                child: const Icon(
-                  Icons.trending_up,
-                  color: AppColors.primary,
-                  size: 16,
-                ),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'DataDash',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white : AppColors.textPrimaryLight,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            // User Avatar Indicator
-            Container(
-              margin: const EdgeInsets.only(right: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: isDarkMode ? const Color(0xFF1E293B) : Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
+              title: Row(
                 children: [
-                  const Icon(Icons.person, size: 12, color: AppColors.primary),
-                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.trending_up,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
-                    user?.displayName ?? 'AFTAB',
+                    'DataDash',
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white70 : Colors.black87,
+                      color: isDarkMode
+                          ? Colors.white
+                          : AppColors.textPrimaryLight,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-        drawer: _buildMobileDrawer(context, selectedIndex, isDarkMode, user),
-        body: IndexedStack(index: selectedIndex, children: _pages),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: isDarkMode ? Colors.white60 : Colors.black54,
-          type: BottomNavigationBarType.fixed,
-          currentIndex: selectedIndex < 4 ? selectedIndex : 4,
-          onTap: (index) {
-            if (index == 4) {
-              _scaffoldKey.currentState?.openDrawer();
-            } else {
-              _onTabSelected(index);
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_box_outlined),
-              label: 'Apply',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.folder_shared_outlined),
-              label: 'Visas',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.airplane_ticket_outlined),
-              label: 'Tickets',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
-              label: 'More',
-            ),
-          ],
-        ),
-      );
-    } else {
-      // ── DESKTOP/WEB HORIZONTAL NAVIGATION HEADER ──
-      return Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: isDarkMode ? const Color(0xFF070B13) : Colors.grey[50],
-        body: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
-                border: Border(
-                  bottom: BorderSide(
+              actions: [
+                // User Avatar Indicator
+                Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
                     color: isDarkMode
-                        ? const Color(0x1AFFFFFF)
-                        : const Color(0x1F000000),
+                        ? const Color(0xFF1E293B)
+                        : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.person,
+                        size: 12,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        user?.displayName ?? 'AFTAB',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.trending_up,
-                            color: AppColors.primary,
-                            size: 18,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'DATADASH',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode
-                                ? Colors.white
-                                : AppColors.textPrimaryLight,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildHeaderTab('Home', 0, selectedIndex, isDarkMode),
-                        const SizedBox(width: 8),
-                        _buildHeaderTab(
-                          'Bookings',
-                          1,
-                          selectedIndex,
-                          isDarkMode,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderTab(
-                          'Visa Records',
-                          2,
-                          selectedIndex,
-                          isDarkMode,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderTab(
-                          'Ticketing',
-                          3,
-                          selectedIndex,
-                          isDarkMode,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderTab(
-                          'Countries',
-                          4,
-                          selectedIndex,
-                          isDarkMode,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildHeaderTab('Search', 5, selectedIndex, isDarkMode),
-                        const SizedBox(width: 8),
-                        _buildHeaderTab(
-                          'Reports',
-                          6,
-                          selectedIndex,
-                          isDarkMode,
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? const Color(0xFF1E293B)
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.person,
-                                size: 14,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Employee ${user?.displayName ?? 'AFTAB'}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDarkMode
-                                      ? Colors.white70
-                                      : Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        OutlinedButton.icon(
-                          onPressed: () async {
-                            await ref
-                                .read(authControllerProvider.notifier)
-                                .logout();
-                            if (context.mounted) {
-                              Navigator.pushReplacementNamed(context, '/login');
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.logout_outlined,
-                            size: 14,
-                            color: AppColors.error,
-                          ),
-                          label: const Text(
-                            'Logout',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.error,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.error),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              ],
+            ),
+            drawer: _buildMobileDrawer(
+              context,
+              selectedIndex,
+              isDarkMode,
+              user,
+            ),
+            body: IndexedStack(index: selectedIndex, children: _pages),
+            bottomNavigationBar: BottomNavigationBar(
+              backgroundColor: isDarkMode
+                  ? const Color(0xFF0F172A)
+                  : Colors.white,
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: isDarkMode ? Colors.white60 : Colors.black54,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: selectedIndex < 4 ? selectedIndex : 4,
+              onTap: (index) {
+                if (index == 4) {
+                  _scaffoldKey.currentState?.openDrawer();
+                } else {
+                  _onTabSelected(index);
+                }
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  label: 'Home',
                 ),
-              ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.add_box_outlined),
+                  label: 'Apply',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.folder_shared_outlined),
+                  label: 'Visas',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.airplane_ticket_outlined),
+                  label: 'Tickets',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.more_horiz),
+                  label: 'More',
+                ),
+              ],
             ),
-            Expanded(
-              child: IndexedStack(index: selectedIndex, children: _pages),
+          )
+        : Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: isDarkMode
+                ? const Color(0xFF070B13)
+                : Colors.grey[50],
+            body: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      // Header tab row
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? const Color(0xFF0F172A)
+                              : Colors.white,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: isDarkMode
+                                  ? const Color(0x1AFFFFFF)
+                                  : const Color(0x1F000000),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Icon(
+                                    Icons.trending_up,
+                                    color: AppColors.primary,
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'DATADASH',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : AppColors.textPrimaryLight,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildHeaderTab(
+                                  'Home',
+                                  0,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildHeaderTab(
+                                  'Bookings',
+                                  1,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildHeaderTab(
+                                  'Visa Records',
+                                  2,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildHeaderTab(
+                                  'Ticketing',
+                                  3,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildHeaderTab(
+                                  'Countries',
+                                  4,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildHeaderTab(
+                                  'Search',
+                                  5,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildHeaderTab(
+                                  'Reports',
+                                  6,
+                                  selectedIndex,
+                                  isDarkMode,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isDarkMode
+                                        ? const Color(0xFF1E293B)
+                                        : Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.person,
+                                        size: 14,
+                                        color: AppColors.primary,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Employee ${user?.displayName ?? 'AFTAB'}',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDarkMode
+                                              ? Colors.white70
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    await ref
+                                        .read(authControllerProvider.notifier)
+                                        .logout();
+                                    if (context.mounted) {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        '/login',
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.logout_outlined,
+                                    size: 14,
+                                    color: AppColors.error,
+                                  ),
+                                  label: const Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.error,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: AppColors.error,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: IndexedStack(
+                          index: selectedIndex,
+                          children: _pages,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
-    }
+          );
+
+    return PopScope(
+      canPop: selectedIndex == 0,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        ref.read(navigationProvider.notifier).state = 0;
+      },
+      child: content,
+    );
   }
 
   Widget _buildHeaderTab(
