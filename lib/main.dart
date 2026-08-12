@@ -5,18 +5,17 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/dashboard/presentation/pages/main_navigation_shell.dart';
 import 'features/dashboard/presentation/pages/employee_navigation_shell.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
   // Note: Firebase.initializeApp() can be called here once firebase_options.dart is generated via FlutterFire CLI
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

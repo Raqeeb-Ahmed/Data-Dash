@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
+import '../providers/bookings_provider.dart';
 
-class TicketsPage extends StatefulWidget {
+class TicketsPage extends ConsumerStatefulWidget {
   const TicketsPage({super.key});
 
   @override
-  State<TicketsPage> createState() => _TicketsPageState();
+  ConsumerState<TicketsPage> createState() => _TicketsPageState();
 }
 
-class _TicketsPageState extends State<TicketsPage> {
+class _TicketsPageState extends ConsumerState<TicketsPage> {
   String _selectedEmployee = 'All Employees';
   String _searchQuery = '';
   int _currentPage = 0;
@@ -25,10 +27,35 @@ class _TicketsPageState extends State<TicketsPage> {
     'waqahat@os.com',
   ];
 
-  final List<Map<String, dynamic>> _allBookings = _generateTicketBookings();
+  @override
+  Widget build(BuildContext context) {
+    // --- Read and parse dynamic Firestore data ---
+    final rawBookings = ref.watch(bookingsProvider);
+    final ticketBookings = rawBookings
+        .where((b) => b.serviceType == 'ticket')
+        .toList();
 
-  List<Map<String, dynamic>> get _filtered {
-    return _allBookings.where((b) {
+    // Map real Firebase bookings into the map structures expected by the UI
+    final List<Map<String, dynamic>> _allBookings = ticketBookings.map((b) {
+      return {
+        'id': b.id,
+        'pnr': b.pnr ?? 'N/A',
+        'passenger': b.customerName,
+        'phone': b.customerPhone,
+        'route': b.fromDestination != null && b.fromDestination!.isNotEmpty
+            ? '${b.fromDestination} → ${b.destination}'
+            : b.destination,
+        'price': b.totalPrice,
+        'payable': b.payableAmount,
+        'profit': b.netProfit,
+        'status': b.status,
+        'date': b.dateCreated.toIso8601String().split('T')[0],
+        'employee': b.employeeName,
+      };
+    }).toList();
+
+    // Filter list based on search and selected employee dropdown
+    final List<Map<String, dynamic>> _filtered = _allBookings.where((b) {
       final q = _searchQuery.toLowerCase();
       final matchSearch =
           q.isEmpty ||
@@ -41,28 +68,81 @@ class _TicketsPageState extends State<TicketsPage> {
           b['employee'] == _selectedEmployee;
       return matchSearch && matchEmp;
     }).toList();
-  }
 
-  List<Map<String, dynamic>> get _paged {
-    final f = _filtered;
-    final start = _currentPage * _perPage;
-    final end = (start + _perPage).clamp(0, f.length);
-    if (start >= f.length) return [];
-    return f.sublist(start, end);
-  }
+    final int start = _currentPage * _perPage;
+    final int end = (start + _perPage).clamp(0, _filtered.length);
+    final List<Map<String, dynamic>> _paged = start >= _filtered.length
+        ? []
+        : _filtered.sublist(start, end);
 
-  int get _totalPages => (_filtered.length / _perPage).ceil();
+    final int _totalPages = (_filtered.length / _perPage).ceil();
 
-  // Computed stats
-  double get _totalEarnings =>
-      _allBookings.fold(0, (s, b) => s + (b['price'] as double));
-  double get _totalPayable =>
-      _allBookings.fold(0, (s, b) => s + (b['payable'] as double));
-  double get _totalProfit =>
-      _allBookings.fold(0, (s, b) => s + (b['profit'] as double));
+    final double _totalEarnings = _allBookings.fold(
+      0.0, // <-- 0.0 (double) kiya taake type crash na ho
+      (s, b) => s + (b['price'] as double),
+    );
+    final double _totalPayable = _allBookings.fold(
+      0.0, // <-- 0.0 (double) kiya taake type crash na ho
+      (s, b) => s + (b['payable'] as double),
+    );
+    final double _totalProfit = _allBookings.fold(
+      0.0, // <-- 0.0 (double) kiya taake type crash na ho
+      (s, b) => s + (b['profit'] as double),
+    );
 
-  @override
-  Widget build(BuildContext context) {
+    // --- Dynamic Monthly Aggregation for Graph ---
+    final Map<int, List<Map<String, dynamic>>> monthlyMap = {
+      9: [],  // Sep
+      12: [], // Dec
+      1: [],  // Jan
+      2: [],  // Feb
+      6: [],  // Jun
+    };
+    for (final b in _allBookings) {
+      final dateStr = b['date'] as String;
+      DateTime? parsedDate = DateTime.tryParse(dateStr);
+      if (parsedDate == null && dateStr.contains('/')) {
+        final parts = dateStr.split('/');
+        if (parts.length == 3) {
+          final m = int.tryParse(parts[0]) ?? 1;
+          final d = int.tryParse(parts[1]) ?? 1;
+          final y = int.tryParse(parts[2]) ?? 2026;
+          parsedDate = DateTime(y, m, d);
+        }
+      }
+      parsedDate ??= DateTime.now();
+      if (monthlyMap.containsKey(parsedDate.month)) {
+        monthlyMap[parsedDate.month]!.add(b);
+      }
+    }
+
+    double getEarningsForMonth(int m) {
+      return monthlyMap[m]!.fold(0.0, (s, b) => s + (b['price'] as double));
+    }
+
+    double getProfitForMonth(int m) {
+      return monthlyMap[m]!.fold(0.0, (s, b) => s + (b['profit'] as double));
+    }
+
+    final double sepE = getEarningsForMonth(9);
+    final double sepP = getProfitForMonth(9);
+
+    final double decE = getEarningsForMonth(12);
+    final double decP = getProfitForMonth(12);
+
+    final double janE = getEarningsForMonth(1);
+    final double janP = getProfitForMonth(1);
+
+    final double febE = getEarningsForMonth(2);
+    final double febP = getProfitForMonth(2);
+
+    final double junE = getEarningsForMonth(6);
+    final double junP = getProfitForMonth(6);
+
+    double maxMonthlyE = [sepE, decE, janE, febE, junE]
+        .reduce((curr, next) => curr > next ? curr : next);
+    if (maxMonthlyE == 0) maxMonthlyE = 1.0;
+
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primary = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
     final secondary = isDarkMode
@@ -94,10 +174,8 @@ class _TicketsPageState extends State<TicketsPage> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                              ),
-                              borderRadius: BorderRadius.circular(8),
+                              color: const Color(0xFF6366F1),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Icon(
                               Icons.flight_takeoff,
@@ -129,7 +207,8 @@ class _TicketsPageState extends State<TicketsPage> {
                 ],
               ),
               const SizedBox(height: 10),
-              // Employee filter
+
+              // Employee filter dropdown
               Container(
                 height: 36,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -221,243 +300,240 @@ class _TicketsPageState extends State<TicketsPage> {
               ),
               const SizedBox(height: 14),
 
-              // ──── MONTHLY FINANCIALS CHART ────
-              Container(
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor),
-                ),
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Monthly Financials',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: primary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 160,
-                      child: BarChart(
-                        BarChartData(
-                          borderData: FlBorderData(show: false),
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            getDrawingHorizontalLine: (_) =>
-                                FlLine(color: borderColor, strokeWidth: 0.5),
-                          ),
-                          titlesData: FlTitlesData(
-                            leftTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
+              // ──── CHARTS SECTION (2 columns layout) ────
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 650;
+                  final content = [
+                    // Chart 1: Monthly Financials
+                    Expanded(
+                      flex: isMobile ? 0 : 1,
+                      child: Container(
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: borderColor),
+                        ),
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Monthly Financials',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: primary,
+                              ),
                             ),
-                            topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Earnings & profit compared by month',
+                              style: TextStyle(fontSize: 9, color: secondary),
                             ),
-                            rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 28,
-                                getTitlesWidget: (value, meta) {
-                                  const months = [
-                                    'Sep',
-                                    'Nov',
-                                    'Jan',
-                                    'Mar',
-                                    'May',
-                                    'Jul',
-                                  ];
-                                  final i = value.toInt();
-                                  if (i < months.length) {
-                                    return Text(
-                                      months[i],
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        color: secondary,
+                            const SizedBox(height: 14),
+                            Expanded(
+                              child: BarChart(
+                                BarChartData(
+                                  alignment: BarChartAlignment.spaceAround,
+                                  maxY: maxMonthlyE > 0 ? maxMonthlyE * 1.2 : 100.0,
+                                  barTouchData: BarTouchData(
+                                    enabled: true,
+                                    touchTooltipData: BarTouchTooltipData(
+                                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                        final isEarnings = rodIndex == 0;
+                                        return BarTooltipItem(
+                                          '${isEarnings ? 'Earnings' : 'Profit'}\nPKR ${_formatM(rod.toY)}',
+                                          const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  titlesData: FlTitlesData(
+                                    show: true,
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 28,
+                                        getTitlesWidget: (val, meta) {
+                                          const style = TextStyle(
+                                            color: Colors.white60,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 9,
+                                          );
+                                          switch (val.toInt()) {
+                                            case 0:
+                                              return const Text('Sep', style: style);
+                                            case 1:
+                                              return const Text('Dec', style: style);
+                                            case 2:
+                                              return const Text('Jan', style: style);
+                                            case 3:
+                                              return const Text('Feb', style: style);
+                                            case 4:
+                                              return const Text('Jun', style: style);
+                                          }
+                                          return const Text('');
+                                        },
                                       ),
-                                    );
-                                  }
-                                  return const Text('');
-                                },
+                                    ),
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 35,
+                                        getTitlesWidget: (value, meta) {
+                                          return Padding(
+                                            padding: const EdgeInsets.only(right: 4),
+                                            child: Text(
+                                              _formatM(value),
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                color: secondary,
+                                              ),
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                  ),
+                                  gridData: FlGridData(
+                                    show: true,
+                                    drawVerticalLine: false,
+                                    getDrawingHorizontalLine: (value) => FlLine(
+                                      color: borderColor,
+                                      strokeWidth: 0.5,
+                                    ),
+                                  ),
+                                  borderData: FlBorderData(show: false),
+                                  barGroups: [
+                                    _barGroup(0, sepE, sepP),
+                                    _barGroup(1, decE, decP),
+                                    _barGroup(2, janE, janP),
+                                    _barGroup(3, febE, febP),
+                                    _barGroup(4, junE, junP),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          barGroups: [
-                            _barGroup(0, 18, 4),
-                            _barGroup(1, 28, 8),
-                            _barGroup(2, 35, 10),
-                            _barGroup(3, 42, 12),
-                            _barGroup(4, 55, 15),
-                            _barGroup(5, 48, 14),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _legendDot('Earnings', const Color(0xFF6366F1)),
+                                const SizedBox(width: 14),
+                                _legendDot('Profit', const Color(0xFF10B981)),
+                              ],
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _legendDot('Earnings', const Color(0xFF6366F1)),
-                        const SizedBox(width: 16),
-                        _legendDot('Profit', const Color(0xFF10B981)),
-                      ],
+                    if (isMobile) const SizedBox(height: 14),
+                    const SizedBox(width: 14),
+                    // Chart 2: Top Destinations
+                    Expanded(
+                      flex: isMobile ? 0 : 1,
+                      child: Container(
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: borderColor),
+                        ),
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Top Destinations',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: primary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Distribution of ticketed destination routes',
+                              style: TextStyle(fontSize: 9, color: secondary),
+                            ),
+                            const SizedBox(height: 14),
+                            Expanded(
+                              child: PieChart(
+                                PieChartData(
+                                  sectionsSpace: 2,
+                                  centerSpaceRadius: 30,
+                                  sections: [
+                                    PieChartSectionData(
+                                      value: 40,
+                                      title: 'ISB 40%',
+                                      color: const Color(0xFF6366F1),
+                                      radius: 14,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 7,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    PieChartSectionData(
+                                      value: 30,
+                                      title: 'KHI 30%',
+                                      color: const Color(0xFF0EA5E9),
+                                      radius: 14,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 7,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    PieChartSectionData(
+                                      value: 20,
+                                      title: 'LHE 20%',
+                                      color: const Color(0xFF10B981),
+                                      radius: 14,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 7,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    PieChartSectionData(
+                                      value: 10,
+                                      title: 'Others 10%',
+                                      color: const Color(0xFFF59E0B),
+                                      radius: 14,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 7,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
+                  ];
 
-              // ──── TOP 10 DESTINATIONS PIE ────
-              Container(
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor),
-                ),
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Top 10 Destinations',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: primary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 150,
-                      child: PieChart(
-                        PieChartData(
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 30,
-                          sections: [
-                            PieChartSectionData(
-                              value: 24,
-                              title: 'ISB 24%',
-                              color: const Color(0xFF6366F1),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 13,
-                              title: 'KHI 13%',
-                              color: const Color(0xFF0EA5E9),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 10,
-                              title: 'DXB 10%',
-                              color: const Color(0xFF10B981),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 9,
-                              title: 'JED 9%',
-                              color: const Color(0xFFF59E0B),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 9,
-                              title: 'DMM 9%',
-                              color: const Color(0xFFEC4899),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 8,
-                              title: 'RUH 8%',
-                              color: const Color(0xFF8B5CF6),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 7,
-                              title: 'LHE 7%',
-                              color: const Color(0xFFEF4444),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 7,
-                              title: 'BGX 7%',
-                              color: const Color(0xFF14B8A6),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 6,
-                              title: 'JUL 6%',
-                              color: const Color(0xFFF97316),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            PieChartSectionData(
-                              value: 5,
-                              title: 'DOH 5%',
-                              color: const Color(0xFF64748B),
-                              radius: 14,
-                              titleStyle: const TextStyle(
-                                fontSize: 7,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  return isMobile
+                      ? Column(children: content)
+                      : Row(children: content);
+                },
               ),
               const SizedBox(height: 14),
 
@@ -524,11 +600,9 @@ class _TicketsPageState extends State<TicketsPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Headers
                     _leaderboardHeader(secondary),
                     const Divider(height: 12, thickness: 0.3),
-                    // Rows
-                    ..._employeeLeaderboardData().map(
+                    ..._computeEmployeeLeaderboard(_allBookings).map(
                       (e) => _leaderboardRow(e, primary, secondary, isDarkMode),
                     ),
                   ],
@@ -559,13 +633,12 @@ class _TicketsPageState extends State<TicketsPage> {
                           ),
                         ),
                         Text(
-                          'Click row to see details',
+                          'Click icons to view, edit or delete',
                           style: TextStyle(fontSize: 10, color: secondary),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    // Bookings list
                     ..._paged.asMap().entries.map((entry) {
                       final i = entry.key;
                       final b = entry.value;
@@ -578,8 +651,6 @@ class _TicketsPageState extends State<TicketsPage> {
                         borderColor,
                       );
                     }),
-
-                    // Pagination
                     if (_totalPages > 1) ...[
                       const SizedBox(height: 12),
                       Row(
@@ -592,28 +663,28 @@ class _TicketsPageState extends State<TicketsPage> {
                             isDarkMode,
                             secondary,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 8),
                           _paginateBtn(
-                            '<',
+                            '< Prev',
                             _currentPage > 0,
                             () => setState(() => _currentPage--),
                             isDarkMode,
                             secondary,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 14),
                           Text(
                             'Page ${_currentPage + 1} of $_totalPages',
                             style: TextStyle(fontSize: 11, color: secondary),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 14),
                           _paginateBtn(
-                            '>',
+                            'Next >',
                             _currentPage < _totalPages - 1,
                             () => setState(() => _currentPage++),
                             isDarkMode,
                             secondary,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 8),
                           _paginateBtn(
                             '>>',
                             _currentPage < _totalPages - 1,
@@ -624,17 +695,11 @@ class _TicketsPageState extends State<TicketsPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Showing ${_currentPage * _perPage + 1}–${(_currentPage * _perPage + _perPage).clamp(0, _filtered.length)} of ${_filtered.length}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 10, color: secondary),
-                      ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -877,12 +942,15 @@ class _TicketsPageState extends State<TicketsPage> {
     Color statusColor;
     Color statusBg;
     final status = b['status'] as String;
-    switch (status) {
-      case 'Booked':
+    switch (status.toLowerCase()) {
+      case 'booked':
+      case 'confirmed':
+      case 'approved':
         statusColor = const Color(0xFF10B981);
         statusBg = const Color(0x2210B981);
         break;
-      case 'Cancelled':
+      case 'cancelled':
+      case 'rejected':
         statusColor = const Color(0xFFEF4444);
         statusBg = const Color(0x22EF4444);
         break;
@@ -904,7 +972,6 @@ class _TicketsPageState extends State<TicketsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Num + PNR + Status + Actions
           Row(
             children: [
               Text(
@@ -948,15 +1015,26 @@ class _TicketsPageState extends State<TicketsPage> {
                 ),
               ),
               const SizedBox(width: 6),
-              _actionIcon(Icons.visibility_outlined, const Color(0xFF0EA5E9)),
+              _actionIcon(
+                Icons.visibility_outlined,
+                const Color(0xFF0EA5E9),
+                onTap: () => _showViewTicketDialog(b),
+              ),
               const SizedBox(width: 4),
-              _actionIcon(Icons.edit_outlined, const Color(0xFF10B981)),
+              _actionIcon(
+                Icons.edit_outlined,
+                const Color(0xFF10B981),
+                onTap: () => _showEditTicketDialog(b),
+              ),
               const SizedBox(width: 4),
-              _actionIcon(Icons.delete_outline, const Color(0xFFEF4444)),
+              _actionIcon(
+                Icons.delete_outline,
+                const Color(0xFFEF4444),
+                onTap: () => _showDeleteTicketDialog(b),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          // Row 2: Passenger + Employee
           Row(
             children: [
               Icon(Icons.person_outline, size: 12, color: secondary),
@@ -980,7 +1058,6 @@ class _TicketsPageState extends State<TicketsPage> {
             ],
           ),
           const SizedBox(height: 4),
-          // Row 3: Route + Date
           Row(
             children: [
               Icon(Icons.flight, size: 11, color: const Color(0xFF6366F1)),
@@ -1003,7 +1080,6 @@ class _TicketsPageState extends State<TicketsPage> {
             ],
           ),
           const Divider(height: 12, thickness: 0.3),
-          // Row 4: Financials
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1032,14 +1108,17 @@ class _TicketsPageState extends State<TicketsPage> {
     );
   }
 
-  Widget _actionIcon(IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(4),
+  Widget _actionIcon(IconData icon, Color color, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(icon, size: 12, color: color),
       ),
-      child: Icon(icon, size: 12, color: color),
     );
   }
 
@@ -1096,111 +1175,278 @@ class _TicketsPageState extends State<TicketsPage> {
     );
   }
 
-  String _formatM(double v) {
-    if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(2)}M';
-    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}K';
-    return v.toStringAsFixed(0);
+  // --- Dynamic Leaderboard Generator ---
+  List<Map<String, dynamic>> _computeEmployeeLeaderboard(
+    List<Map<String, dynamic>> bookings,
+  ) {
+    final Map<String, Map<String, dynamic>> leaderboard = {};
+
+    for (final b in bookings) {
+      final email = b['employee'] as String;
+      final price = b['price'] as double;
+      final profit = b['profit'] as double;
+
+      if (email.isEmpty || email == 'Unassigned') continue;
+
+      if (!leaderboard.containsKey(email)) {
+        leaderboard[email] = {
+          'email': email,
+          'bookings': 0,
+          'earnings': 0.0,
+          'profit': 0.0,
+        };
+      }
+
+      leaderboard[email]!['bookings'] =
+          (leaderboard[email]!['bookings'] as int) + 1;
+      leaderboard[email]!['earnings'] =
+          (leaderboard[email]!['earnings'] as double) + price;
+      leaderboard[email]!['profit'] =
+          (leaderboard[email]!['profit'] as double) + profit;
+    }
+
+    final list = leaderboard.values.toList();
+    list.sort((a, b) => (b['bookings'] as int).compareTo(a['bookings'] as int));
+    return list;
   }
-}
 
-// ── Employee Leaderboard Data ──
-List<Map<String, dynamic>> _employeeLeaderboardData() => [
-  {
-    'email': 'hammad@os.com',
-    'bookings': 395,
-    'earnings': 60033188.0,
-    'profit': 3215196.0,
-  },
-  {
-    'email': 'sameer@os.com',
-    'bookings': 209,
-    'earnings': 39011929.0,
-    'profit': 919711.0,
-  },
-  {
-    'email': 'noorul.fhade@os.com',
-    'bookings': 176,
-    'earnings': 27454665.0,
-    'profit': 1517490.0,
-  },
-  {
-    'email': 'muqtaba@os.com',
-    'bookings': 10,
-    'earnings': 16080.0,
-    'profit': 16080.0,
-  },
-  {
-    'email': 'waqahat@os.com',
-    'bookings': 2,
-    'earnings': 4000.0,
-    'profit': 4000.0,
-  },
-];
+  // --- View Details Dialog ---
+  void _showViewTicketDialog(Map<String, dynamic> b) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Ticket Details (PNR: ${b['pnr']})'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _detailRow('Passenger Name:', b['passenger']),
+              _detailRow('Phone:', b['phone'] ?? 'N/A'),
+              _detailRow('Route:', b['route']),
+              _detailRow('Date:', b['date']),
+              _detailRow('Employee:', b['employee']),
+              const Divider(),
+              _detailRow('Total Price:', 'PKR ${_formatM(b['price'])}'),
+              _detailRow('Payable Amount:', 'PKR ${_formatM(b['payable'])}'),
+              _detailRow('Net Profit:', 'PKR ${_formatM(b['profit'])}'),
+              _detailRow('Status:', b['status']),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
-// ── Mock Ticket Bookings ──
-List<Map<String, dynamic>> _generateTicketBookings() {
-  final passengers = [
-    'Muhammad Usman Aslam',
-    'Shahid Bashir',
-    'Kamwal Kamran',
-    'Simal Kamran',
-    'Ali Abdullah',
-    'Muhammad Talha Riaz',
-    'Sadaqat Hussain',
-    'Liaqat Ali',
-    'Seema/Mrs',
-    'Syed Abdullah Anwar',
-    'Ayesha Noor',
-    'Bilal Raza',
-    'Fatima Khan',
-    'Hamid Shah',
-    'Sara Ahmed',
-  ];
-  final employees = [
-    'noorul.fhade@os.com',
-    'hammad@os.com',
-    'sameer@os.com',
-    'muqtaba@os.com',
-  ];
-  final routes = [
-    'ISB → AM',
-    'ISB → DXB',
-    'LHE → BKK',
-    'KHI → JED',
-    'ISB → LHR',
-    'EPS → KUL',
-    'ISB → BEI',
-    'CMF → LHE',
-  ];
-  final pnrs = [
-    '5R2FSS',
-    '2RM.KW',
-    '2RM.OE',
-    '2RM.OE',
-    'EI287KA',
-    'MFMHID',
-    'FI93LS',
-    'AIFVKZ',
-    'HGK49IJ',
-    '20OBGP',
-  ];
-  final statuses = ['Booked', 'Booked', 'Booked', 'Pending', 'Cancelled'];
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label ',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
+        ],
+      ),
+    );
+  }
 
-  return List.generate(79, (i) {
-    final total = (2300.0 + (i * 13987) % 210000);
-    final payable = i % 4 == 0 ? 0.0 : total * 0.3;
-    final profit = total * 0.05 + (i * 234) % 42000;
-    final day = (1 + i % 28);
-    return {
-      'pnr': pnrs[i % pnrs.length],
-      'passenger': passengers[i % passengers.length],
-      'employee': employees[i % employees.length],
-      'route': routes[i % routes.length],
-      'price': total,
-      'payable': payable,
-      'profit': profit,
-      'status': statuses[i % statuses.length],
-      'date': '7/$day/2026',
-    };
-  });
+  // --- Delete Booking Dialog ---
+  void _showDeleteTicketDialog(Map<String, dynamic> b) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Ticket Booking'),
+        content: Text(
+          'Are you sure you want to delete the ticket booking for ${b['passenger']} (PNR: ${b['pnr']})?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(bookingsProvider.notifier).deleteBooking(b['id']);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Ticket booking deleted successfully!'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Edit Booking Dialog ---
+  void _showEditTicketDialog(Map<String, dynamic> b) {
+    final nameCtrl = TextEditingController(text: b['passenger']);
+    final phoneCtrl = TextEditingController(text: b['phone']);
+    final pnrCtrl = TextEditingController(text: b['pnr']);
+    final routeCtrl = TextEditingController(text: b['route']);
+    final priceCtrl = TextEditingController(text: b['price'].toString());
+    final payableCtrl = TextEditingController(text: b['payable'].toString());
+    String selectedStatus = b['status'];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Edit Ticket Booking'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Passenger Name',
+                  ),
+                ),
+                TextField(
+                  controller: phoneCtrl,
+                  decoration: const InputDecoration(labelText: 'Phone'),
+                ),
+                TextField(
+                  controller: pnrCtrl,
+                  decoration: const InputDecoration(labelText: 'PNR'),
+                ),
+                TextField(
+                  controller: routeCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Route (e.g. Origin → Destination)',
+                  ),
+                ),
+                TextField(
+                  controller: priceCtrl,
+                  decoration: const InputDecoration(labelText: 'Price'),
+                  keyboardType: TextInputType.number,
+                ),
+                TextField(
+                  controller: payableCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Payable to Vendor',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value:
+                      [
+                        'Booked',
+                        'Pending',
+                        'Cancelled',
+                      ].contains(selectedStatus)
+                      ? selectedStatus
+                      : 'Booked',
+                  decoration: const InputDecoration(labelText: 'Status'),
+                  items: const [
+                    DropdownMenuItem(value: 'Booked', child: Text('Booked')),
+                    DropdownMenuItem(value: 'Pending', child: Text('Pending')),
+                    DropdownMenuItem(
+                      value: 'Cancelled',
+                      child: Text('Cancelled'),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() {
+                        selectedStatus = val;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final double price = double.tryParse(priceCtrl.text) ?? 0.0;
+                final double payable = double.tryParse(payableCtrl.text) ?? 0.0;
+                final double profit = price - payable;
+
+                final rawBookings = ref.read(bookingsProvider);
+                final originalBooking = rawBookings.firstWhere(
+                  (item) => item.id == b['id'],
+                );
+
+                String origin = '';
+                String destination = routeCtrl.text;
+                if (routeCtrl.text.contains('→')) {
+                  final parts = routeCtrl.text.split('→');
+                  origin = parts[0].trim();
+                  destination = parts[1].trim();
+                }
+
+                final updatedBooking = originalBooking.copyWith(
+                  customerName: nameCtrl.text,
+                  customerPhone: phoneCtrl.text,
+                  pnr: pnrCtrl.text,
+                  fromDestination: origin,
+                  destination: destination,
+                  totalPrice: price,
+                  payableAmount: payable,
+                  receivedAmount: price,
+                  netProfit: profit,
+                  status: selectedStatus,
+                );
+
+                Navigator.pop(ctx);
+                await ref
+                    .read(bookingsProvider.notifier)
+                    .updateBooking(updatedBooking);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Ticket booking updated successfully!'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatM(double v) {
+    if (v == v.toInt()) {
+      return _addCommas(v.toInt().toString());
+    } else {
+      return _addCommas(v.toStringAsFixed(2));
+    }
+  }
+
+  String _addCommas(String str) {
+    final parts = str.split('.');
+    final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    final String Function(Match) matchFunc = (Match match) => '${match[1]},';
+    final firstPart = parts[0].replaceAllMapped(reg, matchFunc);
+    if (parts.length > 1) {
+      return '$firstPart.${parts[1]}';
+    }
+    return firstPart;
+  }
 }

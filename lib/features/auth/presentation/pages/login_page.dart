@@ -71,7 +71,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: AnimatedWorldMapBackground(
-        watermarkText: 'OS TRAVEL',
+        // watermarkText: 'OS TRAVEL',
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -93,7 +93,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: primaryTextColor,
+                        color: const Color.fromARGB(255, 0, 0, 0),
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -103,7 +103,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Text(
                       'Welcome back. Login to view dashboard data.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: secondaryTextColor),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: const Color.fromARGB(153, 0, 0, 0),
+                      ),
                     ),
                     const SizedBox(height: 48),
 
@@ -130,20 +133,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     const SizedBox(height: 8),
 
                     // Forgot Password
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                    // Align(
+                    //   alignment: Alignment.centerRight,
+                    //   child: TextButton(
+                    //     onPressed: () {},
+                    //     child: const Text(
+                    //       'Forgot Password?',
+                    //       style: TextStyle(
+                    //         color: AppColors.primary,
+                    //         fontWeight: FontWeight.w600,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 24),
 
                     // Login Button
                     CustomButton(
@@ -159,13 +162,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       children: [
                         Text(
                           'Quick Login: ',
-                          style: TextStyle(color: secondaryTextColor, fontSize: 12),
+                          style: TextStyle(
+                            color: const Color.fromARGB(153, 0, 0, 0),
+                            fontSize: 12,
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
                             setState(() {
-                              _emailController.text = 'admin@gmail.com';
-                              _passwordController.text = '123456';
+                              _emailController.text = 'adminos@os.com';
+                              _passwordController.text = 'ospk123';
                             });
                           },
                           child: const Text(
@@ -179,13 +185,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         Text(
                           '|',
-                          style: TextStyle(color: secondaryTextColor),
+                          style: TextStyle(
+                            color: const Color.fromARGB(153, 0, 0, 0),
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
                             setState(() {
-                              _emailController.text = 'employee@gmail.com';
-                              _passwordController.text = '123456';
+                              _emailController.text = 'aftab@os.com';
+                              _passwordController.text = 'Aftabk2323';
                             });
                           },
                           child: const Text(
@@ -202,25 +210,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     const SizedBox(height: 12),
 
                     // Sign Up Redirect
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account? ",
-                          style: TextStyle(color: secondaryTextColor),
-                        ),
-                        GestureDetector(
-                          onTap: () {},
-                          child: const Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    //   Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Text(
+                    //         "Don't have an account? ",
+                    //         style: TextStyle(color: secondaryTextColor),
+                    //       ),
+                    //       GestureDetector(
+                    //         onTap: () {},
+                    //         child: const Text(
+                    //           'Sign Up',
+                    //           style: TextStyle(
+                    //             color: AppColors.primary,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
                   ],
                 ),
               ),

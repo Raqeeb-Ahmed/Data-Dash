@@ -125,7 +125,7 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            '${stats.totalBookings}',
+            '${stats.visaCount}',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -133,7 +133,7 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
             ),
           ),
           const SizedBox(height: 6),
-          // 1. Status Row: Closes immediately after the 3 chips
+          // Status Row: Closes immediately after the 3 chips
           Row(
             children: [
               _miniChip('${stats.totalApproved}', Colors.green, isDarkMode),
@@ -141,30 +141,6 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
               _miniChip('${stats.totalProcessing}', Colors.amber, isDarkMode),
               const SizedBox(width: 4),
               _miniChip('${stats.totalRejected}', Colors.red, isDarkMode),
-            ],
-          ),
-          const SizedBox(height: 6),
-          // 2. Wrap: Placed below the status row inside the Column
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              Text(
-                'VISAS ${stats.visaCount}',
-                style: const TextStyle(fontSize: 8, color: Color(0xFF6366F1)),
-              ),
-              Text(
-                'HOTELS ${stats.hotelCount}',
-                style: const TextStyle(fontSize: 8, color: Color(0xFF10B981)),
-              ),
-              Text(
-                'UMRAH ${stats.umrahCount}',
-                style: const TextStyle(fontSize: 8, color: Color(0xFFF59E0B)),
-              ),
-              Text(
-                'TICKETS ${stats.ticketCount}',
-                style: const TextStyle(fontSize: 8, color: Color(0xFF0EA5E9)),
-              ),
             ],
           ),
         ],
@@ -1300,8 +1276,21 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
   }
 
   String _formatPKR(double amount) {
-    if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(2)}M';
-    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)}K';
-    return amount.toStringAsFixed(0);
+    if (amount == amount.toInt()) {
+      return _addCommas(amount.toInt().toString());
+    } else {
+      return _addCommas(amount.toStringAsFixed(2));
+    }
+  }
+
+  String _addCommas(String str) {
+    final parts = str.split('.');
+    final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    final String Function(Match) matchFunc = (Match match) => '${match[1]},';
+    final firstPart = parts[0].replaceAllMapped(reg, matchFunc);
+    if (parts.length > 1) {
+      return '$firstPart.${parts[1]}';
+    }
+    return firstPart;
   }
 }

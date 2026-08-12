@@ -8,7 +8,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 
 // Toggle this to true once Firebase is initialized via FlutterFire CLI
-const bool useFirebase = false;
+const bool useFirebase = true;
 
 final firebaseAuthProvider = Provider<firebase.FirebaseAuth?>((ref) {
   if (!useFirebase) return null;
@@ -33,7 +33,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
       return AuthRepositoryImpl(remoteDataSource: remoteDataSource);
     }
   }
-  
+
   // Fallback to Mock Auth Repository
   final mockRepo = MockAuthRepository();
   ref.onDispose(() => mockRepo.dispose());
@@ -58,9 +58,9 @@ class AuthController extends StateNotifier<AsyncValue<UserEntity?>> {
   AuthController({
     required LoginUseCase loginUseCase,
     required AuthRepository authRepository,
-  })  : _loginUseCase = loginUseCase,
-        _authRepository = authRepository,
-        super(const AsyncValue.data(null)) {
+  }) : _loginUseCase = loginUseCase,
+       _authRepository = authRepository,
+       super(const AsyncValue.data(null)) {
     _init();
   }
 
@@ -98,11 +98,12 @@ class AuthController extends StateNotifier<AsyncValue<UserEntity?>> {
   }
 }
 
-final authControllerProvider = StateNotifierProvider<AuthController, AsyncValue<UserEntity?>>((ref) {
-  final loginUseCase = ref.watch(loginUseCaseProvider);
-  final authRepository = ref.watch(authRepositoryProvider);
-  return AuthController(
-    loginUseCase: loginUseCase,
-    authRepository: authRepository,
-  );
-});
+final authControllerProvider =
+    StateNotifierProvider<AuthController, AsyncValue<UserEntity?>>((ref) {
+      final loginUseCase = ref.watch(loginUseCaseProvider);
+      final authRepository = ref.watch(authRepositoryProvider);
+      return AuthController(
+        loginUseCase: loginUseCase,
+        authRepository: authRepository,
+      );
+    });

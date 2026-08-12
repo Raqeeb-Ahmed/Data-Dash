@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:data_dash/features/dashboard/data/datasource/bookings_remote_data_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/booking_model.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 
 class BookingsFilter {
   final String searchQuery;
@@ -65,63 +69,152 @@ class BookingsFilterNotifier extends StateNotifier<BookingsFilter> {
   }
 }
 
-final bookingsFilterProvider = StateNotifierProvider<BookingsFilterNotifier, BookingsFilter>((ref) {
-  return BookingsFilterNotifier();
+final bookingsFilterProvider =
+    StateNotifierProvider<BookingsFilterNotifier, BookingsFilter>((ref) {
+      return BookingsFilterNotifier();
+    });
+final bookingsDataSourceProvider = Provider<BookingsRemoteDataSource>((ref) {
+  return BookingsRemoteDataSource();
 });
 
 class BookingsNotifier extends StateNotifier<List<BookingModel>> {
-  BookingsNotifier() : super(_generateMockBookings());
-
-  void addBooking(BookingModel booking) {
-    state = [...state, booking];
+  final BookingsRemoteDataSource? _remoteDataSource;
+  StreamSubscription? _subscription;
+  BookingsNotifier(this._remoteDataSource) : super([]) {
+    _init();
+  }
+  BookingsNotifier.empty() : _remoteDataSource = null, super([]);
+  void _init() {
+    print(
+      'BookingsNotifier _init: remoteDataSource is ${_remoteDataSource != null ? 'NOT null' : 'NULL'}',
+    );
+    if (_remoteDataSource != null) {
+      _subscription = _remoteDataSource!.getBookingsStream().listen(
+        (list) {
+          print(
+            'BookingsNotifier: Received ${list.length} merged bookings from remote datasource',
+          );
+          state = list;
+        },
+        onError: (e) {
+          print('BookingsNotifier: stream error: $e');
+        },
+      );
+    }
   }
 
-  void updateBooking(BookingModel booking) {
-    state = [
-      for (final b in state)
-        if (b.id == booking.id) booking else b
-    ];
+  // --- Real-time write actions mapping to Firestore ---
+  Future<void> addBooking(BookingModel booking) async {
+    if (_remoteDataSource != null) {
+      await _remoteDataSource!.addBooking(booking);
+    }
   }
 
-  void deleteBooking(String id) {
-    state = state.where((b) => b.id != id).toList();
+  Future<void> updateBooking(BookingModel booking) async {
+    if (_remoteDataSource != null) {
+      await _remoteDataSource!.updateBooking(booking);
+    }
+  }
+
+  Future<void> deleteBooking(String id) async {
+    if (_remoteDataSource != null) {
+      final booking = state.firstWhere(
+        (b) => b.id == id,
+        orElse: () => BookingModel(
+          id: '',
+          serviceType: 'visa',
+          customerName: '',
+          customerPhone: '',
+          passportNumber: '',
+          destination: '',
+          dateCreated: DateTime.now(),
+          status: '',
+          paymentStatus: '',
+          employeeId: '',
+          employeeName: '',
+          totalPrice: 0,
+          receivedAmount: 0,
+          payableAmount: 0,
+          netProfit: 0,
+        ),
+      );
+      if (booking.id.isNotEmpty) {
+        await _remoteDataSource!.deleteBooking(id, booking.serviceType);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 }
 
-final bookingsProvider = StateNotifierProvider<BookingsNotifier, List<BookingModel>>((ref) {
-  return BookingsNotifier();
-});
-
+final bookingsProvider =
+    StateNotifierProvider<BookingsNotifier, List<BookingModel>>((ref) {
+      final authState = ref.watch(authStateProvider);
+      final dataSource = ref.watch(bookingsDataSourceProvider);
+      return authState.when(
+        data: (user) {
+          if (user != null) {
+            return BookingsNotifier(dataSource);
+          } else {
+            return BookingsNotifier.empty();
+          }
+        },
+        loading: () => BookingsNotifier.empty(),
+        error: (_, __) => BookingsNotifier.empty(),
+      );
+    });
 final filteredBookingsProvider = Provider<List<BookingModel>>((ref) {
   final bookings = ref.watch(bookingsProvider);
   final filter = ref.watch(bookingsFilterProvider);
-
   return bookings.where((b) {
+    // 1. Search Query
     final q = filter.searchQuery.toLowerCase();
-    final matchSearch = q.isEmpty ||
+    final matchSearch =
+        q.isEmpty ||
         b.customerName.toLowerCase().contains(q) ||
-        b.passportNumber.toLowerCase().contains(q) ||
         b.destination.toLowerCase().contains(q) ||
+        b.id.toLowerCase().contains(q) ||
         b.employeeName.toLowerCase().contains(q);
 
-    final matchService = filter.selectedService == 'All Services' ||
+    // 2. Service Filter
+    final matchService =
+        filter.selectedService == 'All Services' ||
         b.serviceType.toLowerCase() == filter.selectedService.toLowerCase();
 
-    final matchStatus = filter.selectedStatus == 'All Status' ||
+    // 3. Status Filter
+    final matchStatus =
+        filter.selectedStatus == 'All Status' ||
+        filter.selectedStatus == 'All Statuses' ||
         b.status.toLowerCase() == filter.selectedStatus.toLowerCase();
 
-    final matchPayment = filter.selectedPayment == 'All Payments' ||
-        b.paymentStatus.toLowerCase() == filter.selectedPayment.toLowerCase();
-
-    bool matchDate = true;
-    if (filter.fromDate != null) {
-      matchDate = matchDate && b.dateCreated.isAfter(filter.fromDate!.subtract(const Duration(seconds: 1)));
+    // 4. Custom Date Range
+    bool matchRange = true;
+    if (filter.fromDate != null && filter.toDate != null) {
+      final bookingDate = DateTime(
+        b.dateCreated.year,
+        b.dateCreated.month,
+        b.dateCreated.day,
+      );
+      final start = DateTime(
+        filter.fromDate!.year,
+        filter.fromDate!.month,
+        filter.fromDate!.day,
+      );
+      final end = DateTime(
+        filter.toDate!.year,
+        filter.toDate!.month,
+        filter.toDate!.day,
+      );
+      matchRange =
+          bookingDate.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          bookingDate.isBefore(end.add(const Duration(seconds: 1)));
     }
-    if (filter.toDate != null) {
-      matchDate = matchDate && b.dateCreated.isBefore(filter.toDate!.add(const Duration(days: 1)));
-    }
 
-    return matchSearch && matchService && matchStatus && matchPayment && matchDate;
+    return matchSearch && matchService && matchStatus && matchRange;
   }).toList();
 });
 
@@ -140,7 +233,6 @@ class BookingStats {
   final double totalNetProfit;
   final int totalPaid;
   final int totalUnpaid;
-
   BookingStats({
     required this.totalBookings,
     required this.totalApproved,
@@ -161,24 +253,52 @@ class BookingStats {
 
 final bookingStatsProvider = Provider<BookingStats>((ref) {
   final bookings = ref.watch(bookingsProvider);
+  final visaBookings = bookings.where((b) => b.serviceType.toLowerCase() == 'visa').toList();
 
   final totalBookings = bookings.length;
-  final totalApproved = bookings.where((b) => b.status == 'Approved').length;
-  final totalProcessing = bookings.where((b) => b.status == 'Processing').length;
-  final totalRejected = bookings.where((b) => b.status == 'Rejected').length;
-  
-  final visaCount = bookings.where((b) => b.serviceType == 'visa').length;
-  final hotelCount = bookings.where((b) => b.serviceType == 'hotel').length;
-  final umrahCount = bookings.where((b) => b.serviceType == 'umrah').length;
-  final ticketCount = bookings.where((b) => b.serviceType == 'ticket').length;
 
-  final totalReceivable = bookings.fold(0.0, (s, b) => s + b.totalPrice);
-  final totalReceived = bookings.fold(0.0, (s, b) => s + b.receivedAmount);
-  final totalPending = bookings.fold(0.0, (s, b) => s + b.payableAmount);
-  final totalNetProfit = bookings.fold(0.0, (s, b) => s + b.netProfit);
+  final totalApproved = visaBookings
+      .where((b) =>
+          b.status.toLowerCase() == 'approved' ||
+          b.status.toLowerCase() == 'confirmed' ||
+          b.status.toLowerCase() == 'completed' ||
+          b.status.toLowerCase() == 'active' ||
+          b.status.toLowerCase() == 'success')
+      .length;
+  final totalProcessing = visaBookings
+      .where(
+        (b) =>
+            b.status.toLowerCase() == 'processing' ||
+            b.status.toLowerCase() == 'pending' ||
+            b.status.toLowerCase() == 'sent to embassy' ||
+            b.status.toLowerCase() == 'submitted',
+      )
+      .length;
+  final totalRejected = visaBookings
+      .where((b) => b.status.toLowerCase() == 'rejected')
+      .length;
 
-  final totalPaid = bookings.where((b) => b.paymentStatus == 'Paid').length;
-  final totalUnpaid = bookings.where((b) => b.paymentStatus == 'Unpaid').length;
+  final visaCount = visaBookings.length;
+  final hotelCount = bookings.where((b) => b.serviceType.toLowerCase() == 'hotel').length;
+  final umrahCount = bookings.where((b) => b.serviceType.toLowerCase() == 'umrah').length;
+  final ticketCount = bookings.where((b) => b.serviceType.toLowerCase() == 'ticket').length;
+
+  final totalReceivable = visaBookings.fold(0.0, (s, b) => s + b.totalPrice);
+  final totalReceived = visaBookings.fold(0.0, (s, b) => s + b.receivedAmount);
+  final totalPending = visaBookings.fold(
+    0.0,
+    (s, b) => s + (b.totalPrice - b.receivedAmount),
+  );
+
+  final totalNetProfit = visaBookings.fold(0.0, (s, b) => s + b.netProfit);
+  final totalPaid = visaBookings
+      .where((b) => b.paymentStatus.toLowerCase() == 'paid')
+      .length;
+  final totalUnpaid = visaBookings
+      .where((b) =>
+          b.paymentStatus.toLowerCase() == 'unpaid' ||
+          b.paymentStatus.toLowerCase() == 'partially paid')
+      .length;
 
   return BookingStats(
     totalBookings: totalBookings,
@@ -197,48 +317,3 @@ final bookingStatsProvider = Provider<BookingStats>((ref) {
     totalUnpaid: totalUnpaid,
   );
 });
-
-// ── Generate 50 realistic mock bookings ──
-List<BookingModel> _generateMockBookings() {
-  final names = [
-    'Nasim Akhtar', 'Irfan Ashraf', 'Burman Ali', 'Deedar Ali', 'Muhammad Aamir',
-    'Naeem Ahmed', 'Rida Amjad', 'Kiran Farooq', 'Humaira Amjad', 'Areeba Amjad',
-    'Asad Khan', 'Sara Malik', 'Hamid Raza', 'Nadia Iqbal', 'Zubair Ahmed',
-    'Fatima Bibi', 'Usman Ghani', 'Sana Tariq', 'Bilal Hassan', 'Aisha Noor',
-  ];
-  final destinations = ['Uzbekistan', 'Malaysia', 'Thailand', 'Indonesia', 'Saudi Arabia', 'UK', 'Germany', 'Canada', 'UAE', 'Singapore'];
-  final services = ['visa', 'visa', 'visa', 'ticket', 'umrah', 'hotel', 'insurance'];
-  final statuses = ['Processing', 'Processing', 'Approved', 'Approved', 'Rejected'];
-  final payments = ['Unpaid', 'Paid', 'Paid', 'Paid'];
-  final employees = ['atsh', 'ehab', 'afab'];
-  final passportPrefixes = ['AM', 'AK', 'BA', 'DA', 'MA', 'NA', 'RA', 'KF', 'HA', 'AA'];
-
-  return List.generate(50, (i) {
-    final name = names[i % names.length];
-    final service = services[i % services.length];
-    final status = statuses[i % statuses.length];
-    final payment = payments[i % payments.length];
-    final emp = employees[i % employees.length];
-    final dest = destinations[i % destinations.length];
-    final total = (15000 + (i * 7123) % 120000).toDouble();
-    final received = payment == 'Paid' ? total : total * 0.5;
-    final remaining = total - received;
-    return BookingModel(
-      id: 'BK-${1000 + i}',
-      serviceType: service,
-      customerName: name,
-      customerPhone: '+92 300 ${1000000 + i * 13}',
-      passportNumber: '${passportPrefixes[i % passportPrefixes.length]}${100000 + i * 7}',
-      destination: dest,
-      dateCreated: DateTime.now().subtract(Duration(days: i)),
-      status: status,
-      paymentStatus: payment,
-      employeeId: emp,
-      employeeName: emp,
-      totalPrice: total,
-      receivedAmount: received,
-      payableAmount: remaining,
-      netProfit: total * 0.22,
-    );
-  });
-}

@@ -1,11 +1,22 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// Animated World Map Background widget with automatic Light & Dark mode adaptation.
+/// Animated Earth Globe Background widget with automatic Light & Dark mode adaptation.
+///
 /// Features:
-/// - Light & Dark theme responsive styling.
-/// - Vector world map continent silhouettes with animated glowing line shaders.
-/// - Interactive ambient light spheres that react to mouse/touch movement.
+/// - A rotating, more "realistic" globe: blue ocean with lighting, green/brown
+///   terrain-colored continents, white polar ice caps, a soft day/night
+///   terminator, a drifting semi-transparent cloud layer, faint city lights
+///   on the night side (dark mode), and a subtle starfield behind it.
+/// - Smoothed (inertia-based) parallax tilt that follows the pointer.
+/// - A brief "shake" wobble when the user taps/drags on empty background —
+///   but NOT when they tap an interactive widget you place in `child`
+///   (buttons, text fields, etc. are unaffected).
+/// - Light & Dark theme responsive styling throughout.
+///
+/// Everything lives in this single file and the public constructor is
+/// unchanged (`child`, `watermarkText`, `backgroundColor`), so it's a
+/// drop-in replacement for the previous version.
 class AnimatedWorldMapBackground extends StatefulWidget {
   final Widget? child;
   final String? watermarkText;
@@ -24,54 +35,80 @@ class AnimatedWorldMapBackground extends StatefulWidget {
 }
 
 class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  Offset _pointerOffset = Offset.zero;
+    with TickerProviderStateMixin {
+  // Slow continuous spin of the globe (also drives cloud drift & starlight twinkle).
+  late final AnimationController _rotationController;
+
+  // Short-lived "shake" pulse triggered by tapping empty background.
+  late final AnimationController _shakeController;
+
+  Offset _targetTilt = Offset.zero; // raw pointer position, -1..1
+  Offset _smoothedTilt = Offset.zero; // eased toward _targetTilt each frame
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 55),
     )..repeat();
+
+    // Piggy-back on the rotation ticks to ease the tilt smoothly (inertia),
+    // instead of snapping the globe straight to the pointer position.
+    _rotationController.addListener(_easeTilt);
+
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+  }
+
+  void _easeTilt() {
+    final next = Offset.lerp(_smoothedTilt, _targetTilt, 0.06)!;
+    if ((next - _smoothedTilt).distanceSquared > 0.0000004) {
+      setState(() => _smoothedTilt = next);
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _rotationController.removeListener(_easeTilt);
+    _rotationController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
   void _onPointerMove(Offset localPosition, Size size) {
     if (size.width == 0 || size.height == 0) return;
-    setState(() {
-      _pointerOffset = Offset(
-        (localPosition.dx / size.width) * 2 - 1.0,
-        (localPosition.dy / size.height) * 2 - 1.0,
-      );
-    });
+    _targetTilt = Offset(
+      (localPosition.dx / size.width) * 2 - 1.0,
+      (localPosition.dy / size.height) * 2 - 1.0,
+    );
+  }
+
+  void _triggerShake() {
+    _shakeController.forward(from: 0);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
-    // Theme-dependent colors
-    final baseBgColor = widget.backgroundColor ??
-        (isDarkMode ? const Color(0xFF07090E) : const Color(0xFFF1F5F9));
+
+    final baseBgColor =
+        widget.backgroundColor ??
+        (isDarkMode ? const Color(0xFF05070C) : const Color(0xFFEFF4FA));
 
     final glow1Colors = isDarkMode
-        ? const [Color(0x403B0764), Color(0x201E1B4B), Colors.transparent]
-        : const [Color(0x30C084FC), Color(0x15A855F7), Colors.transparent];
+        ? const [Color(0x30264A7A), Color(0x181B2A4A), Colors.transparent]
+        : const [Color(0x2892C5FC), Color(0x1560A5FA), Colors.transparent];
 
     final glow2Colors = isDarkMode
-        ? const [Color(0x351E293B), Color(0x184F46E5), Colors.transparent]
-        : const [Color(0x3038BDF8), Color(0x150284C7), Colors.transparent];
+        ? const [Color(0x301B3A2E), Color(0x18143024), Colors.transparent]
+        : const [Color(0x2886EFAC), Color(0x1534D399), Colors.transparent];
 
     final vignetteColors = isDarkMode
-        ? const [Colors.transparent, Color(0x6007090E), Color(0xFF07090E)]
-        : const [Colors.transparent, Color(0x40F1F5F9), Color(0xFFF1F5F9)];
+        ? const [Colors.transparent, Color(0x6005070C), Color(0xFF05070C)]
+        : const [Colors.transparent, Color(0x40EFF4FA), Color(0xFFEFF4FA)];
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -79,105 +116,182 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
 
         return MouseRegion(
           onHover: (event) => _onPointerMove(event.localPosition, size),
+          // Translucent = always tracks pointer movement for the parallax
+          // tilt, but never blocks or steals gestures from `child` below.
           child: Listener(
+            behavior: HitTestBehavior.translucent,
             onPointerMove: (event) => _onPointerMove(event.localPosition, size),
+            onPointerDown: (event) => _onPointerMove(event.localPosition, size),
             child: Stack(
               children: [
-                // 1. Base Canvas Background (Light/Dark Theme adapt)
-                Container(
-                  color: baseBgColor,
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
-
-                // 2. Ambient Light Spheres (Interactive)
-                AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    final pulse =
-                        math.sin(_controller.value * 2 * math.pi) * 0.08 + 0.92;
-                    return Stack(
-                      children: [
-                        // Glow 1
-                        Positioned(
-                          top: -size.height * 0.15 + (_pointerOffset.dy * -15),
-                          left: size.width * 0.25 + (_pointerOffset.dx * -15),
-                          child: Transform.scale(
-                            scale: pulse,
-                            child: Container(
-                              width: size.width * 0.5,
-                              height: size.height * 0.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: RadialGradient(
-                                  colors: glow1Colors,
-                                  stops: const [0.0, 0.55, 1.0],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Glow 2
-                        Positioned(
-                          top: size.height * 0.15 + (_pointerOffset.dy * -20),
-                          right: size.width * 0.05 + (_pointerOffset.dx * -20),
-                          child: Transform.scale(
-                            scale: 2.0 - pulse,
-                            child: Container(
-                              width: size.width * 0.45,
-                              height: size.height * 0.55,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: RadialGradient(
-                                  colors: glow2Colors,
-                                  stops: const [0.0, 0.6, 1.0],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-
-                // 3. Vector World Map Graphic Layer
-                Positioned.fill(
-                  child: Transform.translate(
-                    offset: Offset(
-                      _pointerOffset.dx * -8,
-                      _pointerOffset.dy * -8,
-                    ),
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return CustomPaint(
-                          painter: DetailedWorldMapPainter(
-                            progress: _controller.value,
-                            isDarkMode: isDarkMode,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                // 4. Subtle Vignette Overlay
-                IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: Alignment.center,
-                        radius: 1.15,
-                        colors: vignetteColors,
-                        stops: const [0.35, 0.8, 1.0],
+                // --- Background + globe group ---------------------------------
+                // Wrapped in its own opaque Listener so it only receives a tap
+                // when nothing interactive in `child` (added below, on top)
+                // has claimed it first — that's what stops the shake from
+                // firing when the user taps a real button/text field/etc.
+                Listener(
+                  behavior: HitTestBehavior.opaque,
+                  onPointerDown: (_) => _triggerShake(),
+                  child: Stack(
+                    children: [
+                      // 1. Base canvas background.
+                      Container(
+                        color: baseBgColor,
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
-                    ),
+
+                      // 2. Ambient light spheres (interactive, follow pointer).
+                      AnimatedBuilder(
+                        animation: _rotationController,
+                        builder: (context, child) {
+                          final pulse =
+                              math.sin(
+                                    _rotationController.value * 2 * math.pi,
+                                  ) *
+                                  0.08 +
+                              0.92;
+                          return Stack(
+                            children: [
+                              Positioned(
+                                top:
+                                    -size.height * 0.15 +
+                                    (_smoothedTilt.dy * -15),
+                                left:
+                                    size.width * 0.2 + (_smoothedTilt.dx * -15),
+                                child: Transform.scale(
+                                  scale: pulse,
+                                  child: Container(
+                                    width: size.width * 0.6,
+                                    height: size.height * 0.6,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RadialGradient(
+                                        colors: glow1Colors,
+                                        stops: const [0.0, 0.55, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom:
+                                    -size.height * 0.1 +
+                                    (_smoothedTilt.dy * -20),
+                                right:
+                                    -size.width * 0.05 +
+                                    (_smoothedTilt.dx * -20),
+                                child: Transform.scale(
+                                  scale: 2.0 - pulse,
+                                  child: Container(
+                                    width: size.width * 0.5,
+                                    height: size.height * 0.5,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RadialGradient(
+                                        colors: glow2Colors,
+                                        stops: const [0.0, 0.6, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+
+                      // 3. The Earth globe: rotates continuously, tilts toward
+                      //    the pointer, and wobbles briefly on tap.
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([
+                            _rotationController,
+                            _shakeController,
+                          ]),
+                          builder: (context, child) {
+                            final shakeT = _shakeController.value; // 0 -> 1
+                            final shakeDecay = (1 - shakeT);
+                            final shakeAngle =
+                                math.sin(shakeT * math.pi * 10) *
+                                0.07 *
+                                shakeDecay;
+                            final shakeOffsetX =
+                                math.sin(shakeT * math.pi * 14) *
+                                12 *
+                                shakeDecay;
+                            final shakeOffsetY =
+                                math.cos(shakeT * math.pi * 11) *
+                                7 *
+                                shakeDecay;
+                            final shakeScale =
+                                1.0 +
+                                (shakeDecay *
+                                    math.sin(shakeT * math.pi * 6) *
+                                    0.02);
+
+                            return Transform.translate(
+                              offset: Offset(
+                                _smoothedTilt.dx * -10 + shakeOffsetX,
+                                _smoothedTilt.dy * -10 + shakeOffsetY,
+                              ),
+                              child: Transform.rotate(
+                                angle: shakeAngle,
+                                child: CustomPaint(
+                                  painter: RealisticEarthPainter(
+                                    rotation:
+                                        _rotationController.value * 2 * math.pi,
+                                    tilt: _smoothedTilt,
+                                    isDarkMode: isDarkMode,
+                                    scale: shakeScale,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      // 4. Subtle vignette overlay.
+                      IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: Alignment.center,
+                              radius: 1.15,
+                              colors: vignetteColors,
+                              stops: const [0.35, 0.8, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // 5. Optional watermark.
+                      if (widget.watermarkText != null)
+                        Positioned(
+                          bottom: 16,
+                          right: 20,
+                          child: IgnorePointer(
+                            child: Text(
+                              widget.watermarkText!,
+                              style: TextStyle(
+                                color:
+                                    (isDarkMode ? Colors.white : Colors.black)
+                                        .withOpacity(0.15),
+                                fontSize: 12,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
 
-                // 5. Child Content
+                // --- Foreground content ----------------------------------------
+                // Sits on top, untouched by the shake Listener above: any
+                // GestureDetector/InkWell/etc. inside `child` claims its own
+                // taps first, so the Stack never even tests the layer below it.
                 if (widget.child != null) Positioned.fill(child: widget.child!),
               ],
             ),
@@ -188,163 +302,360 @@ class _AnimatedWorldMapBackgroundState extends State<AnimatedWorldMapBackground>
   }
 }
 
-/// CustomPainter rendering continent vector paths & glowing border outlines adapted to light/dark themes.
-class DetailedWorldMapPainter extends CustomPainter {
-  final double progress;
+/// CustomPainter rendering a more realistic Earth globe:
+/// - starfield behind the globe
+/// - shaded ocean sphere with a soft day/night terminator
+/// - terrain-toned dotted continents (green/brown) fading toward night
+/// - white polar ice caps
+/// - a drifting translucent cloud layer (parallax vs. the landmass)
+/// - faint warm city lights on the night side (dark mode)
+/// - a thin rotating atmosphere rim
+class RealisticEarthPainter extends CustomPainter {
+  final double rotation; // continuous spin, radians
+  final Offset tilt; // pointer offset, -1..1, smoothed
   final bool isDarkMode;
+  final double scale; // shake "bump"
 
-  DetailedWorldMapPainter({
-    required this.progress,
+  RealisticEarthPainter({
+    required this.rotation,
+    required this.tilt,
     required this.isDarkMode,
+    required this.scale,
+  });
+
+  // Fixed "sun" direction in 3D globe space (matches the upper-left highlight
+  // used for the sphere gradient) — used to compute day/night shading.
+  static final Offset3 _lightDir = Offset3(-0.55, 0.35, 0.76).normalized();
+
+  // Land + cloud point clouds, generated once and reused every frame.
+  static final List<Offset> _landPoints = _generateRegionPoints(
+    includeAntarctica: true,
+  );
+  static final List<Offset> _cloudPoints = _generateCloudPoints();
+
+  static List<Offset> _generateRegionPoints({required bool includeAntarctica}) {
+    final List<Offset> pts = [];
+
+    void addRegion(
+      double latMin,
+      double latMax,
+      double lonMin,
+      double lonMax,
+      double density,
+    ) {
+      final rnd = math.Random(
+        ((latMin * 1000).toInt()) ^ ((lonMin * 1000).toInt()),
+      );
+      final area = (latMax - latMin) * (lonMax - lonMin);
+      final count = (area * density).clamp(10, 420).toInt();
+      for (int i = 0; i < count; i++) {
+        final lat = latMin + rnd.nextDouble() * (latMax - latMin);
+        final lon = lonMin + rnd.nextDouble() * (lonMax - lonMin);
+        pts.add(Offset(lat, lon)); // dx = lat, dy = lon
+      }
+    }
+
+    addRegion(15, 72, -170, -55, 0.06); // North America
+    addRegion(-56, 12, -82, -34, 0.075); // South America
+    addRegion(36, 71, -10, 40, 0.1); // Europe
+    addRegion(-35, 37, -18, 52, 0.05); // Africa
+    addRegion(5, 77, 40, 180, 0.035); // Asia
+    addRegion(-44, -10, 112, 154, 0.11); // Australia
+    addRegion(60, 83, -73, -12, 0.09); // Greenland
+    if (includeAntarctica) addRegion(-90, -66, -180, 180, 0.02); // Antarctica
+
+    return pts;
+  }
+
+  static List<Offset> _generateCloudPoints() {
+    final rnd = math.Random(777);
+    final List<Offset> pts = [];
+    for (int i = 0; i < 220; i++) {
+      final lat = -80 + rnd.nextDouble() * 160;
+      final lon = -180 + rnd.nextDouble() * 360;
+      pts.add(Offset(lat, lon));
+    }
+    return pts;
+  }
+
+  static final List<_Star> _stars = List.generate(90, (i) {
+    final rnd = math.Random(i * 97 + 13);
+    return _Star(
+      rnd.nextDouble(),
+      rnd.nextDouble(),
+      0.5 + rnd.nextDouble() * 1.3,
+      rnd.nextDouble() * math.pi * 2,
+    );
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double w = size.width;
-    final double h = size.height;
-    final Rect rect = Rect.fromLTWH(0, 0, w, h);
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) * 0.42 * scale;
 
-    final shaderColors = isDarkMode
-        ? const [
-            Color(0x663B82F6),
-            Color(0x998B5CF6),
-            Color(0x662DD4BF),
-            Color(0x663B82F6),
-          ]
-        : const [
-            Color(0x884F46E5),
-            Color(0xAA7C3AED),
-            Color(0x880284C7),
-            Color(0x884F46E5),
-          ];
+    _paintStars(canvas, size);
 
-    final fillPaintColor = isDarkMode ? const Color(0x2E1E294B) : const Color(0x1864748B);
-    final borderPaintColor = isDarkMode ? const Color(0x35384674) : const Color(0x3094A3B8);
-    final gridLineColor = isDarkMode ? const Color(0x0CFFFFFF) : const Color(0x15000000);
-    final dotColor = isDarkMode ? const Color(0x3B8B5CF6) : const Color(0x406366F1);
+    // --- Atmosphere glow ---
+    final atmoPaint = Paint()
+      ..shader = RadialGradient(
+        colors: const [Color(0x4433C1FF), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.28));
+    canvas.drawCircle(center, radius * 1.28, atmoPaint);
 
-    // Multi-color glowing outline shader
-    final Paint outlineShaderPaint = Paint()
+    // --- Ocean sphere base ---
+    final sphereGradient = isDarkMode
+        ? const RadialGradient(
+            center: Alignment(-0.35, -0.4),
+            radius: 1.15,
+            colors: [Color(0xFF1B3A6B), Color(0xFF0C2040), Color(0xFF040A16)],
+            stops: [0.0, 0.6, 1.0],
+          )
+        : const RadialGradient(
+            center: Alignment(-0.35, -0.4),
+            radius: 1.15,
+            colors: [Color(0xFF6FB6F5), Color(0xFF2E86D6), Color(0xFF1A5FA8)],
+            stops: [0.0, 0.6, 1.0],
+          );
+    final spherePaint = Paint()
+      ..shader = sphereGradient.createShader(
+        Rect.fromCircle(center: center, radius: radius),
+      );
+    canvas.drawCircle(center, radius, spherePaint);
+
+    canvas.save();
+    canvas.clipPath(
+      Path()..addOval(Rect.fromCircle(center: center, radius: radius)),
+    );
+
+    final double tiltX = (tilt.dy * 0.35).clamp(-0.5, 0.5);
+    final double lonOffset = rotation;
+
+    // --- Soft day/night terminator (screen-space shadow toward lower-right) ---
+    final terminatorPaint = Paint()
       ..shader = LinearGradient(
-        begin: Alignment(-1.0 + (progress * 2), -0.5),
-        end: Alignment(1.0 + (progress * 2), 0.5),
-        colors: shaderColors,
-      ).createShader(rect)
+        begin: const Alignment(-0.6, -0.6),
+        end: const Alignment(0.9, 0.9),
+        colors: [
+          Colors.transparent,
+          Colors.transparent,
+          (isDarkMode ? Colors.black : const Color(0xFF0A1B33)).withOpacity(
+            isDarkMode ? 0.55 : 0.35,
+          ),
+        ],
+        stops: const [0.0, 0.45, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, terminatorPaint);
+
+    // --- Faint lat/long grid (kept minimal for realism) ---
+    final gridPaint = Paint()
+      ..color = Colors.white.withOpacity(0.05)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
+      ..strokeWidth = 0.6;
+    for (int latDeg = -60; latDeg <= 60; latDeg += 30) {
+      final path = Path();
+      bool started = false;
+      for (int lonDeg = 0; lonDeg <= 360; lonDeg += 4) {
+        final p = _project(
+          latDeg.toDouble(),
+          lonDeg.toDouble(),
+          lonOffset,
+          tiltX,
+          center,
+          radius,
+        );
+        if (p == null) {
+          started = false;
+          continue;
+        }
+        started
+            ? path.lineTo(p.screen.dx, p.screen.dy)
+            : path.moveTo(p.screen.dx, p.screen.dy);
+        started = true;
+      }
+      canvas.drawPath(path, gridPaint);
+    }
 
-    final Paint fillPaint = Paint()
-      ..color = fillPaintColor
-      ..style = PaintingStyle.fill;
+    // --- Landmass: terrain-toned, ice caps, day/night aware ---
+    final dotPaint = Paint();
+    for (final pt in _landPoints) {
+      final lat = pt.dx;
+      final p = _project(lat, pt.dy, lonOffset, tiltX, center, radius);
+      if (p == null || p.depth <= 0.02) continue;
 
-    final Paint borderPaint = Paint()
-      ..color = borderPaintColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      final lit = _litFactor(lat, pt.dy, lonOffset, tiltX);
+      final isPolar = lat.abs() > 64;
 
-    // Build Detailed World Map Paths
-    final Path mapPath = Path();
+      Color base;
+      if (isPolar) {
+        base = const Color(0xFFF3F7FB);
+      } else {
+        // Cheap terrain variation: hash lat/lon into a green<->brown mix.
+        final hash =
+            (math.sin(lat * 12.9898 + pt.dy * 78.233) * 43758.5453) % 1.0;
+        final t = hash.abs();
+        base = Color.lerp(const Color(0xFF3E8E4F), const Color(0xFF9C7B4A), t)!;
+      }
 
-    // 1. North America
-    final Path na = Path()
-      ..moveTo(w * 0.06, h * 0.12)
-      ..cubicTo(w * 0.12, h * 0.05, w * 0.28, h * 0.06, w * 0.32, h * 0.14)
-      ..cubicTo(w * 0.35, h * 0.20, w * 0.30, h * 0.28, w * 0.25, h * 0.34)
-      ..lineTo(w * 0.22, h * 0.42)
-      ..cubicTo(w * 0.18, h * 0.46, w * 0.15, h * 0.42, w * 0.14, h * 0.36)
-      ..cubicTo(w * 0.11, h * 0.30, w * 0.04, h * 0.20, w * 0.06, h * 0.12)
-      ..close();
-    mapPath.addPath(na, Offset.zero);
+      if (lit > 0.05) {
+        final brightness = (0.55 + lit * 0.6).clamp(0.0, 1.15);
+        final litColor = Color.lerp(
+          base,
+          Colors.white,
+          (brightness - 1.0).clamp(0.0, 0.4),
+        )!;
+        dotPaint.color = litColor.withOpacity(
+          (0.55 + p.depth * 0.4).clamp(0.0, 1.0),
+        );
+        canvas.drawCircle(p.screen, 1.0 + p.depth * 1.3, dotPaint);
+      } else {
+        // Night side: land barely visible, but show occasional warm city lights.
+        dotPaint.color = base.withOpacity(0.12 * p.depth);
+        canvas.drawCircle(p.screen, 0.8 + p.depth * 0.9, dotPaint);
 
-    // 2. Greenland
-    final Path greenland = Path()
-      ..moveTo(w * 0.34, h * 0.05)
-      ..cubicTo(w * 0.38, h * 0.03, w * 0.43, h * 0.04, w * 0.44, h * 0.10)
-      ..cubicTo(w * 0.42, h * 0.15, w * 0.36, h * 0.14, w * 0.34, h * 0.09)
-      ..close();
-    mapPath.addPath(greenland, Offset.zero);
-
-    // 3. South America
-    final Path sa = Path()
-      ..moveTo(w * 0.24, h * 0.46)
-      ..cubicTo(w * 0.30, h * 0.48, w * 0.34, h * 0.56, w * 0.30, h * 0.68)
-      ..cubicTo(w * 0.27, h * 0.78, w * 0.24, h * 0.85, w * 0.22, h * 0.82)
-      ..cubicTo(w * 0.20, h * 0.75, w * 0.21, h * 0.58, w * 0.24, h * 0.46)
-      ..close();
-    mapPath.addPath(sa, Offset.zero);
-
-    // 4. Europe
-    final Path europe = Path()
-      ..moveTo(w * 0.46, h * 0.12)
-      ..cubicTo(w * 0.52, h * 0.10, w * 0.58, h * 0.14, w * 0.56, h * 0.24)
-      ..cubicTo(w * 0.52, h * 0.28, w * 0.45, h * 0.27, w * 0.44, h * 0.20)
-      ..close();
-    mapPath.addPath(europe, Offset.zero);
-
-    // 5. Africa
-    final Path africa = Path()
-      ..moveTo(w * 0.44, h * 0.30)
-      ..cubicTo(w * 0.52, h * 0.28, w * 0.60, h * 0.35, w * 0.58, h * 0.48)
-      ..cubicTo(w * 0.56, h * 0.62, w * 0.52, h * 0.72, w * 0.48, h * 0.70)
-      ..cubicTo(w * 0.44, h * 0.62, w * 0.42, h * 0.42, w * 0.44, h * 0.30)
-      ..close();
-    mapPath.addPath(africa, Offset.zero);
-
-    // 6. Asia
-    final Path asia = Path()
-      ..moveTo(w * 0.58, h * 0.12)
-      ..cubicTo(w * 0.72, h * 0.08, w * 0.90, h * 0.12, w * 0.94, h * 0.24)
-      ..cubicTo(w * 0.96, h * 0.34, w * 0.85, h * 0.45, w * 0.72, h * 0.44)
-      ..cubicTo(w * 0.66, h * 0.42, w * 0.60, h * 0.32, w * 0.58, h * 0.22)
-      ..close();
-    mapPath.addPath(asia, Offset.zero);
-
-    // 7. Australia & Indonesia
-    final Path australia = Path()
-      ..moveTo(w * 0.76, h * 0.55)
-      ..cubicTo(w * 0.84, h * 0.52, w * 0.92, h * 0.58, w * 0.90, h * 0.70)
-      ..cubicTo(w * 0.86, h * 0.76, w * 0.78, h * 0.74, w * 0.75, h * 0.65)
-      ..close();
-    mapPath.addPath(australia, Offset.zero);
-
-    // Draw Map
-    canvas.drawPath(mapPath, fillPaint);
-    canvas.drawPath(mapPath, borderPaint);
-    canvas.drawPath(mapPath, outlineShaderPaint);
-
-    // Tech Dots inside Map
-    final Paint dotsPaint = Paint()
-      ..color = dotColor
-      ..style = PaintingStyle.fill;
-
-    const double step = 16.0;
-    for (double x = 0; x < w; x += step) {
-      for (double y = 0; y < h; y += step) {
-        if (mapPath.contains(Offset(x, y))) {
-          final pulse = math.sin((x + y + progress * 120) * 0.04) * 0.5 + 1.6;
-          canvas.drawCircle(Offset(x, y), pulse, dotsPaint);
+        if (isDarkMode && !isPolar) {
+          final cityHash =
+              ((lat * 1000).toInt() ^ (pt.dy * 1000).toInt()).abs() % 100;
+          if (cityHash < 10) {
+            dotPaint.color = const Color(
+              0xFFFFD98A,
+            ).withOpacity(0.55 * p.depth);
+            canvas.drawCircle(p.screen, 1.1 * p.depth, dotPaint);
+          }
         }
       }
     }
 
-    // Grid lines
-    final Paint gridLinePaint = Paint()
-      ..color = gridLineColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-
-    for (int i = 1; i <= 5; i++) {
-      final double y = h * (i / 6);
-      canvas.drawLine(Offset(0, y), Offset(w, y), gridLinePaint);
+    // --- Cloud layer (drifts a little faster than the landmass) ---
+    final cloudLonOffset = rotation * 1.18;
+    final cloudPaint = Paint();
+    for (final pt in _cloudPoints) {
+      final p = _project(pt.dx, pt.dy, cloudLonOffset, tiltX, center, radius);
+      if (p == null || p.depth <= 0.05) continue;
+      final lit = _litFactor(pt.dx, pt.dy, cloudLonOffset, tiltX);
+      final brightness = lit > 0 ? 0.5 : 0.18;
+      cloudPaint.color = Colors.white.withOpacity(brightness * p.depth * 0.6);
+      canvas.drawCircle(p.screen, 2.6 + p.depth * 2.2, cloudPaint);
     }
-    for (int i = 1; i <= 8; i++) {
-      final double x = w * (i / 9);
-      canvas.drawLine(Offset(x, 0), Offset(x, h), gridLinePaint);
+
+    // --- Rotating atmosphere-edge gradient rim ---
+    final rimPaint = Paint()
+      ..shader = SweepGradient(
+        colors: const [
+          Color(0x552196F3),
+          Color(0x8877E1E8),
+          Color(0x5533C1FF),
+          Color(0x552196F3),
+        ],
+        transform: GradientRotation(rotation),
+      ).createShader(Rect.fromCircle(center: center, radius: radius))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    canvas.drawCircle(center, radius - 1, rimPaint);
+
+    canvas.restore();
+
+    // --- Outer highlight ring ---
+    final outerRing = Paint()
+      ..color = Colors.white.withOpacity(0.10)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    canvas.drawCircle(center, radius, outerRing);
+  }
+
+  void _paintStars(Canvas canvas, Size size) {
+    final starPaint = Paint();
+    for (final star in _stars) {
+      final twinkle =
+          0.35 + 0.65 * (0.5 + 0.5 * math.sin(rotation * 3 + star.phase));
+      starPaint.color = Colors.white.withOpacity(
+        (isDarkMode ? 0.55 : 0.18) * twinkle,
+      );
+      canvas.drawCircle(
+        Offset(star.fx * size.width, star.fy * size.height),
+        star.radius,
+        starPaint,
+      );
     }
   }
 
+  /// Dot product of a projected point's (post-tilt) 3D normal against the
+  /// fixed light direction — positive means "facing the sun" (day side).
+  double _litFactor(
+    double latDeg,
+    double lonDeg,
+    double lonOffset,
+    double tiltX,
+  ) {
+    final lat = latDeg * math.pi / 180;
+    final lon = (lonDeg * math.pi / 180) + lonOffset;
+    final x = math.cos(lat) * math.sin(lon);
+    final y = math.sin(lat);
+    final z = math.cos(lat) * math.cos(lon);
+    final cosT = math.cos(tiltX);
+    final sinT = math.sin(tiltX);
+    final y2 = y * cosT - z * sinT;
+    final z2 = y * sinT + z * cosT;
+    return x * _lightDir.x + y2 * _lightDir.y + z2 * _lightDir.z;
+  }
+
+  /// Orthographic projection of a lat/long point to screen space.
+  /// Returns null when the point is on the far side of the globe.
+  _Projected? _project(
+    double latDeg,
+    double lonDeg,
+    double lonOffset,
+    double tiltX,
+    Offset center,
+    double radius,
+  ) {
+    final lat = latDeg * math.pi / 180;
+    final lon = (lonDeg * math.pi / 180) + lonOffset;
+
+    final x = math.cos(lat) * math.sin(lon);
+    final y = math.sin(lat);
+    final z = math.cos(lat) * math.cos(lon);
+
+    final cosT = math.cos(tiltX);
+    final sinT = math.sin(tiltX);
+    final y2 = y * cosT - z * sinT;
+    final z2 = y * sinT + z * cosT;
+
+    if (z2 < -0.05) return null;
+
+    final depth = ((z2 + 1) / 2).clamp(0.0, 1.0);
+    final screen = Offset(center.dx + x * radius, center.dy - y2 * radius);
+    return _Projected(screen, depth);
+  }
+
   @override
-  bool shouldRepaint(covariant DetailedWorldMapPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.isDarkMode != isDarkMode;
+  bool shouldRepaint(covariant RealisticEarthPainter oldDelegate) {
+    return oldDelegate.rotation != rotation ||
+        oldDelegate.tilt != tilt ||
+        oldDelegate.isDarkMode != isDarkMode ||
+        oldDelegate.scale != scale;
+  }
+}
+
+class _Projected {
+  final Offset screen;
+  final double depth;
+  const _Projected(this.screen, this.depth);
+}
+
+class _Star {
+  final double fx, fy; // fractional canvas position, 0..1
+  final double radius;
+  final double phase;
+  const _Star(this.fx, this.fy, this.radius, this.phase);
+}
+
+/// Tiny 3D vector helper used only for the fixed light direction.
+class Offset3 {
+  final double x, y, z;
+  const Offset3(this.x, this.y, this.z);
+
+  Offset3 normalized() {
+    final len = math.sqrt(x * x + y * y + z * z);
+    return Offset3(x / len, y / len, z / len);
   }
 }

@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/rendering.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -20,9 +23,23 @@ abstract class AuthRemoteDataSource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final firebase.FirebaseAuth _firebaseAuth;
+  final FirebaseFirestore _firebasestore = FirebaseFirestore.instance;
 
   AuthRemoteDataSourceImpl({firebase.FirebaseAuth? firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? firebase.FirebaseAuth.instance;
+    : _firebaseAuth = firebaseAuth ?? firebase.FirebaseAuth.instance;
+
+  // Helper method to fetch role from Firestore
+  Future<String> _getUserRole(String uid) async {
+    try {
+      final doc = await _firebasestore.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        return doc.data()?['role'] ?? 'employee';
+      }
+    } catch (e) {
+      debugPrint('Print Fetching user role: $e');
+    }
+    return 'employee'; //default fallback
+  }
 
   @override
   Future<UserModel?> signInWithEmailAndPassword({
@@ -35,7 +52,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         password: password,
       );
       if (credential.user != null) {
-        return UserModel.fromFirebaseUser(credential.user!);
+        final role = await _getUserRole(credential.user!.uid);
+        return UserModel.fromFirebaseUser(credential.user!, role: role);
       }
       return null;
     } catch (e) {
@@ -59,7 +77,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         // Reload user to sync updated display name
         await credential.user!.reload();
         final updatedUser = _firebaseAuth.currentUser;
-        return UserModel.fromFirebaseUser(updatedUser ?? credential.user!);
+        await _firebasestore.collection('users').doc(credential.user!.uid).set({
+          'uid': credential.user!.uid,
+          'email': email,
+          'displayName': displayName,
+          'role': 'employee', // Default new signups to employee
+          'photoUrl': updatedUser?.photoURL,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        return UserModel.fromFirebaseUser(
+          updatedUser ?? credential.user!,
+          role: 'employee',
+        );
       }
       return null;
     } catch (e) {
@@ -74,9 +103,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Stream<UserModel?> get authStateChanges {
-    return _firebaseAuth.authStateChanges().map((user) {
+    return _firebaseAuth.authStateChanges().asyncMap((user) async {
       if (user != null) {
-        return UserModel.fromFirebaseUser(user);
+        final role = await _getUserRole(user.uid);
+        return UserModel.fromFirebaseUser(user, role: role);
       }
       return null;
     });
