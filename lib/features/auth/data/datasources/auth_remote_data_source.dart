@@ -52,8 +52,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         password: password,
       );
       if (credential.user != null) {
-        final role = await _getUserRole(credential.user!.uid);
-        return UserModel.fromFirebaseUser(credential.user!, role: role);
+        final doc = await _firebasestore.collection('users').doc(credential.user!.uid).get();
+        if (doc.exists && doc.data() != null) {
+          final disabled = doc.data()?['disabled'] ?? false;
+          if (disabled) {
+            await _firebaseAuth.signOut();
+            throw firebase.FirebaseAuthException(
+              code: 'user-disabled',
+              message: 'Your access has been disabled by the admin.',
+            );
+          }
+          final role = doc.data()?['role'] ?? 'employee';
+          return UserModel.fromFirebaseUser(credential.user!, role: role);
+        }
+        return UserModel.fromFirebaseUser(credential.user!, role: 'employee');
       }
       return null;
     } catch (e) {

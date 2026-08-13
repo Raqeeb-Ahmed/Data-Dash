@@ -214,9 +214,21 @@ class BookingsRemoteDataSource {
   BookingModel _mapVisa(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     final payable = _parseNum(data['remainingFee']);
-    final profit = _parseNum(data['profit']);
     final received = _parseNum(data['receivedFee']);
-    final total = _parseNum(data['totalFee'] ?? (received + payable));
+    final total = _parseNum(data['totalFee']);
+    final embassy = _parseNum(data['embassyFee']);
+    final vendor = _parseNum(data['vendorFee']);
+    
+    var profit = _parseNum(
+      data['profit'] ?? data['netProfit'] ?? data['margin'] ?? data['totalProfit'],
+    );
+    if (profit == 0 && total > 0) {
+      final calculated = total - embassy - vendor;
+      if (calculated > 0) {
+        profit = calculated;
+      }
+    }
+    
     return BookingModel(
       id: doc.id,
       serviceType: 'visa',
@@ -256,7 +268,6 @@ class BookingsRemoteDataSource {
     final payable = _parseNum(data['payable']);
     final profit = _parseNum(data['profit']);
     final received = _parseNum(data['received']);
-    final total = received + payable;
     return BookingModel(
       id: doc.id,
       serviceType: 'hotel',
@@ -266,12 +277,12 @@ class BookingsRemoteDataSource {
       destination: _parseString(data['property'] ?? 'Hotel'),
       dateCreated: _parseDateTime(data['createdAt']),
       status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= total
+      paymentStatus: received >= (payable + profit)
           ? 'Paid'
           : (received > 0 ? 'Partially Paid' : 'Unpaid'),
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['userEmail'] ?? 'Unassigned'),
-      totalPrice: total,
+      totalPrice: payable + profit,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
@@ -288,7 +299,6 @@ class BookingsRemoteDataSource {
     final payable = _parseNum(data['payable']);
     final profit = _parseNum(data['profit']);
     final received = _parseNum(data['received']);
-    final total = received + payable;
     return BookingModel(
       id: doc.id,
       serviceType: 'umrah',
@@ -298,12 +308,12 @@ class BookingsRemoteDataSource {
       destination: _parseString(data['makkahHotel'] ?? 'Makkah'),
       dateCreated: _parseDateTime(data['createdAt']),
       status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= total
+      paymentStatus: received >= (payable + profit)
           ? 'Paid'
           : (received > 0 ? 'Partially Paid' : 'Unpaid'),
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['createdByEmail'] ?? 'Unassigned'),
-      totalPrice: total,
+      totalPrice: payable + profit,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
@@ -320,7 +330,7 @@ class BookingsRemoteDataSource {
     final received = _parseNum(
       data['received'] ?? data['receivedAmount'] ?? data['totalReceivedAmount'],
     );
-    final total = received + payable;
+    final total = _parseNum(data['price'] ?? data['totalPrice'] ?? data['total'] ?? (payable + profit));
     return BookingModel(
       id: doc.id,
       serviceType: 'ticket',
@@ -379,10 +389,9 @@ class BookingsRemoteDataSource {
 
   BookingModel _mapInsurance(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['totalPayableAmount'] ?? data['payable']);
-    final profit = _parseNum(data['totalProfit'] ?? data['profit']);
-    final received = _parseNum(data['totalReceivedAmount'] ?? data['received']);
-    final total = received + payable;
+    final payable = _parseNum(data['totalPayableAmount']);
+    final profit = _parseNum(data['totalProfit']);
+    final received = _parseNum(data['totalReceivedAmount']);
     return BookingModel(
       id: doc.id,
       serviceType: 'insurance',
@@ -391,13 +400,11 @@ class BookingsRemoteDataSource {
       passportNumber: _parseString(data['passportNumber']),
       destination: _parseString(data['countryofTravel']),
       dateCreated: _parseDateTime(data['createdAt']),
-      status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= total
-          ? 'Paid'
-          : (received > 0 ? 'Partially Paid' : 'Unpaid'),
+      status: 'Approved',
+      paymentStatus: received >= (payable + profit) ? 'Paid' : 'Unpaid',
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['userEmail'] ?? 'Unassigned'),
-      totalPrice: total,
+      totalPrice: payable + profit,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,

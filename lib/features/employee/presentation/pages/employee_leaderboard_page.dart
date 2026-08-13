@@ -306,10 +306,20 @@ class _EmployeeLeaderboardPageState
                           Switch(
                             value: emp.isEnabled,
                             activeThumbColor: const Color(0xFF10B981),
-                            onChanged: (v) {
-                              ref
-                                  .read(employeeListProvider.notifier)
-                                  .toggleEmployeeAccess(emp.email);
+                            onChanged: (v) async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              try {
+                                await ref
+                                    .read(employeeListProvider.notifier)
+                                    .toggleEmployeeAccess(emp.uid, emp.isEnabled);
+                              } catch (e) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to update status: $e'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
                             },
                           ),
                         ],
@@ -325,22 +335,40 @@ class _EmployeeLeaderboardPageState
     );
   }
 
-  void _createEmployee() {
+  void _createEmployee() async {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
+      final messenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
 
-      ref.read(employeeListProvider.notifier).addEmployee(email, password);
-
-      _emailController.clear();
-      _passwordController.clear();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Employee login created successfully!'),
-          backgroundColor: Color(0xFF10B981),
-        ),
+      // Show loader dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
+
+      try {
+        await ref.read(employeeListProvider.notifier).addEmployee(email, password);
+        navigator.pop(); // Dismiss loader
+        _emailController.clear();
+        _passwordController.clear();
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Employee login created successfully!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      } catch (e) {
+        navigator.pop(); // Dismiss loader
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 }

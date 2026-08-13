@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/bookings_provider.dart';
 
 class HomeDashboardPage extends ConsumerStatefulWidget {
   const HomeDashboardPage({super.key});
@@ -15,65 +16,110 @@ class HomeDashboardPage extends ConsumerStatefulWidget {
 class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   bool _isExpanded = false;
 
-  final List<Map<String, String>> _allDestinations = const [
-    {'name': 'Malaysia', 'count': '1391', 'flag': '🇲🇾'},
-    {'name': 'THAILAND', 'count': '15', 'flag': '🇹🇭'},
-    {'name': 'Azerbaijan', 'count': '52', 'flag': '🇦🇿'},
-    {'name': 'Indonesia', 'count': '241', 'flag': '🇮🇩'},
-    {'name': 'Singapore', 'count': '163', 'flag': '🇸🇬'},
-    {'name': 'Uzbekistan', 'count': '31', 'flag': '🇺🇿'},
-    {'name': 'Nepal', 'count': '53', 'flag': '🇳🇵'},
-    {'name': 'Thailand', 'count': '673', 'flag': '🇹🇭'},
-    {'name': 'Austria', 'count': '6', 'flag': '🇦🇹'},
-    {'name': 'Hungary', 'count': '17', 'flag': '🇭🇺'},
-    {'name': 'Norway', 'count': '8', 'flag': '🇳🇴'},
-    {'name': 'USA', 'count': '50', 'flag': '🇺🇸'},
-    {'name': 'South Korea', 'count': '7', 'flag': '🇰🇷'},
-    {'name': 'Morocco', 'count': '5', 'flag': '🇲🇦'},
-    {'name': 'Pakistan', 'count': '11', 'flag': '🇵🇰'},
-    {'name': 'Tajikistan', 'count': '9', 'flag': '🇹🇯'},
-    {'name': 'Egypt', 'count': '9', 'flag': '🇪🇬'},
-    {'name': 'KYRGYZSTAN', 'count': '2', 'flag': '🇰🇬'},
-    {'name': 'Japan', 'count': '59', 'flag': '🇯🇵'},
-    {'name': 'Bahrain', 'count': '27', 'flag': '🇧🇭'},
-    {'name': 'France', 'count': '18', 'flag': '🇫🇷'},
-    {'name': 'Spain', 'count': '27', 'flag': '🇪🇸'},
-    {'name': 'United Kingdom', 'count': '22', 'flag': '🇬🇧'},
-    {'name': 'Turkey', 'count': '18', 'flag': '🇹🇷'},
-    {'name': 'Italy', 'count': '13', 'flag': '🇮🇹'},
-    {'name': 'Netherlands', 'count': '22', 'flag': '🇳🇱'},
-    {'name': 'Switzerland', 'count': '5', 'flag': '🇨🇭'},
-    {'name': 'Germany', 'count': '4', 'flag': '🇩🇪'},
-    {'name': 'South Africa', 'count': '7', 'flag': '🇿🇦'},
-    {'name': 'Belgium', 'count': '11', 'flag': '🇧🇪'},
-    {'name': 'SWITZERLAND', 'count': '1', 'flag': '🇨🇭'},
-    {'name': 'Cambodia', 'count': '6', 'flag': '🇰🇭'},
-    {'name': 'Philippines', 'count': '2', 'flag': '🇵🇭'},
-    {'name': 'Canada', 'count': '4', 'flag': '🇨🇦'},
-    {'name': 'Kazakhstan', 'count': '4', 'flag': '🇰🇿'},
-    {'name': 'Uganda', 'count': '3', 'flag': '🇺🇬'},
-    {'name': 'Vietnam', 'count': '5', 'flag': '🇻🇳'},
-    {'name': 'Zimbabwe', 'count': '2', 'flag': '🇿🇼'},
-    {'name': 'Sri Lanka', 'count': '27', 'flag': '🇱🇰'},
-    {'name': 'Belgium', 'count': '2', 'flag': '🇧🇪'},
-    {'name': 'China', 'count': '4', 'flag': '🇨🇳'},
-    {'name': 'Greece', 'count': '15', 'flag': '🇬🇷'},
-    {'name': 'Hungary', 'count': '1', 'flag': '🇭🇺'},
-    {'name': 'Denmark', 'count': '2', 'flag': '🇩🇰'},
-    {'name': 'Qatar', 'count': '8', 'flag': '🇶🇦'},
-    {'name': 'LUXEMBOURG', 'count': '1', 'flag': '🇱🇺'},
-    {'name': 'Hong Kong', 'count': '2', 'flag': '🇭🇰'},
-    {'name': 'Costa Rica', 'count': '1', 'flag': '🇨🇷'},
-    {'name': 'Poland', 'count': '8', 'flag': '🇵🇱'},
-    {'name': 'Sweden', 'count': '17', 'flag': '🇸🇪'},
-    {'name': 'Finland', 'count': '2', 'flag': '🇫🇮'},
-    {'name': 'UAE', 'count': '10', 'flag': '🇦🇪'},
-    {'name': 'Zambia', 'count': '2', 'flag': '🇿🇲'},
-    {'name': 'Ireland', 'count': '2', 'flag': '🇮🇪'},
-  ];
+  String _getCountryFlag(String countryName) {
+    final normalized = countryName.toLowerCase().trim();
+    final Map<String, String> countryFlags = {
+      'malaysia': '🇲🇾',
+      'thailand': '🇹🇭',
+      'azerbaijan': '🇦🇿',
+      'indonesia': '🇮🇩',
+      'singapore': '🇸🇬',
+      'uzbekistan': '🇺🇿',
+      'nepal': '🇳🇵',
+      'austria': '🇦🇹',
+      'hungary': '🇭🇺',
+      'norway': '🇳🇴',
+      'usa': '🇺🇸',
+      'united states': '🇺🇸',
+      'south korea': '🇰🇷',
+      'korea': '🇰🇷',
+      'morocco': '🇲🇦',
+      'pakistan': '🇵🇰',
+      'tajikistan': '🇹🇯',
+      'egypt': '🇪🇬',
+      'kyrgyzstan': '🇰🇬',
+      'japan': '🇯🇵',
+      'bahrain': '🇧🇭',
+      'france': '🇫🇷',
+      'spain': '🇪🇸',
+      'united kingdom': '🇬🇧',
+      'uk': '🇬🇧',
+      'turkey': '🇹🇷',
+      'türkiye': '🇹🇷',
+      'italy': '🇮🇹',
+      'netherlands': '🇳🇱',
+      'switzerland': '🇨🇭',
+      'germany': '🇩🇪',
+      'south africa': '🇿🇦',
+      'belgium': '🇧🇪',
+      'cambodia': '🇰🇭',
+      'philippines': '🇵🇭',
+      'canada': '🇨🇦',
+      'kazakhstan': '🇰🇿',
+      'uganda': '🇺🇬',
+      'vietnam': '🇻🇳',
+      'zimbabwe': '🇿🇼',
+      'sri lanka': '🇱🇰',
+      'china': '🇨🇳',
+      'greece': '🇬🇷',
+      'denmark': '🇩🇰',
+      'qatar': '🇶🇦',
+      'luxembourg': '🇱🇺',
+      'hong kong': '🇭🇰',
+      'costa rica': '🇨🇷',
+      'poland': '🇵🇱',
+      'sweden': '🇸🇪',
+      'finland': '🇫🇮',
+      'uae': '🇦🇪',
+      'united arab emirates': '🇦🇪',
+      'zambia': '🇿🇲',
+      'ireland': '🇮🇪',
+      'saudi arabia': '🇸🇦',
+      'saudi': '🇸🇦',
+      'oman': '🇴🇲',
+      'kuwait': '🇰🇼',
+    };
+
+    return countryFlags[normalized] ?? '🌍';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final bookings = ref.watch(bookingsProvider);
+    final stats = ref.watch(bookingStatsProvider);
+    final visaBookings = bookings
+        .where((b) => b.serviceType.toLowerCase() == 'visa')
+        .toList();
+
+    // Group bookings by destination/country directly from Firestore values
+    final Map<String, int> destinationCounts = {};
+    for (final b in visaBookings) {
+      final dest = b.destination.trim();
+      if (dest.isNotEmpty) {
+        destinationCounts[dest] = (destinationCounts[dest] ?? 0) + 1;
+      }
+    }
+
+    // Convert to a list of maps
+    final List<Map<String, String>> dynamicDestinations = destinationCounts
+        .entries
+        .map((entry) {
+          final name = entry.key;
+          final count = entry.value.toString();
+          final flag = _getCountryFlag(name);
+          return {'name': name, 'count': count, 'flag': flag};
+        })
+        .toList();
+
+    // Sort destinations by count descending
+    dynamicDestinations.sort((a, b) {
+      final countA = int.tryParse(a['count'] ?? '0') ?? 0;
+      final countB = int.tryParse(b['count'] ?? '0') ?? 0;
+      return countB.compareTo(countA);
+    });
+
+    final totalCountries = dynamicDestinations.length;
+
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDarkMode
         ? Colors.white
@@ -137,121 +183,139 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Stat Cards Grid (Mobile optimized 2 columns, beautiful glowing glassmorphic cards)
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.25,
+                      // Stat Cards Grid (Mobile optimized 3 cards layout: Total Bookings, Active Agents, Global Reach)
+                      Column(
                         children: [
-                          // Card 1: Total Bookings (Interactive)
-                          _buildInteractiveCard(
-                            context: context,
-                            title: 'Total Bookings',
-                            onTap: () =>
-                                ref.read(navigationProvider.notifier).state =
-                                    2, // Navigate to Records/Search
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      '3,040',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: primaryTextColor,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Text(
-                                      '+102',
-                                      style: TextStyle(
-                                        color: Color(0xFF10B981),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Spacer(),
-                                // Custom sparkline wave visual
-                                SizedBox(
-                                  height: 28,
-                                  width: double.infinity,
-                                  child: CustomPaint(
-                                    painter: SparklineMiniPainter(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Card 2: Total Handlers (Interactive)
-                          _buildInteractiveCard(
-                            context: context,
-                            title: 'Active Agents',
-                            onTap: () =>
-                                ref.read(navigationProvider.notifier).state =
-                                    8, // Navigate to Staff
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '7 Handlers',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryTextColor,
-                                  ),
-                                ),
-                                const Spacer(),
-
-                                // Small avatar stack
-                                Row(
-                                  children: List.generate(4, (index) {
-                                    final List<Color> colors = [
-                                      Colors.indigo,
-                                      Colors.teal,
-                                      Colors.amber,
-                                      Colors.pink,
-                                    ];
-                                    final List<String> initials = [
-                                      'AH',
-                                      'ZA',
-                                      'HA',
-                                      'BI',
-                                    ];
-                                    return Align(
-                                      widthFactor: 0.7,
-                                      child: CircleAvatar(
-                                        radius: 12,
-                                        backgroundColor: const Color(
-                                          0xFF0F172A,
-                                        ),
-                                        child: CircleAvatar(
-                                          radius: 11,
-                                          backgroundColor: colors[index],
-                                          child: Text(
-                                            initials[index],
-                                            style: const TextStyle(
-                                              fontSize: 8,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                // Card 1: Total Bookings (Interactive)
+                                Expanded(
+                                  child: _buildInteractiveCard(
+                                    context: context,
+                                    title: 'Total Bookings',
+                                    onTap: () =>
+                                        ref
+                                                .read(
+                                                  navigationProvider.notifier,
+                                                )
+                                                .state =
+                                            2, // Navigate to Records/Search
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '${stats.visaCount}',
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: primaryTextColor,
+                                              ),
                                             ),
+                                            const SizedBox(width: 4),
+                                            const Text(
+                                              '+102',
+                                              style: TextStyle(
+                                                color: Color(0xFF10B981),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        // Custom sparkline wave visual
+                                        SizedBox(
+                                          height: 28,
+                                          width: double.infinity,
+                                          child: CustomPaint(
+                                            painter: SparklineMiniPainter(),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // Card 2: Total Handlers (Interactive)
+                                Expanded(
+                                  child: _buildInteractiveCard(
+                                    context: context,
+                                    title: 'Active Agents',
+                                    onTap: () =>
+                                        ref
+                                                .read(
+                                                  navigationProvider.notifier,
+                                                )
+                                                .state =
+                                            8, // Navigate to Staff
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '7 Handlers',
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: primaryTextColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        // Small avatar stack
+                                        Row(
+                                          children: List.generate(4, (index) {
+                                            final List<Color> colors = [
+                                              Colors.indigo,
+                                              Colors.teal,
+                                              Colors.amber,
+                                              Colors.pink,
+                                            ];
+                                            final List<String> initials = [
+                                              'AH',
+                                              'ZA',
+                                              'HA',
+                                              'BI',
+                                            ];
+                                            return Align(
+                                              widthFactor: 0.7,
+                                              child: CircleAvatar(
+                                                radius: 12,
+                                                backgroundColor: const Color(
+                                                  0xFF0F172A,
+                                                ),
+                                                child: CircleAvatar(
+                                                  radius: 11,
+                                                  backgroundColor:
+                                                      colors[index],
+                                                  child: Text(
+                                                    initials[index],
+                                                    style: const TextStyle(
+                                                      fontSize: 8,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-
+                          const SizedBox(height: 16),
                           // Card 3: Global Reach (Interactive)
                           _buildInteractiveCard(
                             context: context,
@@ -261,16 +325,17 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                     2, // Navigate to Destinations/Records
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '53 Countries',
+                                  '$totalCountries Countries',
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: primaryTextColor,
                                   ),
                                 ),
-                                const Spacer(),
+                                const SizedBox(height: 12),
                                 Row(
                                   children: [
                                     const Icon(
@@ -281,46 +346,6 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                     const SizedBox(width: 4),
                                     Text(
                                       'Activations',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: secondaryTextColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Card 4: Net Profit (Interactive)
-                          _buildInteractiveCard(
-                            context: context,
-                            title: 'Net Profit',
-                            onTap: () =>
-                                ref.read(navigationProvider.notifier).state =
-                                    1, // Navigate to Analytics
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '25.8M PKR',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryTextColor,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.trending_up,
-                                      color: Colors.amber,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '28.9% Margin',
                                       style: TextStyle(
                                         fontSize: 11,
                                         color: secondaryTextColor,
@@ -443,40 +468,18 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                       if (!_isExpanded)
                         SizedBox(
                           height: 110,
-                          child: ListView(
+                          child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            children: [
-                              _buildDestinationCard(
+                            itemCount: dynamicDestinations.length.clamp(0, 5),
+                            itemBuilder: (context, index) {
+                              final dest = dynamicDestinations[index];
+                              return _buildDestinationCard(
                                 context,
-                                'Uzbekistan',
-                                '31',
-                                '🇺🇿',
-                              ),
-                              _buildDestinationCard(
-                                context,
-                                'Malaysia',
-                                '1391',
-                                '🇲🇾',
-                              ),
-                              _buildDestinationCard(
-                                context,
-                                'Thailand',
-                                '673',
-                                '🇹🇭',
-                              ),
-                              _buildDestinationCard(
-                                context,
-                                'Indonesia',
-                                '241',
-                                '🇮🇩',
-                              ),
-                              _buildDestinationCard(
-                                context,
-                                'Singapore',
-                                '163',
-                                '🇸🇬',
-                              ),
-                            ],
+                                dest['name']!,
+                                dest['count']!,
+                                dest['flag']!,
+                              );
+                            },
                           ),
                         )
                       else ...[
@@ -494,7 +497,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             return GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: _allDestinations.length,
+                              itemCount: dynamicDestinations.length,
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: crossAxisCount,
@@ -503,7 +506,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                     childAspectRatio: 1.6,
                                   ),
                               itemBuilder: (context, index) {
-                                final dest = _allDestinations[index];
+                                final dest = dynamicDestinations[index];
                                 return _buildGridDestinationCard(
                                   context,
                                   dest['name']!,
@@ -588,6 +591,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               title,
@@ -600,7 +604,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
               ),
             ),
             const SizedBox(height: 8),
-            Expanded(child: child),
+            child,
           ],
         ),
       ),

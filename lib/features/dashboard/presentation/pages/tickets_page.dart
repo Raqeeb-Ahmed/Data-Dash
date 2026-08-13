@@ -92,11 +92,11 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
 
     // --- Dynamic Monthly Aggregation for Graph ---
     final Map<int, List<Map<String, dynamic>>> monthlyMap = {
-      9: [],  // Sep
+      9: [], // Sep
       12: [], // Dec
-      1: [],  // Jan
-      2: [],  // Feb
-      6: [],  // Jun
+      1: [], // Jan
+      2: [], // Feb
+      6: [], // Jun
     };
     for (final b in _allBookings) {
       final dateStr = b['date'] as String;
@@ -139,8 +139,13 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
     final double junE = getEarningsForMonth(6);
     final double junP = getProfitForMonth(6);
 
-    double maxMonthlyE = [sepE, decE, janE, febE, junE]
-        .reduce((curr, next) => curr > next ? curr : next);
+    double maxMonthlyE = [
+      sepE,
+      decE,
+      janE,
+      febE,
+      junE,
+    ].reduce((curr, next) => curr > next ? curr : next);
     if (maxMonthlyE == 0) maxMonthlyE = 1.0;
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -337,21 +342,24 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
                               child: BarChart(
                                 BarChartData(
                                   alignment: BarChartAlignment.spaceAround,
-                                  maxY: maxMonthlyE > 0 ? maxMonthlyE * 1.2 : 100.0,
+                                  maxY: maxMonthlyE > 0
+                                      ? maxMonthlyE * 1.2
+                                      : 100.0,
                                   barTouchData: BarTouchData(
                                     enabled: true,
                                     touchTooltipData: BarTouchTooltipData(
-                                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                                        final isEarnings = rodIndex == 0;
-                                        return BarTooltipItem(
-                                          '${isEarnings ? 'Earnings' : 'Profit'}\nPKR ${_formatM(rod.toY)}',
-                                          const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
-                                          ),
-                                        );
-                                      },
+                                      getTooltipItem:
+                                          (group, groupIndex, rod, rodIndex) {
+                                            final isEarnings = rodIndex == 0;
+                                            return BarTooltipItem(
+                                              '${isEarnings ? 'Earnings' : 'Profit'}\nPKR ${_formatM(rod.toY)}',
+                                              const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10,
+                                              ),
+                                            );
+                                          },
                                     ),
                                   ),
                                   titlesData: FlTitlesData(
@@ -368,15 +376,30 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
                                           );
                                           switch (val.toInt()) {
                                             case 0:
-                                              return const Text('Sep', style: style);
+                                              return const Text(
+                                                'Sep',
+                                                style: style,
+                                              );
                                             case 1:
-                                              return const Text('Dec', style: style);
+                                              return const Text(
+                                                'Dec',
+                                                style: style,
+                                              );
                                             case 2:
-                                              return const Text('Jan', style: style);
+                                              return const Text(
+                                                'Jan',
+                                                style: style,
+                                              );
                                             case 3:
-                                              return const Text('Feb', style: style);
+                                              return const Text(
+                                                'Feb',
+                                                style: style,
+                                              );
                                             case 4:
-                                              return const Text('Jun', style: style);
+                                              return const Text(
+                                                'Jun',
+                                                style: style,
+                                              );
                                           }
                                           return const Text('');
                                         },
@@ -388,7 +411,9 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
                                         reservedSize: 35,
                                         getTitlesWidget: (value, meta) {
                                           return Padding(
-                                            padding: const EdgeInsets.only(right: 4),
+                                            padding: const EdgeInsets.only(
+                                              right: 4,
+                                            ),
                                             child: Text(
                                               _formatM(value),
                                               style: TextStyle(
