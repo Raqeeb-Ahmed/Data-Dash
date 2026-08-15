@@ -8,9 +8,9 @@ import '../providers/bookings_provider.dart';
 import 'employee_home_page.dart';
 import 'employee_tickets_page.dart';
 import 'employee_visa_records_page.dart';
-import 'universal_search_page.dart';
+import 'employee_search_page.dart';
+import 'employee_reports_page.dart';
 import 'visa_bookings_form_page.dart';
-import '../../../analytics/presentation/pages/analytics_page.dart';
 
 class EmployeeNavigationShell extends ConsumerStatefulWidget {
   const EmployeeNavigationShell({super.key});
@@ -31,8 +31,8 @@ class _EmployeeNavigationShellState
     const EmployeeVisaRecordsPage(), // Visa Records (Custom page for employees)
     const EmployeeTicketsPage(), // Ticketing
     const EmployeeCountriesPage(), // Countries Grid
-    const UniversalSearchPage(), // Search
-    const AnalyticsPage(), // Reports
+    const EmployeeSearchPage(), // Search
+    const EmployeeReportsPage(), // Reports
   ];
 
   @override
@@ -619,7 +619,6 @@ class _EmployeeCountriesPageState extends ConsumerState<EmployeeCountriesPage> {
       {'name': 'Thailand', 'flag': '🇹🇭', 'baseline': 665},
       {'name': 'Malaysia', 'flag': '🇲🇾', 'baseline': 1400},
       {'name': 'Azerbaijan', 'flag': '🇦🇿', 'baseline': 49},
-      {'name': 'THAILAND', 'flag': '🇹🇭', 'baseline': 15},
       {'name': 'Indonesia', 'flag': '🇮🇩', 'baseline': 240},
       {'name': 'Singapore', 'flag': '🇸🇬', 'baseline': 159},
       {'name': 'Uzbekistan', 'flag': '🇺🇿', 'baseline': 31},
@@ -635,15 +634,14 @@ class _EmployeeCountriesPageState extends ConsumerState<EmployeeCountriesPage> {
       {'name': 'United Arab Emirates', 'flag': '🇦🇪', 'baseline': 1},
     ];
 
-    // Compute display list (sum baseline + actual count from data matching name)
+    // Compute display list (actual count of applications logged-in employee applied for)
     final List<Map<String, dynamic>> displayList = mockupCountries.map((c) {
       final String countryName = c['name'] as String;
-      final int baseline = c['baseline'] as int;
       final matchedCount = activeCounts[countryName.toLowerCase()] ?? 0;
       return {
         'name': countryName,
         'flag': c['flag'],
-        'count': baseline + matchedCount,
+        'count': matchedCount,
       };
     }).toList();
 

@@ -4,6 +4,7 @@ import 'package:data_dash/features/dashboard/data/datasource/bookings_remote_dat
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/booking_model.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../auth/domain/entities/user_entity.dart';
 
 class BookingsFilter {
   final String searchQuery;
@@ -79,11 +80,12 @@ final bookingsDataSourceProvider = Provider<BookingsRemoteDataSource>((ref) {
 
 class BookingsNotifier extends StateNotifier<List<BookingModel>> {
   final BookingsRemoteDataSource? _remoteDataSource;
+  final UserEntity? _currentUser;
   StreamSubscription? _subscription;
-  BookingsNotifier(this._remoteDataSource) : super([]) {
+  BookingsNotifier(this._remoteDataSource, this._currentUser) : super([]) {
     _init();
   }
-  BookingsNotifier.empty() : _remoteDataSource = null, super([]);
+  BookingsNotifier.empty() : _remoteDataSource = null, _currentUser = null, super([]);
   void _init() {
     print(
       'BookingsNotifier _init: remoteDataSource is ${_remoteDataSource != null ? 'NOT null' : 'NULL'}',
@@ -94,7 +96,22 @@ class BookingsNotifier extends StateNotifier<List<BookingModel>> {
           print(
             'BookingsNotifier: Received ${list.length} merged bookings from remote datasource',
           );
-          state = list;
+          // Filter out deleted/trash status bookings first
+          final activeList = list.where((b) {
+            final s = b.status.toLowerCase();
+            return s != 'deleted' && s != 'trash';
+          }).toList();
+
+          if (_currentUser != null && _currentUser!.role == 'employee') {
+            final filtered = activeList.where((b) {
+              return b.employeeId == _currentUser!.uid ||
+                  b.employeeName.toLowerCase().trim() ==
+                      _currentUser!.email.toLowerCase().trim();
+            }).toList();
+            state = filtered;
+          } else {
+            state = activeList;
+          }
         },
         onError: (e) {
           print('BookingsNotifier: stream error: $e');
@@ -158,7 +175,7 @@ final bookingsProvider =
       return authState.when(
         data: (user) {
           if (user != null) {
-            return BookingsNotifier(dataSource);
+            return BookingsNotifier(dataSource, user);
           } else {
             return BookingsNotifier.empty();
           }
@@ -253,39 +270,96 @@ class BookingStats {
 
 final bookingStatsProvider = Provider<BookingStats>((ref) {
   final bookings = ref.watch(bookingsProvider);
+  final authState = ref.watch(authStateProvider);
 
-  final totalBookings = bookings.isNotEmpty ? 4225 : 0;
-  final visaCount = 3271;
-  final hotelCount = 53;
-  final umrahCount = 33;
-  final ticketCount = 853;
+  final currentUser = authState.value;
 
-  final totalApproved = 2896;
-  final totalProcessing = 196;
-  final totalRejected = 179;
+  if (currentUser != null && currentUser.role == 'employee') {
+    final totalBookings = bookings.length;
+    final visaCount = bookings.where((b) => b.serviceType == 'visa').length;
+    final hotelCount = bookings.where((b) => b.serviceType == 'hotel').length;
+    final umrahCount = bookings.where((b) => b.serviceType == 'umrah').length;
+    final ticketCount = bookings.where((b) => b.serviceType == 'ticket').length;
 
-  final totalReceivable = 96565835.0;
-  final totalReceived = 91910875.0;
-  final totalPending = 4654960.0;
+    final totalApproved = bookings
+        .where((b) => b.status.toLowerCase() == 'approved')
+        .length;
+    final totalProcessing = bookings
+        .where((b) => b.status.toLowerCase() == 'processing')
+        .length;
+    final totalRejected = bookings
+        .where((b) => b.status.toLowerCase() == 'rejected')
+        .length;
 
-  final totalNetProfit = 29634172.0;
-  final totalPaid = 2966;
-  final totalUnpaid = 264;
+    double totalReceivable = 0;
+    double totalReceived = 0;
+    double totalPending = 0;
+    double totalNetProfit = 0;
+    int totalPaid = 0;
+    int totalUnpaid = 0;
 
-  return BookingStats(
-    totalBookings: totalBookings,
-    totalApproved: totalApproved,
-    totalProcessing: totalProcessing,
-    totalRejected: totalRejected,
-    visaCount: visaCount,
-    hotelCount: hotelCount,
-    umrahCount: umrahCount,
-    ticketCount: ticketCount,
-    totalReceivable: totalReceivable,
-    totalReceived: totalReceived,
-    totalPending: totalPending,
-    totalNetProfit: totalNetProfit,
-    totalPaid: totalPaid,
-    totalUnpaid: totalUnpaid,
-  );
+    for (final b in bookings) {
+      totalReceivable += b.totalPrice;
+      totalReceived += b.receivedAmount;
+      totalPending += b.payableAmount;
+      totalNetProfit += b.netProfit;
+      if (b.paymentStatus.toLowerCase() == 'paid') {
+        totalPaid++;
+      } else if (b.paymentStatus.toLowerCase() == 'unpaid') {
+        totalUnpaid++;
+      }
+    }
+
+    return BookingStats(
+      totalBookings: totalBookings,
+      totalApproved: totalApproved,
+      totalProcessing: totalProcessing,
+      totalRejected: totalRejected,
+      visaCount: visaCount,
+      hotelCount: hotelCount,
+      umrahCount: umrahCount,
+      ticketCount: ticketCount,
+      totalReceivable: totalReceivable,
+      totalReceived: totalReceived,
+      totalPending: totalPending,
+      totalNetProfit: totalNetProfit,
+      totalPaid: totalPaid,
+      totalUnpaid: totalUnpaid,
+    );
+  } else {
+    final totalBookings = bookings.isNotEmpty ? 4225 : 0;
+    final visaCount = 3271;
+    final hotelCount = 53;
+    final umrahCount = 33;
+    final ticketCount = 853;
+
+    final totalApproved = 2896;
+    final totalProcessing = 196;
+    final totalRejected = 179;
+
+    final totalReceivable = 96565835.0;
+    final totalReceived = 91910875.0;
+    final totalPending = 4654960.0;
+
+    final totalNetProfit = 29634172.0;
+    final totalPaid = 2966;
+    final totalUnpaid = 264;
+
+    return BookingStats(
+      totalBookings: totalBookings,
+      totalApproved: totalApproved,
+      totalProcessing: totalProcessing,
+      totalRejected: totalRejected,
+      visaCount: visaCount,
+      hotelCount: hotelCount,
+      umrahCount: umrahCount,
+      ticketCount: ticketCount,
+      totalReceivable: totalReceivable,
+      totalReceived: totalReceived,
+      totalPending: totalPending,
+      totalNetProfit: totalNetProfit,
+      totalPaid: totalPaid,
+      totalUnpaid: totalUnpaid,
+    );
+  }
 });

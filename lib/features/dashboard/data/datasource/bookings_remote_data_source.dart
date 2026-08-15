@@ -218,9 +218,12 @@ class BookingsRemoteDataSource {
     final total = _parseNum(data['totalFee']);
     final embassy = _parseNum(data['embassyFee']);
     final vendor = _parseNum(data['vendorFee']);
-    
+
     var profit = _parseNum(
-      data['profit'] ?? data['netProfit'] ?? data['margin'] ?? data['totalProfit'],
+      data['profit'] ??
+          data['netProfit'] ??
+          data['margin'] ??
+          data['totalProfit'],
     );
     if (profit == 0 && total > 0) {
       final calculated = total - embassy - vendor;
@@ -228,7 +231,7 @@ class BookingsRemoteDataSource {
         profit = calculated;
       }
     }
-    
+
     return BookingModel(
       id: doc.id,
       serviceType: 'visa',
@@ -330,7 +333,12 @@ class BookingsRemoteDataSource {
     final received = _parseNum(
       data['received'] ?? data['receivedAmount'] ?? data['totalReceivedAmount'],
     );
-    final total = _parseNum(data['price'] ?? data['totalPrice'] ?? data['total'] ?? (payable + profit));
+    final total = _parseNum(
+      data['price'] ??
+          data['totalPrice'] ??
+          data['total'] ??
+          (payable + profit),
+    );
     return BookingModel(
       id: doc.id,
       serviceType: 'ticket',
@@ -446,7 +454,8 @@ class BookingsRemoteDataSource {
 
   Future<void> deleteBooking(String id, String serviceType) async {
     final col = _getCollectionName(serviceType);
-    await _firestore.collection(col).doc(id).delete();
+    final statusField = (serviceType.toLowerCase() == 'visa') ? 'visaStatus' : 'status';
+    await _firestore.collection(col).doc(id).update({statusField: 'Deleted'});
   }
 
   Map<String, dynamic> _mapModelToDbMap(BookingModel b) {

@@ -90,6 +90,7 @@ class _EmployeeVisaRecordsPageState
   Widget build(BuildContext context) {
     final allBookings = ref.watch(bookingsProvider);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final bool isMobile = MediaQuery.of(context).size.width < 750;
     final primaryColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
     final secondaryColor = isDarkMode
         ? const Color(0xFF94A3B8)
@@ -134,10 +135,12 @@ class _EmployeeVisaRecordsPageState
         return false;
 
       // Reference filter
-      if (_selectedReference.isNotEmpty &&
-          (b.reference?.toLowerCase() ?? '') !=
-              _selectedReference.toLowerCase())
-        return false;
+      if (_selectedReference.isNotEmpty) {
+        final bookingRef = (b.reference == null || b.reference!.trim().isEmpty)
+            ? 'direct'
+            : b.reference!.trim().toLowerCase();
+        if (bookingRef != _selectedReference.toLowerCase()) return false;
+      }
 
       // Search Query
       if (_searchQuery.isNotEmpty) {
@@ -163,11 +166,12 @@ class _EmployeeVisaRecordsPageState
     int processingCount = 0;
     int rejectedCount = 0;
     for (final b in filteredList) {
-      if (b.status == 'Approved') {
+      final s = b.status.toLowerCase().trim();
+      if (s == 'approved') {
         approvedCount++;
-      } else if (b.status == 'Processing') {
+      } else if (s == 'processing') {
         processingCount++;
-      } else if (b.status == 'Rejected') {
+      } else if (s == 'rejected') {
         rejectedCount++;
       }
     }
@@ -300,10 +304,16 @@ class _EmployeeVisaRecordsPageState
                                         'Rejected',
                                       ]
                                       .map(
-                                        (st) => DropdownMenuItem(
-                                          value: st,
-                                          child: Text(st),
+                                      (st) => DropdownMenuItem(
+                                        value: st,
+                                        child: Text(
+                                          st,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: primaryColor,
+                                          ),
                                         ),
+                                      ),
                                       )
                                       .toList(),
                               onChanged: (v) => setState(() {
@@ -478,6 +488,7 @@ class _EmployeeVisaRecordsPageState
                                         approved: approvedCount.toDouble(),
                                         processing: processingCount.toDouble(),
                                         rejected: rejectedCount.toDouble(),
+                                        textColor: primaryColor,
                                       ),
                                     ),
                                   ),
@@ -492,18 +503,21 @@ class _EmployeeVisaRecordsPageState
                                           'Approved',
                                           approvedCount,
                                           const Color(0xFF10B981),
+                                          primaryColor,
                                         ),
                                         const SizedBox(height: 6),
                                         _legendText(
                                           'Processing',
                                           processingCount,
                                           const Color(0xFFF59E0B),
+                                          primaryColor,
                                         ),
                                         const SizedBox(height: 6),
                                         _legendText(
                                           'Rejected',
                                           rejectedCount,
                                           const Color(0xFFEF4444),
+                                          primaryColor,
                                         ),
                                       ],
                                     ),
@@ -630,70 +644,102 @@ class _EmployeeVisaRecordsPageState
                     const SizedBox(height: 24),
 
                     // ── Table Container (Scrollable ScrollWrapper to solve RenderFlex table overflow) ──
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: 1100, // Fixed desktop-friendly width
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: cardBg,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: borderColor),
+                    if (isMobile) ...[
+                      // Mobile Card View
+                      if (pagedList.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Center(
+                            child: Text(
+                              'No visa bookings found matching filters.',
+                              style: TextStyle(
+                                color: secondaryColor,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Table Header Header row
-                              _buildTableHeaderRow(
-                                isDarkMode,
-                                primaryColor,
-                                secondaryColor,
-                              ),
-                              const Divider(
-                                height: 1,
-                                color: Color(0x1Fffffff),
-                              ),
-
-                              // Table body rows
-                              if (pagedList.isEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Center(
-                                    child: Text(
-                                      'No visa bookings found matching filters.',
-                                      style: TextStyle(
-                                        color: secondaryColor,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              else
-                                ...List.generate(pagedList.length, (idx) {
-                                  final b = pagedList[idx];
-                                  return _buildBookingTableRow(
-                                    context: context,
-                                    booking: b,
-                                    serialIndex: start + idx + 1,
-                                    isDarkMode: isDarkMode,
-                                    primaryColor: primaryColor,
-                                    secondaryColor: secondaryColor,
-                                    borderColor: borderColor,
-                                  );
-                                }),
-
-                              // Pagination Controls footer
-                              if (totalPages > 1)
-                                _buildPaginationFooter(
-                                  filteredList.length,
-                                  totalPages,
+                        )
+                      else
+                        ...List.generate(pagedList.length, (idx) {
+                          final b = pagedList[idx];
+                          return _buildBookingMobileCard(
+                            context: context,
+                            booking: b,
+                            serialIndex: start + idx + 1,
+                            isDarkMode: isDarkMode,
+                            primaryColor: primaryColor,
+                            secondaryColor: secondaryColor,
+                            borderColor: borderColor,
+                          );
+                        }),
+                      if (totalPages > 1)
+                        _buildPaginationFooter(
+                          filteredList.length,
+                          totalPages,
+                          secondaryColor,
+                        ),
+                    ] else ...[
+                      // Desktop Table View
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 1100, // Fixed desktop-friendly width
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildTableHeaderRow(
+                                  isDarkMode,
+                                  primaryColor,
                                   secondaryColor,
                                 ),
-                            ],
+                                const Divider(
+                                  height: 1,
+                                  color: Color(0x1Fffffff),
+                                ),
+                                if (pagedList.isEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Center(
+                                      child: Text(
+                                        'No visa bookings found matching filters.',
+                                        style: TextStyle(
+                                          color: secondaryColor,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  ...List.generate(pagedList.length, (idx) {
+                                    final b = pagedList[idx];
+                                    return _buildBookingTableRow(
+                                      context: context,
+                                      booking: b,
+                                      serialIndex: start + idx + 1,
+                                      isDarkMode: isDarkMode,
+                                      primaryColor: primaryColor,
+                                      secondaryColor: secondaryColor,
+                                      borderColor: borderColor,
+                                    );
+                                  }),
+                                if (totalPages > 1)
+                                  _buildPaginationFooter(
+                                    filteredList.length,
+                                    totalPages,
+                                    secondaryColor,
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
 
                     const SizedBox(height: 32),
                   ],
@@ -708,7 +754,7 @@ class _EmployeeVisaRecordsPageState
 
   // ── Helper Widgets ──
 
-  Widget _legendText(String label, int count, Color color) {
+  Widget _legendText(String label, int count, Color color, Color textColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -722,10 +768,10 @@ class _EmployeeVisaRecordsPageState
             const SizedBox(width: 6),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: Colors.white70,
+                color: textColor,
               ),
             ),
           ],
@@ -832,7 +878,7 @@ class _EmployeeVisaRecordsPageState
             ),
           ),
           const SizedBox(
-            width: 140,
+            width: 210,
             child: Text(
               'Actions',
               style: TextStyle(
@@ -845,6 +891,442 @@ class _EmployeeVisaRecordsPageState
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBookingMobileCard({
+    required BuildContext context,
+    required BookingModel booking,
+    required int serialIndex,
+    required bool isDarkMode,
+    required Color primaryColor,
+    required Color secondaryColor,
+    required Color borderColor,
+  }) {
+    final statusColor = booking.status == 'Approved'
+        ? const Color(0xFF10B981)
+        : (booking.status == 'Processing'
+              ? const Color(0xFFF59E0B)
+              : const Color(0xFFEF4444));
+
+    final statusBgColor = booking.status == 'Approved'
+        ? const Color(0x1A10B981)
+        : (booking.status == 'Processing'
+              ? const Color(0x1AF59E0B)
+              : const Color(0x1AEF4444));
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkMode
+            ? const Color(0xFF1E293B).withValues(alpha: 0.3)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDarkMode ? const Color(0x1AFFFFFF) : const Color(0x0F000000),
+          width: 1.0,
+        ),
+        boxShadow: isDarkMode
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Name, Passport & Status
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDarkMode
+                                ? const Color(0xFF334155)
+                                : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '#$serialIndex',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: secondaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            booking.customerName,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Passport: ${booking.passportNumber}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: secondaryColor,
+                        fontFamily: 'Courier',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: statusBgColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  booking.status,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 0.5),
+          ),
+
+          // Details Grid (2-column layout)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Column 1: Country & Visa Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCardInfoRow(
+                      icon: Icons.public,
+                      label: 'Destination',
+                      value: booking.destination,
+                      primaryColor: primaryColor,
+                      secondaryColor: secondaryColor,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildCardInfoRow(
+                      icon: Icons.assignment_outlined,
+                      label: 'Visa Type',
+                      value: booking.visaType ?? 'Tourist',
+                      primaryColor: primaryColor,
+                      secondaryColor: secondaryColor,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildCardInfoRow(
+                      icon: Icons.calendar_month_outlined,
+                      label: 'Date Created',
+                      value: _formatDate(booking.dateCreated),
+                      primaryColor: primaryColor,
+                      secondaryColor: secondaryColor,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              // Column 2: Financials Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCardFinancialsRow(
+                      label: 'Total Price',
+                      value: booking.totalPrice,
+                      color: const Color(0xFF10B981),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildCardFinancialsRow(
+                      label: 'Received',
+                      value: booking.receivedAmount,
+                      color: const Color(0xFF3B82F6),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildCardFinancialsRow(
+                      label: 'Remaining',
+                      value: booking.payableAmount,
+                      color: const Color(0xFFEF4444),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildCardFinancialsRow(
+                      label: 'Profit Margin',
+                      value: booking.netProfit,
+                      color: const Color(0xFF10B981),
+                      isBold: true,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Collapsible/Simple details row for Embassy & Vendor info
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? const Color(0xFF1E293B).withValues(alpha: 0.2)
+                  : Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Embassy Status',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Sent: ${booking.sentToEmbassyDate ?? '-'}',
+                        style: TextStyle(fontSize: 10, color: primaryColor),
+                      ),
+                      Text(
+                        'Recv: ${booking.receivedFromEmbassyDate ?? '-'}',
+                        style: TextStyle(fontSize: 10, color: primaryColor),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Vendor & Reference',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Ref: ${booking.reference ?? 'Direct'}',
+                        style: TextStyle(fontSize: 10, color: primaryColor),
+                      ),
+                      Text(
+                        'Contact: ${booking.vendorContact ?? '-'}',
+                        style: TextStyle(fontSize: 10, color: primaryColor),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Actions Panel
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              InkWell(
+                onTap: () => _openViewModal(context, booking),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.remove_red_eye_outlined,
+                        size: 12,
+                        color: Color(0xFF8B5CF6),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'View Details',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF8B5CF6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _openEditModal(context, booking),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.edit_outlined, size: 12, color: Colors.white),
+                      SizedBox(width: 6),
+                      Text(
+                        'Edit',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _confirmDelete(context, booking),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.delete_outline,
+                        size: 12,
+                        color: Color(0xFFEF4444),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color primaryColor,
+    required Color secondaryColor,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 14, color: AppColors.primary),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 9, color: secondaryColor)),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardFinancialsRow({
+    required String label,
+    required double value,
+    required Color color,
+    bool isBold = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        Text(
+          'PKR ${value.toStringAsFixed(0)}',
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1088,7 +1570,7 @@ class _EmployeeVisaRecordsPageState
 
           // Actions
           SizedBox(
-            width: 140,
+            width: 210,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -1155,6 +1637,40 @@ class _EmployeeVisaRecordsPageState
                     ),
                   ),
                 ),
+                const SizedBox(width: 6),
+                // Delete Button
+                InkWell(
+                  onTap: () => _confirmDelete(context, booking),
+                  borderRadius: BorderRadius.circular(15),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          size: 10,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Delete',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1209,10 +1725,101 @@ class _EmployeeVisaRecordsPageState
   // ── VIEW details screen (3-Column Layout matching your mockup details pop-up) ──
   void _openViewModal(BuildContext context, BookingModel b) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final bool isMobile = MediaQuery.of(context).size.width < 750;
     final primaryColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
     final secondaryColor = isDarkMode
         ? const Color(0xFF94A3B8)
         : AppColors.textSecondaryLight;
+
+    final column1Children = [
+      _detailCell('Full Name', b.customerName, secondaryColor, primaryColor),
+      const SizedBox(height: 14),
+      _detailCell('Passport', b.passportNumber, secondaryColor, primaryColor),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Passport Expiry',
+        b.passportExpiryDate ?? '-',
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell('Email', b.email ?? '-', secondaryColor, primaryColor),
+      const SizedBox(height: 14),
+      _detailCell('Phone', b.customerPhone, secondaryColor, primaryColor),
+    ];
+
+    final column2Children = [
+      _detailCell('Country', b.destination, secondaryColor, primaryColor),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Visa Type',
+        b.visaType ?? 'Tourist',
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Date',
+        _formatDate(b.dateCreated),
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Visa Status',
+        b.status,
+        secondaryColor,
+        primaryColor,
+        isStatus: true,
+      ),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Payment Status',
+        b.paymentStatus,
+        secondaryColor,
+        primaryColor,
+        isPayment: true,
+      ),
+    ];
+
+    final column3Children = [
+      _detailCell(
+        'Sent to Embassy',
+        b.sentToEmbassyDate ?? '-',
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Reference',
+        b.reference ?? 'Direct',
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Embassy Fee',
+        (b.embassyFee ?? 0.0).toStringAsFixed(0),
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell('Vendor', b.vendorName ?? '-', secondaryColor, primaryColor),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Vendor Contact',
+        b.vendorContact ?? '-',
+        secondaryColor,
+        primaryColor,
+      ),
+      const SizedBox(height: 14),
+      _detailCell(
+        'Vendor Fee',
+        (b.vendorFee ?? 0.0).toStringAsFixed(0),
+        secondaryColor,
+        primaryColor,
+      ),
+    ];
 
     showDialog(
       context: context,
@@ -1220,7 +1827,9 @@ class _EmployeeVisaRecordsPageState
         backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
-          width: 800, // Wide layout for 3 columns side by side
+          width: isMobile
+              ? MediaQuery.of(context).size.width * 0.95
+              : 800, // Responsive width
           padding: const EdgeInsets.all(24),
           child: SingleChildScrollView(
             child: Column(
@@ -1246,149 +1855,40 @@ class _EmployeeVisaRecordsPageState
                 const Divider(),
                 const SizedBox(height: 16),
 
-                // ── Mockup 3-Column Grid Details ──
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Column 1
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _detailCell(
-                            'Full Name',
-                            b.customerName,
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Passport',
-                            b.passportNumber,
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Passport Expiry',
-                            b.passportExpiryDate ?? '-',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Email',
-                            b.email ?? '-',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Phone',
-                            b.customerPhone,
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                        ],
+                // ── Mockup 3-Column Grid Details (Responsive layout check) ──
+                if (isMobile) ...[
+                  ...column1Children,
+                  const SizedBox(height: 14),
+                  ...column2Children,
+                  const SizedBox(height: 14),
+                  ...column3Children,
+                ] else ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: column1Children,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 24),
-                    // Column 2
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _detailCell(
-                            'Country',
-                            b.destination,
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Visa Type',
-                            b.visaType ?? 'Tourist',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Date',
-                            _formatDate(b.dateCreated),
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Visa Status',
-                            b.status,
-                            secondaryColor,
-                            primaryColor,
-                            isStatus: true,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Payment Status',
-                            b.paymentStatus,
-                            secondaryColor,
-                            primaryColor,
-                            isPayment: true,
-                          ),
-                        ],
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: column2Children,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 24),
-                    // Column 3
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _detailCell(
-                            'Sent to Embassy',
-                            b.sentToEmbassyDate ?? '-',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Reference',
-                            b.reference ?? 'Direct',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Embassy Fee',
-                            (b.embassyFee ?? 0.0).toStringAsFixed(0),
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Vendor',
-                            b.vendorName ?? '-',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Vendor Contact',
-                            b.vendorContact ?? '-',
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                          const SizedBox(height: 14),
-                          _detailCell(
-                            'Vendor Fee',
-                            (b.vendorFee ?? 0.0).toStringAsFixed(0),
-                            secondaryColor,
-                            primaryColor,
-                          ),
-                        ],
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: column3Children,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
 
                 const Divider(height: 32),
 
@@ -1522,6 +2022,7 @@ class _EmployeeVisaRecordsPageState
   // ── EDIT modal popup dialog ──
   void _openEditModal(BuildContext context, BookingModel b) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final bool isMobile = MediaQuery.of(context).size.width < 750;
     final primaryColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
     final secondaryColor = isDarkMode
         ? const Color(0xFF94A3B8)
@@ -1567,6 +2068,41 @@ class _EmployeeVisaRecordsPageState
     String country = b.destination;
     String calculatedPaymentStatus = b.paymentStatus;
 
+    // Dynamic dropdown lists builder to avoid Assertion crashes if database has custom values
+    final List<String> countryDropdownItems = [
+      'Belgium',
+      'Malaysia',
+      'Uzbekistan',
+      'Thailand',
+      'Indonesia',
+      'Singapore',
+      'Austria',
+      'Hungary',
+      'Schengen',
+    ];
+    if (!countryDropdownItems.contains(country)) {
+      countryDropdownItems.add(country);
+    }
+
+    final List<String> visaTypeDropdownItems = [
+      'Tourist',
+      'Work',
+      'Student',
+      'Business',
+    ];
+    if (!visaTypeDropdownItems.contains(visaType)) {
+      visaTypeDropdownItems.add(visaType);
+    }
+
+    final List<String> statusDropdownItems = [
+      'Approved',
+      'Processing',
+      'Rejected',
+    ];
+    if (!statusDropdownItems.contains(status)) {
+      statusDropdownItems.add(status);
+    }
+
     void calculate() {
       final double total = double.tryParse(totalFeeController.text) ?? 0.0;
       final double received =
@@ -1603,7 +2139,7 @@ class _EmployeeVisaRecordsPageState
             borderRadius: BorderRadius.circular(16),
           ),
           child: Container(
-            width: 700,
+            width: isMobile ? MediaQuery.of(context).size.width * 0.95 : 700,
             padding: const EdgeInsets.all(24),
             child: SingleChildScrollView(
               child: Form(
@@ -1631,323 +2167,298 @@ class _EmployeeVisaRecordsPageState
                     const Divider(),
                     const SizedBox(height: 12),
 
-                    // Forms inputs (2 columns layout)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _modalInput(
-                            'Full Name',
-                            nameController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                    // Forms inputs (stacked on mobile, side-by-side on desktop)
+                    _formRow(isMobile, [
+                      Expanded(
+                        child: _modalInput(
+                          'Full Name',
+                          nameController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _modalInput(
-                            'Passport Number',
-                            passportController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                      ),
+                      Expanded(
+                        child: _modalInput(
+                          'Passport Number',
+                          passportController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
                         ),
-                      ],
-                    ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Country Dropdown
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Country',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: secondaryColor,
-                                ),
+                    _formRow(isMobile, [
+                      // Country Dropdown
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Country',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: secondaryColor,
                               ),
-                              const SizedBox(height: 6),
-                              DropdownButtonFormField<String>(
-                                initialValue: country,
-                                dropdownColor: isDarkMode
-                                    ? const Color(0xFF0F172A)
-                                    : Colors.white,
-                                decoration: _modalInputDecoration(
-                                  inputBg,
-                                  secondaryColor,
-                                ),
-                                items:
-                                    [
-                                          'Belgium',
-                                          'Malaysia',
-                                          'Uzbekistan',
-                                          'Thailand',
-                                          'Indonesia',
-                                          'Singapore',
-                                          'Austria',
-                                          'Hungary',
-                                          'Schengen',
-                                        ]
-                                        .map(
-                                          (c) => DropdownMenuItem(
-                                            value: c,
-                                            child: Text(
-                                              c,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: primaryColor,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged: (v) => country = v!,
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              initialValue: country,
+                              style: TextStyle(fontSize: 12, color: primaryColor),
+                              dropdownColor: isDarkMode
+                                  ? const Color(0xFF0F172A)
+                                  : Colors.white,
+                              decoration: _modalInputDecoration(
+                                inputBg,
+                                secondaryColor,
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Visa Type Dropdown
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Visa Type',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: secondaryColor,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              DropdownButtonFormField<String>(
-                                initialValue: visaType,
-                                dropdownColor: isDarkMode
-                                    ? const Color(0xFF0F172A)
-                                    : Colors.white,
-                                decoration: _modalInputDecoration(
-                                  inputBg,
-                                  secondaryColor,
-                                ),
-                                items:
-                                    ['Tourist', 'Work', 'Student', 'Business']
-                                        .map(
-                                          (vt) => DropdownMenuItem(
-                                            value: vt,
-                                            child: Text(
-                                              vt,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: primaryColor,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged: (v) => visaType = v!,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Visa Status Dropdown
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Visa Status',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: secondaryColor,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              DropdownButtonFormField<String>(
-                                initialValue: status,
-                                dropdownColor: isDarkMode
-                                    ? const Color(0xFF0F172A)
-                                    : Colors.white,
-                                decoration: _modalInputDecoration(
-                                  inputBg,
-                                  secondaryColor,
-                                ),
-                                items: ['Approved', 'Processing', 'Rejected']
-                                    .map(
-                                      (st) => DropdownMenuItem(
-                                        value: st,
-                                        child: Text(
-                                          st,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: primaryColor,
-                                          ),
+                              items: countryDropdownItems
+                                  .map(
+                                    (c) => DropdownMenuItem(
+                                      value: c,
+                                      child: Text(
+                                        c,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: primaryColor,
                                         ),
                                       ),
-                                    )
-                                    .toList(),
-                                onChanged: (v) => status = v!,
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) => country = v!,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Visa Type Dropdown
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Visa Type',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: secondaryColor,
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              initialValue: visaType,
+                              style: TextStyle(fontSize: 12, color: primaryColor),
+                              dropdownColor: isDarkMode
+                                  ? const Color(0xFF0F172A)
+                                  : Colors.white,
+                              decoration: _modalInputDecoration(
+                                inputBg,
+                                secondaryColor,
+                              ),
+                              items: visaTypeDropdownItems
+                                  .map(
+                                    (vt) => DropdownMenuItem(
+                                      value: vt,
+                                      child: Text(
+                                        vt,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) => visaType = v!,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        // Total Fee
-                        Expanded(
-                          child: _modalInput(
-                            'Total Fee',
-                            totalFeeController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                            isNumeric: true,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Received Fee
-                        Expanded(
-                          child: _modalInput(
-                            'Received Fee',
-                            receivedFeeController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                            isNumeric: true,
-                          ),
+                    _formRow(isMobile, [
+                      // Visa Status Dropdown
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Visa Status',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: secondaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              initialValue: status,
+                              style: TextStyle(fontSize: 12, color: primaryColor),
+                              dropdownColor: isDarkMode
+                                  ? const Color(0xFF0F172A)
+                                  : Colors.white,
+                              decoration: _modalInputDecoration(
+                                inputBg,
+                                secondaryColor,
+                              ),
+                              items: statusDropdownItems
+                                  .map(
+                                    (st) => DropdownMenuItem(
+                                      value: st,
+                                      child: Text(
+                                        st,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) => status = v!,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        // Remaining Fee (LOCKED)
-                        Expanded(
-                          child: _modalInput(
-                            'Remaining Fee (Locked)',
-                            remainingFeeController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                            isEnabled: false,
-                          ),
+                      ),
+                      // Total Fee
+                      Expanded(
+                        child: _modalInput(
+                          'Total Fee',
+                          totalFeeController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isNumeric: true,
                         ),
-                      ],
-                    ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Embassy Fee
-                        Expanded(
-                          child: _modalInput(
-                            'Embassy Fee',
-                            embassyFeeController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                            isNumeric: true,
-                          ),
+                    _formRow(isMobile, [
+                      // Received Fee
+                      Expanded(
+                        child: _modalInput(
+                          'Received Fee',
+                          receivedFeeController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isNumeric: true,
                         ),
-                        const SizedBox(width: 12),
-                        // Vendor Fee
-                        Expanded(
-                          child: _modalInput(
-                            'Vendor Fee',
-                            vendorFeeController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                            isNumeric: true,
-                          ),
+                      ),
+                      // Remaining Fee (LOCKED)
+                      Expanded(
+                        child: _modalInput(
+                          'Remaining Fee (Locked)',
+                          remainingFeeController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isEnabled: false,
+                          isRequired: false,
                         ),
-                      ],
-                    ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Calculated Profit (LOCKED)
-                        Expanded(
-                          child: _modalInput(
-                            'Calculated Profit (Locked)',
-                            profitController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                            isEnabled: false,
-                          ),
+                    _formRow(isMobile, [
+                      // Embassy Fee
+                      Expanded(
+                        child: _modalInput(
+                          'Embassy Fee',
+                          embassyFeeController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isNumeric: true,
+                          isRequired: false,
                         ),
-                        const SizedBox(width: 12),
-                        // Reference
-                        Expanded(
-                          child: _modalInput(
-                            'Reference',
-                            refController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                      ),
+                      // Vendor Fee
+                      Expanded(
+                        child: _modalInput(
+                          'Vendor Fee',
+                          vendorFeeController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isNumeric: true,
+                          isRequired: false,
                         ),
-                      ],
-                    ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Email
-                        Expanded(
-                          child: _modalInput(
-                            'Email Address',
-                            emailController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                    _formRow(isMobile, [
+                      // Calculated Profit (LOCKED)
+                      Expanded(
+                        child: _modalInput(
+                          'Calculated Profit (Locked)',
+                          profitController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isEnabled: false,
+                          isRequired: false,
                         ),
-                        const SizedBox(width: 12),
-                        // Phone
-                        Expanded(
-                          child: _modalInput(
-                            'Contact Phone',
-                            phoneController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                      ),
+                      // Reference
+                      Expanded(
+                        child: _modalInput(
+                          'Reference',
+                          refController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isRequired: false,
                         ),
-                      ],
-                    ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Vendor Name
-                        Expanded(
-                          child: _modalInput(
-                            'Vendor Name',
-                            vendorNameController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                    _formRow(isMobile, [
+                      // Email
+                      Expanded(
+                        child: _modalInput(
+                          'Email Address',
+                          emailController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isRequired: false,
                         ),
-                        const SizedBox(width: 12),
-                        // Vendor Contact
-                        Expanded(
-                          child: _modalInput(
-                            'Vendor Contact',
-                            vendorContactController,
-                            primaryColor,
-                            secondaryColor,
-                            inputBg,
-                          ),
+                      ),
+                      // Phone
+                      Expanded(
+                        child: _modalInput(
+                          'Contact Phone',
+                          phoneController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
                         ),
-                      ],
-                    ),
+                      ),
+                    ]),
+                    const SizedBox(height: 12),
+                    _formRow(isMobile, [
+                      // Vendor Name
+                      Expanded(
+                        child: _modalInput(
+                          'Vendor Name',
+                          vendorNameController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isRequired: false,
+                        ),
+                      ),
+                      // Vendor Contact
+                      Expanded(
+                        child: _modalInput(
+                          'Vendor Contact',
+                          vendorContactController,
+                          primaryColor,
+                          secondaryColor,
+                          inputBg,
+                          isRequired: false,
+                        ),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
                     // Remarks
                     _modalInput(
@@ -1957,6 +2468,7 @@ class _EmployeeVisaRecordsPageState
                       secondaryColor,
                       inputBg,
                       maxLines: 3,
+                      isRequired: false,
                     ),
                     const SizedBox(height: 20),
 
@@ -1990,16 +2502,22 @@ class _EmployeeVisaRecordsPageState
                                 paymentStatus: calculatedPaymentStatus,
                                 employeeId: b.employeeId,
                                 employeeName: b.employeeName,
-                                totalPrice: double.parse(
-                                  totalFeeController.text,
-                                ),
-                                receivedAmount: double.parse(
-                                  receivedFeeController.text,
-                                ),
-                                payableAmount: double.parse(
-                                  remainingFeeController.text,
-                                ),
-                                netProfit: double.parse(profitController.text),
+                                totalPrice:
+                                    double.tryParse(totalFeeController.text) ??
+                                    0.0,
+                                receivedAmount:
+                                    double.tryParse(
+                                      receivedFeeController.text,
+                                    ) ??
+                                    0.0,
+                                payableAmount:
+                                    double.tryParse(
+                                      remainingFeeController.text,
+                                    ) ??
+                                    0.0,
+                                netProfit:
+                                    double.tryParse(profitController.text) ??
+                                    0.0,
                                 // Visa Details
                                 passportExpiryDate: b.passportExpiryDate,
                                 visaType: visaType,
@@ -2073,6 +2591,101 @@ class _EmployeeVisaRecordsPageState
     );
   }
 
+  // Helper Row widget that stacks elements vertically on mobile, and side-by-side on desktop
+  Widget _formRow(bool isMobile, List<Widget> children) {
+    // Strip Expanded wrappers for Column layout to prevent rendering issues in scroll view
+    final List<Widget> processedChildren = children.map((c) {
+      if (c is Expanded) return c.child;
+      return c;
+    }).toList();
+
+    if (isMobile) {
+      final List<Widget> spacedChildren = [];
+      for (int i = 0; i < processedChildren.length; i++) {
+        spacedChildren.add(processedChildren[i]);
+        if (i < processedChildren.length - 1) {
+          spacedChildren.add(const SizedBox(height: 12));
+        }
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: spacedChildren,
+      );
+    } else {
+      final List<Widget> spacedChildren = [];
+      for (int i = 0; i < children.length; i++) {
+        spacedChildren.add(children[i]);
+        if (i < children.length - 1) {
+          spacedChildren.add(const SizedBox(width: 12));
+        }
+      }
+      return Row(children: spacedChildren);
+    }
+  }
+
+  // Delete Action Confirmation alert popup
+  void _confirmDelete(BuildContext context, BookingModel booking) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF0F172A)
+            : Colors.white,
+        title: const Text(
+          'Confirm Delete',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Are you sure you want to delete the visa booking for ${booking.customerName}?',
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await ref
+                    .read(bookingsProvider.notifier)
+                    .deleteBooking(booking.id);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Visa booking deleted successfully!'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Delete failed: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _modalInput(
     String label,
     TextEditingController ctrl,
@@ -2082,6 +2695,7 @@ class _EmployeeVisaRecordsPageState
     bool isNumeric = false,
     bool isEnabled = true,
     int maxLines = 1,
+    bool isRequired = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2100,7 +2714,12 @@ class _EmployeeVisaRecordsPageState
                 : primaryColor.withValues(alpha: 0.6),
           ),
           decoration: _modalInputDecoration(inputBg, secondaryColor),
-          validator: (v) => v!.isEmpty ? 'Enter field data' : null,
+          validator: (v) {
+            if (isRequired && (v == null || v.isEmpty)) {
+              return 'Enter field data';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -2128,11 +2747,13 @@ class DoughnutChartPainter extends CustomPainter {
   final double approved;
   final double processing;
   final double rejected;
+  final Color textColor;
 
   DoughnutChartPainter({
     required this.approved,
     required this.processing,
     required this.rejected,
+    required this.textColor,
   });
 
   @override
@@ -2211,10 +2832,10 @@ class DoughnutChartPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: '${total.toInt()}',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: textColor,
         ),
       ),
       textDirection: TextDirection.ltr,

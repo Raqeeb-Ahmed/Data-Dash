@@ -4,9 +4,9 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../../presentation/providers/navigation_provider.dart';
 import '../providers/bookings_provider.dart';
-import 'umrah_page.dart';
-import 'hotels_page.dart';
-import 'insurance_page.dart';
+import 'employee_umrah_booking_page.dart';
+import 'employee_hotel_booking_page.dart';
+import 'employee_medical_insurance_page.dart';
 
 class EmployeeHomePage extends ConsumerWidget {
   const EmployeeHomePage({super.key});
@@ -173,26 +173,26 @@ class EmployeeHomePage extends ConsumerWidget {
                                   2; // Visa Records tab
                             },
                           ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            title: 'Deleted Visas',
-                            description:
-                                'Restore or permanently delete visa records.',
-                            buttonText: 'Go to Deleted Visas',
-                            icon: Icons.delete_outline,
-                            iconColor: const Color(0xFFEF4444),
-                            onTap: () {
-                              // Show snackbar / message
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'No deleted visas found in trash.',
-                                  ),
-                                  backgroundColor: AppColors.primary,
-                                ),
-                              );
-                            },
-                          ),
+                          // _buildQuickAccessCard(
+                          //   context: context,
+                          //   title: 'Deleted Visas',
+                          //   description:
+                          //       'Restore or permanently delete visa records.',
+                          //   buttonText: 'Go to Deleted Visas',
+                          //   icon: Icons.delete_outline,
+                          //   iconColor: const Color(0xFFEF4444),
+                          //   onTap: () {
+                          //     // Show snackbar / message
+                          //     ScaffoldMessenger.of(context).showSnackBar(
+                          //       const SnackBar(
+                          //         content: Text(
+                          //           'No deleted visas found in trash.',
+                          //         ),
+                          //         backgroundColor: AppColors.primary,
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
                           _buildQuickAccessCard(
                             context: context,
                             title: 'Countries',
@@ -484,8 +484,12 @@ class EmployeeHomePage extends ConsumerWidget {
             'Plan your spiritual journey with our dedicated Umrah packages.',
         icon: Icons.mosque,
         onTap: () {
-          // Open details modal
-          _showDetailDialog(context, 'Umrah Bookings', const UmrahPage());
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const EmployeeUmrahBookingPage(),
+            ),
+          );
         },
       ),
       _buildServiceCard(
@@ -494,7 +498,12 @@ class EmployeeHomePage extends ConsumerWidget {
         description: 'Find and reserve top-rated hotels and accommodations.',
         icon: Icons.hotel,
         onTap: () {
-          _showDetailDialog(context, 'Hotel Booking', const HotelsPage());
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const EmployeeHotelBookingPage(),
+            ),
+          );
         },
       ),
       _buildServiceCard(
@@ -503,10 +512,11 @@ class EmployeeHomePage extends ConsumerWidget {
         description: 'Get personalized tips for your trips and destinations.',
         icon: Icons.verified_user,
         onTap: () {
-          _showDetailDialog(
+          Navigator.push(
             context,
-            'Medical Insurance',
-            const InsurancePage(),
+            MaterialPageRoute(
+              builder: (context) => const EmployeeMedicalInsurancePage(),
+            ),
           );
         },
       ),
@@ -589,43 +599,7 @@ class EmployeeHomePage extends ConsumerWidget {
     );
   }
 
-  void _showDetailDialog(BuildContext context, String title, Widget content) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF0F172A)
-            : Colors.white,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(child: content),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   List<Widget> _buildWhyChooseCards(BuildContext context) {
     return [
