@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/marketing_provider.dart';
+import '../providers/bookings_provider.dart';
 
 class MarketingPage extends ConsumerStatefulWidget {
   const MarketingPage({super.key});
@@ -85,8 +86,12 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
     'Finland': '🇫🇮',
     'Zambia': '🇿🇲',
     'Ireland': '🇮🇪',
-    'Luxembourg': '🇱🇺',
     'Costa Rica': '🇨🇷',
+    'Saudi Arabia': '🇸🇦',
+    'General': '🌐',
+    'Hotel': '🏨',
+    'Visa': '🛂',
+    'Insurance': '🛡️',
   };
 
   @override
@@ -252,28 +257,32 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
 
         // Grid of Country Cards (Two Columns responsive)
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: childAspectRatio,
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: GridView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: childAspectRatio,
+              ),
+              itemCount: filteredCountries.length,
+              itemBuilder: (context, idx) {
+                final c = filteredCountries[idx];
+                final flag = _flags[c.countryName] ?? '🏳️';
+                return _buildCountryCard(
+                  c,
+                  flag,
+                  cardBg,
+                  borderColor,
+                  primaryColor,
+                  secondaryColor,
+                  isDarkMode,
+                );
+              },
             ),
-            itemCount: filteredCountries.length,
-            itemBuilder: (context, idx) {
-              final c = filteredCountries[idx];
-              final flag = _flags[c.countryName] ?? '🏳️';
-              return _buildCountryCard(
-                c,
-                flag,
-                cardBg,
-                borderColor,
-                primaryColor,
-                secondaryColor,
-                isDarkMode,
-              );
-            },
           ),
         ),
       ],
@@ -549,14 +558,19 @@ class _MarketingPageState extends ConsumerState<MarketingPage> {
     int from = int.tryParse(_rangeFromController.text) ?? 1;
     int to = int.tryParse(_rangeToController.text) ?? 10;
 
-    // Bounds clamping
-    if (from < 1) from = 1;
-    if (to > c.customers.length) to = c.customers.length;
-    if (from > to) from = to;
+    final List<MarketingCustomerModel> displayedCustomers;
+    if (c.customers.isEmpty) {
+      displayedCustomers = [];
+    } else {
+      // Bounds clamping
+      if (from < 1) from = 1;
+      if (to > c.customers.length) to = c.customers.length;
+      if (from > to) from = to;
 
-    final displayedCustomers = _showAll
-        ? c.customers
-        : c.customers.sublist(from - 1, to);
+      displayedCustomers = _showAll
+          ? c.customers
+          : c.customers.sublist(from - 1, to);
+    }
 
     // Check if all displayed are selected
     final bool allSelected =

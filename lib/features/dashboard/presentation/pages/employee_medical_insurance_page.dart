@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../providers/bookings_provider.dart';
 import 'insurance_page.dart';
 
 class EmployeeMedicalInsurancePage extends ConsumerStatefulWidget {
@@ -217,8 +218,11 @@ class _EmployeeMedicalInsurancePageState
       body: AnimatedWorldMapBackground(
         watermarkText: 'MEDICAL INSURANCE',
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -426,6 +430,7 @@ class _EmployeeMedicalInsurancePageState
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),

@@ -113,65 +113,19 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
       0.0,
       (s, b) => s + b.receivedAmount,
     );
-    double calculatedProfit = filteredBookings.fold(0.0, (s, b) {
-      if (b.netProfit > 0) {
-        return s + b.netProfit;
-      }
-      return s;
-    });
+    double calculatedProfit = filteredBookings.fold(
+      0.0,
+      (s, b) => s + b.netProfit,
+    );
     double calculatedPending = filteredBookings.fold(0.0, (s, b) {
-      if (b.serviceType.toLowerCase() == 'visa') {
-        return s + b.payableAmount;
-      } else if (b.serviceType.toLowerCase() != 'ticket') {
-        final clientBal = b.totalPrice - b.receivedAmount;
-        if (clientBal > 0 && clientBal < 100000) {
-          return s + clientBal;
+      final type = b.serviceType.toLowerCase().trim();
+      if (type == 'visa') {
+        if (b.payableAmount > 0) {
+          return s + b.payableAmount;
         }
       }
       return s;
     });
-
-    // Web Portal Benchmark Synchronization for Quick Time Filter Chips
-    final webBenchmarks = {
-      '7 Days': {
-        'records': 112,
-        'received': 1223500.0,
-        'profit': 1233723.0,
-        'pending': 700500.0,
-      },
-      '30 Days': {
-        'records': 438,
-        'received': 4181997.0,
-        'profit': 3813606.0,
-        'pending': 2656063.0,
-      },
-      '90 Days': {
-        'records': 1097,
-        'received': 43628623.0,
-        'profit': 8298569.0,
-        'pending': 3905563.0,
-      },
-      'YTD': {
-        'records': 2375,
-        'received': 64263953.0,
-        'profit': 17184230.0,
-        'pending': 4330559.0,
-      },
-      'All': {
-        'records': 4223,
-        'received': 91910875.0,
-        'profit': 29629672.0,
-        'pending': 4624460.0,
-      },
-    };
-
-    if (_fromDate == null && _toDate == null && webBenchmarks.containsKey(_selectedTimeFilter)) {
-      final bench = webBenchmarks[_selectedTimeFilter]!;
-      calculatedRecords = bench['records'] as int;
-      calculatedReceived = bench['received'] as double;
-      calculatedProfit = bench['profit'] as double;
-      calculatedPending = bench['pending'] as double;
-    }
 
     final totalRecords = calculatedRecords;
     final totalReceived = calculatedReceived;
@@ -244,10 +198,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
       backgroundColor: Colors.transparent,
       body: AnimatedWorldMapBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppConstants.defaultPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(AppConstants.defaultPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Section
                 Row(
@@ -755,6 +712,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                 const SizedBox(height: 20),
               ],
             ),
+          ),
           ),
         ),
       ),

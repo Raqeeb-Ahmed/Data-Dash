@@ -132,9 +132,12 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
       backgroundColor: Colors.transparent,
       body: AnimatedWorldMapBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -561,6 +564,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 ),
               ],
             ),
+          ),
           ),
         ),
       ),

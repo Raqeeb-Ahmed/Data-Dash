@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/hotels_provider.dart';
+import '../providers/bookings_provider.dart';
 
 class HotelsPage extends ConsumerStatefulWidget {
   const HotelsPage({super.key});
@@ -58,12 +59,15 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
             children: [
               // Scrollable area
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  children: [
+                child: RefreshIndicator(
+                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    children: [
                     // Header Title
                     Row(
                       children: [
@@ -234,6 +238,7 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                     const SizedBox(height: 20),
                   ],
                 ),
+              ),
               ),
             ],
           ),

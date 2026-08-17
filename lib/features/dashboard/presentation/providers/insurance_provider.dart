@@ -121,7 +121,9 @@ class InsuranceBookingsNotifier
     extends StateNotifier<List<InsuranceBookingModel>> {
   final Ref _ref;
 
-  InsuranceBookingsNotifier(this._ref) : super([]);
+  InsuranceBookingsNotifier(this._ref) : super([]) {
+    _init();
+  }
 
   void _init() {
     _ref.listen<List<BookingModel>>(bookingsProvider, (prev, next) {

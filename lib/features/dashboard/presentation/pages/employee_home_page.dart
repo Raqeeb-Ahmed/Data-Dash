@@ -26,9 +26,12 @@ class EmployeeHomePage extends ConsumerWidget {
       body: AnimatedWorldMapBackground(
         watermarkText: 'DATADASH',
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 48),
 
@@ -357,6 +360,7 @@ class EmployeeHomePage extends ConsumerWidget {
                 // _buildFooter(context),
               ],
             ),
+          ),
           ),
         ),
       ),

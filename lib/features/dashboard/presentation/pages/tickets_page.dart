@@ -164,9 +164,12 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
       backgroundColor: Colors.transparent,
       body: AnimatedWorldMapBackground(
         child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(14),
-            children: [
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(14),
+              children: [
               // ──── HEADER ────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -726,6 +729,7 @@ class _TicketsPageState extends ConsumerState<TicketsPage> {
               ),
               const SizedBox(height: 32),
             ],
+          ),
           ),
         ),
       ),

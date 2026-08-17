@@ -254,24 +254,27 @@ class _EmployeeTicketsPageState extends ConsumerState<EmployeeTicketsPage> {
       body: AnimatedWorldMapBackground(
         watermarkText: 'TICKETING',
         child: SafeArea(
-          child: _showAllBookings
-              ? _buildAllBookedTicketsView(
-                  ticketBookings,
-                  isDarkMode,
-                  primaryColor,
-                  secondaryColor,
-                  cardBg: formBg,
-                  borderColor: borderColor,
-                )
-              : _buildBookNewTicketFormView(
-                  ticketBookings,
-                  isDarkMode,
-                  primaryColor,
-                  secondaryColor,
-                  formBg: formBg,
-                  inputBg: inputBg,
-                  borderColor: borderColor,
-                ),
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: _showAllBookings
+                ? _buildAllBookedTicketsView(
+                    ticketBookings,
+                    isDarkMode,
+                    primaryColor,
+                    secondaryColor,
+                    cardBg: formBg,
+                    borderColor: borderColor,
+                  )
+                : _buildBookNewTicketFormView(
+                    ticketBookings,
+                    isDarkMode,
+                    primaryColor,
+                    secondaryColor,
+                    formBg: formBg,
+                    inputBg: inputBg,
+                    borderColor: borderColor,
+                  ),
+          ),
         ),
       ),
     );
@@ -295,6 +298,7 @@ class _EmployeeTicketsPageState extends ConsumerState<EmployeeTicketsPage> {
     final rejectedCount = tickets.where((b) => b.status == 'Rejected').length;
 
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(24),
       child: Form(
         key: _formKey,
@@ -1171,6 +1175,7 @@ class _EmployeeTicketsPageState extends ConsumerState<EmployeeTicketsPage> {
     final totalPages = (filtered.length / _perPage).ceil();
 
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

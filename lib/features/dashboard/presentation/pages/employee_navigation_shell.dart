@@ -616,22 +616,22 @@ class _EmployeeCountriesPageState extends ConsumerState<EmployeeCountriesPage> {
 
     // 2. Specific countries list matching the mockup, with their flags and baseline counts
     final List<Map<String, dynamic>> mockupCountries = [
-      {'name': 'Thailand', 'flag': '🇹🇭', 'baseline': 665},
-      {'name': 'Malaysia', 'flag': '🇲🇾', 'baseline': 1400},
-      {'name': 'Azerbaijan', 'flag': '🇦🇿', 'baseline': 49},
-      {'name': 'Indonesia', 'flag': '🇮🇩', 'baseline': 240},
-      {'name': 'Singapore', 'flag': '🇸🇬', 'baseline': 159},
-      {'name': 'Uzbekistan', 'flag': '🇺🇿', 'baseline': 31},
-      {'name': 'Tajikistan', 'flag': '🇹🇯', 'baseline': 9},
-      {'name': 'Egypt', 'flag': '🇪🇬', 'baseline': 9},
-      {'name': 'Nepal', 'flag': '🇳🇵', 'baseline': 51},
-      {'name': 'KYRGYZSTAN', 'flag': '🇰🇬', 'baseline': 2},
-      {'name': 'Bahrain', 'flag': '🇧🇭', 'baseline': 26},
-      {'name': 'Uganda', 'flag': '🇺🇬', 'baseline': 3},
-      {'name': 'Vietnam', 'flag': '🇻🇳', 'baseline': 5},
-      {'name': 'Sri Lanka', 'flag': '🇱🇰', 'baseline': 27},
-      {'name': 'Cambodia', 'flag': '🇰🇭', 'baseline': 5},
-      {'name': 'United Arab Emirates', 'flag': '🇦🇪', 'baseline': 1},
+      {'name': 'Thailand', 'flag': '🇹🇭'},
+      {'name': 'Malaysia', 'flag': '🇲🇾'},
+      {'name': 'Azerbaijan', 'flag': '🇦🇿'},
+      {'name': 'Indonesia', 'flag': '🇮🇩'},
+      {'name': 'Singapore', 'flag': '🇸🇬'},
+      {'name': 'Uzbekistan', 'flag': '🇺🇿'},
+      {'name': 'Tajikistan', 'flag': '🇹🇯'},
+      {'name': 'Egypt', 'flag': '🇪🇬'},
+      {'name': 'Nepal', 'flag': '🇳🇵'},
+      {'name': 'Kyrgyzstan', 'flag': '🇰🇬'},
+      {'name': 'Bahrain', 'flag': '🇧🇭'},
+      {'name': 'Uganda', 'flag': '🇺🇬'},
+      {'name': 'Vietnam', 'flag': '🇻🇳'},
+      {'name': 'Sri Lanka', 'flag': '🇱🇰'},
+      {'name': 'Cambodia', 'flag': '🇰🇭'},
+      {'name': 'United Arab Emirates', 'flag': '🇦🇪'},
     ];
 
     // Compute display list (actual count of applications logged-in employee applied for)

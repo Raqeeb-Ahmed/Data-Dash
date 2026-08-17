@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/insurance_provider.dart';
+import '../providers/bookings_provider.dart';
 
 class InsurancePage extends ConsumerStatefulWidget {
   const InsurancePage({super.key});
@@ -66,12 +67,15 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
           child: Column(
             children: [
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  children: [
+                child: RefreshIndicator(
+                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    children: [
                     // ──── HEADER ────
                     _buildHeader(primaryTextColor, secondaryTextColor),
                     const SizedBox(height: 16),
@@ -126,6 +130,7 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                     const SizedBox(height: 20),
                   ],
                 ),
+              ),
               ),
             ],
           ),

@@ -213,17 +213,19 @@ class BookingsRemoteDataSource {
 
   BookingModel _mapVisa(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['remainingFee']);
-    final received = _parseNum(data['receivedFee']);
-    final total = _parseNum(data['totalFee']);
-    final embassy = _parseNum(data['embassyFee']);
-    final vendor = _parseNum(data['vendorFee']);
+    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
+    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
+    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price']);
+    final embassy = _parseNum(data['embassyFee'] ?? data['embassy_fee']);
+    final vendor = _parseNum(data['vendorFee'] ?? data['vendor_fee']);
 
     var profit = _parseNum(
       data['profit'] ??
           data['netProfit'] ??
+          data['net_profit'] ??
           data['margin'] ??
-          data['totalProfit'],
+          data['totalProfit'] ??
+          data['total_profit'],
     );
     if (profit == 0 && total > 0) {
       final calculated = total - embassy - vendor;
@@ -250,27 +252,31 @@ class BookingsRemoteDataSource {
       netProfit: profit,
       passportExpiryDate: _parseString(data['expiryDate']),
       visaType: _parseString(data['visaType']),
-      embassyFee: data['embassyFee'] != null
-          ? _parseNum(data['embassyFee'])
+      embassyFee: data['embassyFee'] != null || data['embassy_fee'] != null
+          ? _parseNum(data['embassyFee'] ?? data['embassy_fee'])
           : null,
       vendorName: _parseString(data['vendor']),
       vendorContact: _parseString(data['vendorContact']),
-      vendorFee: data['vendorFee'] != null
-          ? _parseNum(data['vendorFee'])
+      vendorFee: data['vendorFee'] != null || data['vendor_fee'] != null
+          ? _parseNum(data['vendorFee'] ?? data['vendor_fee'])
           : null,
       sentToEmbassyDate: _parseString(data['sentToEmbassy']),
       receivedFromEmbassyDate: _parseString(data['receivedFromEmbassy']),
       remarks: _parseString(data['remarks']),
-      email: _parseString(data['email']),
+      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address']),
       reference: _parseString(data['reference']),
     );
   }
 
   BookingModel _mapHotel(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable']);
-    final profit = _parseNum(data['profit']);
-    final received = _parseNum(data['received']);
+    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
+    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
+    var profit = _parseNum(data['profit'] ?? data['netProfit'] ?? data['net_profit'] ?? data['margin'] ?? data['totalProfit'] ?? data['total_profit']);
+    if (profit == 0) {
+      profit = received - payable;
+    }
+    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price'] ?? (payable + profit));
     return BookingModel(
       id: doc.id,
       serviceType: 'hotel',
@@ -280,12 +286,12 @@ class BookingsRemoteDataSource {
       destination: _parseString(data['property'] ?? 'Hotel'),
       dateCreated: _parseDateTime(data['createdAt']),
       status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= (payable + profit)
+      paymentStatus: received >= total
           ? 'Paid'
           : (received > 0 ? 'Partially Paid' : 'Unpaid'),
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['userEmail'] ?? 'Unassigned'),
-      totalPrice: payable + profit,
+      totalPrice: total,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
@@ -294,14 +300,19 @@ class BookingsRemoteDataSource {
       travellersAdults: _parseInt(data['numberOfAdults']),
       travellersChildren: _parseInt(data['numberOfChildren']),
       cabinClass: _parseString(data['numberOfRooms']),
+      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address']),
     );
   }
 
   BookingModel _mapUmrah(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable']);
-    final profit = _parseNum(data['profit']);
-    final received = _parseNum(data['received']);
+    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
+    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
+    var profit = _parseNum(data['profit'] ?? data['netProfit'] ?? data['net_profit'] ?? data['margin'] ?? data['totalProfit'] ?? data['total_profit']);
+    if (profit == 0) {
+      profit = received - payable;
+    }
+    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price'] ?? (payable + profit));
     return BookingModel(
       id: doc.id,
       serviceType: 'umrah',
@@ -311,32 +322,49 @@ class BookingsRemoteDataSource {
       destination: _parseString(data['makkahHotel'] ?? 'Makkah'),
       dateCreated: _parseDateTime(data['createdAt']),
       status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= (payable + profit)
+      paymentStatus: received >= total
           ? 'Paid'
           : (received > 0 ? 'Partially Paid' : 'Unpaid'),
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['createdByEmail'] ?? 'Unassigned'),
-      totalPrice: payable + profit,
+      totalPrice: total,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
       vendorName: _parseString(data['vendor']),
+      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address'] ?? data['createdByEmail']),
     );
   }
 
   BookingModel _mapTicket(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable'] ?? data['payableAmount']);
-    final profit = _parseNum(
-      data['profit'] ?? data['netProfit'] ?? data['totalProfit'],
-    );
+    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
     final received = _parseNum(
-      data['received'] ?? data['receivedAmount'] ?? data['totalReceivedAmount'],
+      data['received'] ??
+          data['receivedAmount'] ??
+          data['received_amount'] ??
+          data['totalReceivedAmount'] ??
+          data['total_received_amount'] ??
+          data['receivedFee'] ??
+          data['received_fee'],
     );
+    var profit = _parseNum(
+      data['profit'] ??
+          data['netProfit'] ??
+          data['net_profit'] ??
+          data['margin'] ??
+          data['totalProfit'] ??
+          data['total_profit'],
+    );
+    if (profit == 0) {
+      profit = received - payable;
+    }
     final total = _parseNum(
-      data['price'] ??
+      data['total'] ??
           data['totalPrice'] ??
-          data['total'] ??
+          data['total_price'] ??
+          data['totalFee'] ??
+          data['total_fee'] ??
           (payable + profit),
     );
     return BookingModel(
@@ -388,7 +416,7 @@ class BookingsRemoteDataSource {
       cnic: _parseString(data['cnic']),
       pnr: _parseString(data['pnr'] ?? data['PNR']),
       vendor: _parseString(data['vendor']),
-      email: _parseString(data['email']),
+      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address'] ?? data['createdByEmail']),
       airlinePreference: _parseString(data['airlinePreference']),
       promoCode: _parseString(data['promoCode']),
       notes: _parseString(data['notes']),
@@ -397,9 +425,13 @@ class BookingsRemoteDataSource {
 
   BookingModel _mapInsurance(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['totalPayableAmount']);
-    final profit = _parseNum(data['totalProfit']);
-    final received = _parseNum(data['totalReceivedAmount']);
+    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
+    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
+    var profit = _parseNum(data['profit'] ?? data['netProfit'] ?? data['net_profit'] ?? data['margin'] ?? data['totalProfit'] ?? data['total_profit']);
+    if (profit == 0) {
+      profit = received - payable;
+    }
+    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price'] ?? (payable + profit));
     return BookingModel(
       id: doc.id,
       serviceType: 'insurance',
@@ -408,15 +440,16 @@ class BookingsRemoteDataSource {
       passportNumber: _parseString(data['passportNumber']),
       destination: _parseString(data['countryofTravel']),
       dateCreated: _parseDateTime(data['createdAt']),
-      status: 'Approved',
-      paymentStatus: received >= (payable + profit) ? 'Paid' : 'Unpaid',
+      status: _parseString(data['status'] ?? 'Approved'),
+      paymentStatus: received >= total ? 'Paid' : 'Unpaid',
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['userEmail'] ?? 'Unassigned'),
-      totalPrice: payable + profit,
+      totalPrice: total,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
       vendorName: _parseString(data['NameofCompany']),
+      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address']),
     );
   }
 
@@ -454,7 +487,9 @@ class BookingsRemoteDataSource {
 
   Future<void> deleteBooking(String id, String serviceType) async {
     final col = _getCollectionName(serviceType);
-    final statusField = (serviceType.toLowerCase() == 'visa') ? 'visaStatus' : 'status';
+    final statusField = (serviceType.toLowerCase() == 'visa')
+        ? 'visaStatus'
+        : 'status';
     await _firestore.collection(col).doc(id).update({statusField: 'Deleted'});
   }
 

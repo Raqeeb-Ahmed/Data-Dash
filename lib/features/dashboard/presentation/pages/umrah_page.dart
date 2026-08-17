@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/umrah_provider.dart';
+import '../providers/bookings_provider.dart';
 
 class UmrahPage extends ConsumerStatefulWidget {
   const UmrahPage({super.key});
@@ -89,12 +90,15 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
           child: Column(
             children: [
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  children: [
+                child: RefreshIndicator(
+                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    children: [
                     // ──── HEADER ────
                     _buildHeader(
                       primaryTextColor,
@@ -147,6 +151,7 @@ class _UmrahPageState extends ConsumerState<UmrahPage> {
                     const SizedBox(height: 20),
                   ],
                 ),
+              ),
               ),
             ],
           ),

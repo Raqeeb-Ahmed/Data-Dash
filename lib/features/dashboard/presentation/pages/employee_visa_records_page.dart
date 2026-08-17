@@ -440,9 +440,12 @@ class _EmployeeVisaRecordsPageState
 
               // ── Scrollable Body Area ──
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  children: [
+                child: RefreshIndicator(
+                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    children: [
                     // ── Visual Status & References Filters Layout ──
                     LayoutBuilder(
                       builder: (context, constraints) {
@@ -744,6 +747,7 @@ class _EmployeeVisaRecordsPageState
                     const SizedBox(height: 32),
                   ],
                 ),
+              ),
               ),
             ],
           ),

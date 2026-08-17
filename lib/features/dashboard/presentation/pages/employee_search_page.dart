@@ -191,8 +191,11 @@ class _EmployeeSearchPageState extends ConsumerState<EmployeeSearchPage> {
       backgroundColor: Colors.transparent,
       body: AnimatedWorldMapBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -891,14 +894,17 @@ class _EmployeeSearchPageState extends ConsumerState<EmployeeSearchPage> {
                         padding: const EdgeInsets.all(16),
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            final bool isMobileFooter = constraints.maxWidth < 550;
+                            final bool isMobileFooter =
+                                constraints.maxWidth < 550;
                             final showingText = Text(
                               'Showing ${filteredVisaBookings.isEmpty ? 0 : start + 1} to $end of ${filteredVisaBookings.length} entries',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: secondaryTextColor,
                               ),
-                              textAlign: isMobileFooter ? TextAlign.center : TextAlign.start,
+                              textAlign: isMobileFooter
+                                  ? TextAlign.center
+                                  : TextAlign.start,
                             );
 
                             final controlsRow = Row(
@@ -957,10 +963,7 @@ class _EmployeeSearchPageState extends ConsumerState<EmployeeSearchPage> {
 
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                showingText,
-                                controlsRow,
-                              ],
+                              children: [showingText, controlsRow],
                             );
                           },
                         ),
@@ -971,6 +974,7 @@ class _EmployeeSearchPageState extends ConsumerState<EmployeeSearchPage> {
                 const SizedBox(height: 32),
               ],
             ),
+          ),
           ),
         ),
       ),

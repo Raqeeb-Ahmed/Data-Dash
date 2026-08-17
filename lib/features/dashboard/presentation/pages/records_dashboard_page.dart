@@ -373,9 +373,12 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
             children: [
               // ──────────────── Scrollable Content ────────────────
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(14),
-                  children: [
+                child: RefreshIndicator(
+                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(14),
+                    children: [
                     // ── STAT METRICS GRID (RESPONSIVE) ──
                     LayoutBuilder(
                       builder: (context, constraints) {
@@ -810,6 +813,7 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
                     const SizedBox(height: 20),
                   ],
                 ),
+              ),
               ),
             ],
           ),

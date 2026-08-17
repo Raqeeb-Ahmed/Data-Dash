@@ -190,8 +190,11 @@ class _EmployeeReportsPageState extends ConsumerState<EmployeeReportsPage> {
       backgroundColor: Colors.transparent,
       body: AnimatedWorldMapBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -771,6 +774,7 @@ class _EmployeeReportsPageState extends ConsumerState<EmployeeReportsPage> {
                 const SizedBox(height: 32),
               ],
             ),
+          ),
           ),
         ),
       ),
