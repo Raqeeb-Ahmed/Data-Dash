@@ -1,10 +1,10 @@
+import 'package:data_dash/features/dashboard/presentation/providers/bookings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/hotels_provider.dart';
-import '../providers/bookings_provider.dart';
 
 class HotelsPage extends ConsumerStatefulWidget {
   const HotelsPage({super.key});
@@ -60,7 +60,8 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
               // Scrollable area
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  onRefresh: () =>
+                      ref.read(bookingsProvider.notifier).refresh(),
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
@@ -68,177 +69,179 @@ class _HotelsPageState extends ConsumerState<HotelsPage> {
                       vertical: 10,
                     ),
                     children: [
-                    // Header Title
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF059669)],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.hotel_outlined,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hotel Bookings Admin Dashboard 🏨',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryTextColor,
-                                ),
-                              ),
-                              Text(
-                                'Worldwide room reservations & lodgings',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Metrics row
-                    _buildMetricsGrid(isDarkMode, stats),
-                    const SizedBox(height: 14),
-
-                    // Search & Filters card
-                    _buildFiltersSection(
-                      context,
-                      cardBg,
-                      borderColor,
-                      primaryTextColor,
-                      secondaryTextColor,
-                      isDarkMode,
-                      filter,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Charts Section (Bar chart & Donut Chart stacked)
-                    _buildChartsSection(
-                      cardBg,
-                      borderColor,
-                      primaryTextColor,
-                      secondaryTextColor,
-                      isDarkMode,
-                      filteredList,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Bookings table title & list count
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        border: Border.all(color: borderColor),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      // Header Title
+                      Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Booking Details (${filteredList.length})',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryTextColor,
-                                ),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
                               ),
-                              Text(
-                                'Showing ${displayedList.length} of ${filteredList.length}',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                            ],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.hotel_outlined,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                           ),
-                          const SizedBox(height: 10),
-                          if (filteredList.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 30),
-                              child: Center(
-                                child: Text(
-                                  'No hotel bookings found matching filters.',
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hotel Bookings Admin Dashboard 🏨',
                                   style: TextStyle(
-                                    color: secondaryTextColor,
-                                    fontSize: 13,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryTextColor,
                                   ),
                                 ),
-                              ),
-                            )
-                          else
-                            ...displayedList.asMap().entries.map((entry) {
-                              final idx = entry.key + 1;
-                              final booking = entry.value;
-                              return _buildBookingMobileCard(
-                                context,
-                                booking,
-                                idx,
-                                isDarkMode,
-                                primaryTextColor,
-                                secondaryTextColor,
-                                borderColor,
-                              );
-                            }),
-
-                          // Load More Button
-                          if (filteredList.length > _itemsToShow)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _itemsToShow += 10;
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF2563EB),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    elevation: 0,
+                                Text(
+                                  'Worldwide room reservations & lodgings',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: secondaryTextColor,
                                   ),
-                                  child: const Text(
-                                    'Load More',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Metrics row
+                      _buildMetricsGrid(isDarkMode, stats),
+                      const SizedBox(height: 14),
+
+                      // Search & Filters card
+                      _buildFiltersSection(
+                        context,
+                        cardBg,
+                        borderColor,
+                        primaryTextColor,
+                        secondaryTextColor,
+                        isDarkMode,
+                        filter,
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Charts Section (Bar chart & Donut Chart stacked)
+                      _buildChartsSection(
+                        cardBg,
+                        borderColor,
+                        primaryTextColor,
+                        secondaryTextColor,
+                        isDarkMode,
+                        filteredList,
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Bookings table title & list count
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          border: Border.all(color: borderColor),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Booking Details (${filteredList.length})',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryTextColor,
+                                  ),
+                                ),
+                                Text(
+                                  'Showing ${displayedList.length} of ${filteredList.length}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: secondaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            if (filteredList.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 30,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'No hotel bookings found matching filters.',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      color: secondaryTextColor,
                                       fontSize: 13,
                                     ),
                                   ),
                                 ),
+                              )
+                            else
+                              ...displayedList.asMap().entries.map((entry) {
+                                final idx = entry.key + 1;
+                                final booking = entry.value;
+                                return _buildBookingMobileCard(
+                                  context,
+                                  booking,
+                                  idx,
+                                  isDarkMode,
+                                  primaryTextColor,
+                                  secondaryTextColor,
+                                  borderColor,
+                                );
+                              }),
+
+                            // Load More Button
+                            if (filteredList.length > _itemsToShow)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _itemsToShow += 10;
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF2563EB),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: const Text(
+                                      'Load More',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ],
           ),

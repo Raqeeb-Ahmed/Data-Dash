@@ -1,10 +1,10 @@
+import 'package:data_dash/features/dashboard/presentation/providers/bookings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../providers/bookings_provider.dart';
 import 'hotels_page.dart';
 
 class EmployeeHotelBookingPage extends ConsumerStatefulWidget {
@@ -68,8 +68,10 @@ class _EmployeeHotelBookingPageState
   }
 
   void _calculateProfit() {
-    final double payable = double.tryParse(_payableAmountController.text) ?? 0.0;
-    final double received = double.tryParse(_receivedAmountController.text) ?? 0.0;
+    final double payable =
+        double.tryParse(_payableAmountController.text) ?? 0.0;
+    final double received =
+        double.tryParse(_receivedAmountController.text) ?? 0.0;
     // Profit = Received - Payable to vendor
     final double profit = received - payable;
     _profitController.text = profit.toStringAsFixed(0);
@@ -87,7 +89,8 @@ class _EmployeeHotelBookingPageState
   }
 
   Future<void> _selectDate(BuildContext context, bool isArrival) async {
-    final DateTime initial = (isArrival ? _arrivalDate : _departureDate) ?? DateTime.now();
+    final DateTime initial =
+        (isArrival ? _arrivalDate : _departureDate) ?? DateTime.now();
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -206,10 +209,18 @@ class _EmployeeHotelBookingPageState
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryTextColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
-    final formBg = isDarkMode ? const Color(0xFF0B0F19).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.95);
-    final inputBg = isDarkMode ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.grey[100]!;
+    final primaryTextColor = isDarkMode
+        ? Colors.white
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
+    final formBg = isDarkMode
+        ? const Color(0xFF0B0F19).withValues(alpha: 0.6)
+        : Colors.white.withValues(alpha: 0.95);
+    final inputBg = isDarkMode
+        ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+        : Colors.grey[100]!;
     final isMobile = MediaQuery.of(context).size.width < 750;
 
     return Scaffold(
@@ -217,7 +228,11 @@ class _EmployeeHotelBookingPageState
         backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
         title: Text(
           'Hotel Bookings',
-          style: TextStyle(color: primaryTextColor, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: primaryTextColor,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         iconTheme: IconThemeData(color: primaryTextColor),
         elevation: 1,
@@ -231,254 +246,588 @@ class _EmployeeHotelBookingPageState
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Hotel Bookings 🏨',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: primaryTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Add and manage your hotel booking records.',
-                        style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Form Container
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: formBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDarkMode ? const Color(0x1AFFFFFF) : const Color(0x1F000000),
-                      ),
-                    ),
-                    child: Column(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Add New Hotel Booking',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: primaryTextColor,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Form Fields
-                        if (isMobile) ...[
-                          _buildTextField('Booking ID', _bookingIdController, Icons.qr_code, 'Booking ID', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Client Name', _clientNameController, Icons.person, 'Client Name', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Property Name', _propertyNameController, Icons.domain, 'Property Name', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Number of Rooms', _numberOfRoomsController, Icons.bed, 'Number of Rooms', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Number of Adults', _numberOfAdultsController, Icons.people, 'Number of Adults', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Number of Children', _numberOfChildrenController, Icons.child_care, 'Number of Children', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildDateField('Arrival Date', _arrivalDate, () => _selectDate(context, true), inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildDateField('Departure Date', _departureDate, () => _selectDate(context, false), inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Nights Stayed', _nightsStayedController, Icons.edit, 'Nights Stayed', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Care Name', _careNameController, Icons.person_outline, 'Care Name', inputBg, secondaryTextColor, primaryTextColor, isRequired: false),
-                          const SizedBox(height: 12),
-                          _buildTextField('Care Contact', _careContactController, Icons.phone, 'Care Contact', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Care Email', _careEmailController, Icons.email, 'Care Email', inputBg, secondaryTextColor, primaryTextColor, isRequired: false),
-                          const SizedBox(height: 12),
-                          _buildTextField('Payment Method', _paymentMethodController, Icons.payment, 'Payment Method', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Payable Amount', _payableAmountController, Icons.attach_money, 'Payable Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Received Amount', _receivedAmountController, Icons.account_balance_wallet, 'Received Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Profit', _profitController, Icons.attach_money, 'Profit', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true, isEnabled: false),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Booking ID', _bookingIdController, Icons.qr_code, 'Booking ID', inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Client Name', _clientNameController, Icons.person, 'Client Name', inputBg, secondaryTextColor, primaryTextColor)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Property Name', _propertyNameController, Icons.domain, 'Property Name', inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Number of Rooms', _numberOfRoomsController, Icons.bed, 'Number of Rooms', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Number of Adults', _numberOfAdultsController, Icons.people, 'Number of Adults', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Number of Children', _numberOfChildrenController, Icons.child_care, 'Number of Children', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildDateField('Arrival Date', _arrivalDate, () => _selectDate(context, true), inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildDateField('Departure Date', _departureDate, () => _selectDate(context, false), inputBg, secondaryTextColor, primaryTextColor)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Nights Stayed', _nightsStayedController, Icons.edit, 'Nights Stayed', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Care Name', _careNameController, Icons.person_outline, 'Care Name', inputBg, secondaryTextColor, primaryTextColor, isRequired: false)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Care Contact', _careContactController, Icons.phone, 'Care Contact', inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Care Email', _careEmailController, Icons.email, 'Care Email', inputBg, secondaryTextColor, primaryTextColor, isRequired: false)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Payment Method', _paymentMethodController, Icons.payment, 'Payment Method', inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Payable Amount', _payableAmountController, Icons.attach_money, 'Payable Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Received Amount', _receivedAmountController, Icons.account_balance_wallet, 'Received Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Profit', _profitController, Icons.attach_money, 'Profit', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true, isEnabled: false)),
-                            ],
-                          ),
-                        ],
-
-                        const SizedBox(height: 16),
-                        // Notes Field
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
                             Text(
-                              'Notes / Additional Details',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondaryTextColor),
-                            ),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: _notesController,
-                              style: TextStyle(fontSize: 12, color: primaryTextColor),
-                              maxLines: 4,
-                              decoration: InputDecoration(
-                                hintText: 'Add any additional notes here...',
-                                hintStyle: TextStyle(fontSize: 12, color: secondaryTextColor.withValues(alpha: 0.6)),
-                                filled: true,
-                                fillColor: inputBg,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: secondaryTextColor.withValues(alpha: 0.2)),
-                                ),
+                              'Hotel Bookings 🏨',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: primaryTextColor,
                               ),
                             ),
                           ],
                         ),
-
-                        const SizedBox(height: 24),
-
-                        // Add Booking Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _saveBooking,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                  )
-                                : const Text(
-                                    '+ Add Booking',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Add and manage your hotel booking records.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: secondaryTextColor,
                           ),
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 20),
 
-                  const SizedBox(height: 16),
-
-                  // View All Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HotelsPage()),
-                        );
-                      },
-                      icon: const Icon(Icons.remove_red_eye, color: Colors.white, size: 16),
-                      label: const Text(
-                        'View All Hotel Bookings',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                    // Form Container
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: formBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? const Color(0x1AFFFFFF)
+                              : const Color(0x1F000000),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add New Hotel Booking',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: primaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Form Fields
+                          if (isMobile) ...[
+                            _buildTextField(
+                              'Booking ID',
+                              _bookingIdController,
+                              Icons.qr_code,
+                              'Booking ID',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Client Name',
+                              _clientNameController,
+                              Icons.person,
+                              'Client Name',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Property Name',
+                              _propertyNameController,
+                              Icons.domain,
+                              'Property Name',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Number of Rooms',
+                              _numberOfRoomsController,
+                              Icons.bed,
+                              'Number of Rooms',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Number of Adults',
+                              _numberOfAdultsController,
+                              Icons.people,
+                              'Number of Adults',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Number of Children',
+                              _numberOfChildrenController,
+                              Icons.child_care,
+                              'Number of Children',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildDateField(
+                              'Arrival Date',
+                              _arrivalDate,
+                              () => _selectDate(context, true),
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildDateField(
+                              'Departure Date',
+                              _departureDate,
+                              () => _selectDate(context, false),
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Nights Stayed',
+                              _nightsStayedController,
+                              Icons.edit,
+                              'Nights Stayed',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Care Name',
+                              _careNameController,
+                              Icons.person_outline,
+                              'Care Name',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Care Contact',
+                              _careContactController,
+                              Icons.phone,
+                              'Care Contact',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Care Email',
+                              _careEmailController,
+                              Icons.email,
+                              'Care Email',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Payment Method',
+                              _paymentMethodController,
+                              Icons.payment,
+                              'Payment Method',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Payable Amount',
+                              _payableAmountController,
+                              Icons.attach_money,
+                              'Payable Amount',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Received Amount',
+                              _receivedAmountController,
+                              Icons.account_balance_wallet,
+                              'Received Amount',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Profit',
+                              _profitController,
+                              Icons.attach_money,
+                              'Profit',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                              isEnabled: false,
+                            ),
+                          ] else ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Booking ID',
+                                    _bookingIdController,
+                                    Icons.qr_code,
+                                    'Booking ID',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Client Name',
+                                    _clientNameController,
+                                    Icons.person,
+                                    'Client Name',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Property Name',
+                                    _propertyNameController,
+                                    Icons.domain,
+                                    'Property Name',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Number of Rooms',
+                                    _numberOfRoomsController,
+                                    Icons.bed,
+                                    'Number of Rooms',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Number of Adults',
+                                    _numberOfAdultsController,
+                                    Icons.people,
+                                    'Number of Adults',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Number of Children',
+                                    _numberOfChildrenController,
+                                    Icons.child_care,
+                                    'Number of Children',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildDateField(
+                                    'Arrival Date',
+                                    _arrivalDate,
+                                    () => _selectDate(context, true),
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildDateField(
+                                    'Departure Date',
+                                    _departureDate,
+                                    () => _selectDate(context, false),
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Nights Stayed',
+                                    _nightsStayedController,
+                                    Icons.edit,
+                                    'Nights Stayed',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Care Name',
+                                    _careNameController,
+                                    Icons.person_outline,
+                                    'Care Name',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Care Contact',
+                                    _careContactController,
+                                    Icons.phone,
+                                    'Care Contact',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Care Email',
+                                    _careEmailController,
+                                    Icons.email,
+                                    'Care Email',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Payment Method',
+                                    _paymentMethodController,
+                                    Icons.payment,
+                                    'Payment Method',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Payable Amount',
+                                    _payableAmountController,
+                                    Icons.attach_money,
+                                    'Payable Amount',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Received Amount',
+                                    _receivedAmountController,
+                                    Icons.account_balance_wallet,
+                                    'Received Amount',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Profit',
+                                    _profitController,
+                                    Icons.attach_money,
+                                    'Profit',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                    isEnabled: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+
+                          const SizedBox(height: 16),
+                          // Notes Field
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Notes / Additional Details',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: _notesController,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: primaryTextColor,
+                                ),
+                                maxLines: 4,
+                                decoration: InputDecoration(
+                                  hintText: 'Add any additional notes here...',
+                                  hintStyle: TextStyle(
+                                    fontSize: 12,
+                                    color: secondaryTextColor.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: inputBg,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: secondaryTextColor.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Add Booking Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _saveBooking,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      '+ Add Booking',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // View All Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HotelsPage(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.remove_red_eye,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        label: const Text(
+                          'View All Hotel Bookings',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B82F6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           ),
         ),
       ),
@@ -502,7 +851,11 @@ class _EmployeeHotelBookingPageState
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondary),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: secondary,
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -513,10 +866,16 @@ class _EmployeeHotelBookingPageState
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 16, color: secondary),
             hintText: hint,
-            hintStyle: TextStyle(fontSize: 12, color: secondary.withValues(alpha: 0.6)),
+            hintStyle: TextStyle(
+              fontSize: 12,
+              color: secondary.withValues(alpha: 0.6),
+            ),
             filled: true,
             fillColor: isEnabled ? inputBg : inputBg.withValues(alpha: 0.5),
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: secondary.withValues(alpha: 0.2)),
@@ -546,7 +905,11 @@ class _EmployeeHotelBookingPageState
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondary),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: secondary,
+          ),
         ),
         const SizedBox(height: 6),
         GestureDetector(
@@ -556,13 +919,22 @@ class _EmployeeHotelBookingPageState
               controller: TextEditingController(text: _formatDate(value)),
               style: TextStyle(fontSize: 12, color: primary),
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.calendar_today_outlined, size: 16, color: secondary),
+                prefixIcon: Icon(
+                  Icons.calendar_today_outlined,
+                  size: 16,
+                  color: secondary,
+                ),
                 filled: true,
                 fillColor: inputBg,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: secondary.withValues(alpha: 0.2)),
+                  borderSide: BorderSide(
+                    color: secondary.withValues(alpha: 0.2),
+                  ),
                 ),
               ),
             ),

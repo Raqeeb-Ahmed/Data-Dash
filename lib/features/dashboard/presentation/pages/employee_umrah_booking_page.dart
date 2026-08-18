@@ -1,10 +1,10 @@
+import 'package:data_dash/features/dashboard/presentation/providers/bookings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../providers/bookings_provider.dart';
 import 'umrah_page.dart';
 
 class EmployeeUmrahBookingPage extends ConsumerStatefulWidget {
@@ -299,460 +299,489 @@ class _EmployeeUmrahBookingPageState
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header Title
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Umrah Bookings Management 🕋',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Add, view, and manage your Umrah booking records.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Add New Booking Card
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: formBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDarkMode
-                            ? const Color(0x1AFFFFFF)
-                            : const Color(0x1F000000),
-                      ),
-                    ),
-                    child: Column(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header Title
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Add New Booking',
+                          'Umrah Bookings Management 🕋',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: primaryTextColor,
                           ),
                         ),
-                        const SizedBox(height: 16),
-
-                        // Form Layout
-                        if (isMobile) ...[
-                          _buildTextField(
-                            'Full Name',
-                            _fullNameController,
-                            Icons.person,
-                            'Full Name',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Phone Number',
-                            _phoneController,
-                            Icons.phone,
-                            'Phone Number',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Customer Email',
-                            _emailController,
-                            Icons.email,
-                            'Customer Email (for confirmation) — optional',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                            isRequired: false,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Passport Number',
-                            _passportNoController,
-                            Icons.card_membership,
-                            'Passport Number',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Visa Number',
-                            _visaNoController,
-                            Icons.verified,
-                            'Visa Number',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                          ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  'Full Name',
-                                  _fullNameController,
-                                  Icons.person,
-                                  'Full Name',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildTextField(
-                                  'Phone Number',
-                                  _phoneController,
-                                  Icons.phone,
-                                  'Phone Number',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  'Customer Email',
-                                  _emailController,
-                                  Icons.email,
-                                  'Customer Email (for confirmation) — optional',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                  isRequired: false,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildTextField(
-                                  'Passport Number',
-                                  _passportNoController,
-                                  Icons.card_membership,
-                                  'Passport Number',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Visa Number',
-                            _visaNoController,
-                            Icons.verified,
-                            'Visa Number',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                          ),
-                        ],
-
-                        const SizedBox(height: 20),
-
-                        // ── Sub-section: Makkah Hotel ──
-                        _buildSectionHeader(
-                          'Makkah Hotel Details',
-                          Colors.amber[700]!,
-                          primaryTextColor,
-                        ),
-                        const SizedBox(height: 10),
-                        _buildHotelSection(
-                          1,
-                          _makkahHotelController,
-                          _makkahCheckIn,
-                          _makkahCheckOut,
-                          _makkahNightsController,
-                          inputBg,
-                          secondaryTextColor,
-                          primaryTextColor,
-                          isMobile,
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // ── Sub-section: Madinah Hotel ──
-                        _buildSectionHeader(
-                          'Madinah Hotel Details',
-                          Colors.green[700]!,
-                          primaryTextColor,
-                        ),
-                        const SizedBox(height: 10),
-                        _buildHotelSection(
-                          2,
-                          _madinahHotelController,
-                          _madinahCheckIn,
-                          _madinahCheckOut,
-                          _madinahNightsController,
-                          inputBg,
-                          secondaryTextColor,
-                          primaryTextColor,
-                          isMobile,
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // ── Sub-section: 2nd Makkah Hotel ──
-                        _buildSectionHeader(
-                          '2nd Makkah Hotel (If applicable)',
-                          Colors.blue[700]!,
-                          primaryTextColor,
-                        ),
-                        const SizedBox(height: 10),
-                        _buildHotelSection(
-                          3,
-                          _secondMakkahHotelController,
-                          _secondMakkahCheckIn,
-                          _secondMakkahCheckOut,
-                          _secondMakkahNightsController,
-                          inputBg,
-                          secondaryTextColor,
-                          primaryTextColor,
-                          isMobile,
-                          isRequired: false,
-                        ),
-
-                        const SizedBox(height: 24),
-                        const Divider(height: 1),
-                        const SizedBox(height: 20),
-
-                        // Financials
-                        if (isMobile) ...[
-                          _buildTextField(
-                            'Vendor',
-                            _vendorController,
-                            Icons.business,
-                            'Vendor',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Payable Amount',
-                            _payableController,
-                            Icons.attach_money,
-                            'Payable Amount',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                            isNumeric: true,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Received Amount',
-                            _receivedController,
-                            Icons.account_balance_wallet,
-                            'Received Amount',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                            isNumeric: true,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
-                            'Profit',
-                            _profitController,
-                            Icons.attach_money,
-                            'Profit',
-                            inputBg,
-                            secondaryTextColor,
-                            primaryTextColor,
-                            isNumeric: true,
-                            isEnabled: false,
-                          ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  'Vendor',
-                                  _vendorController,
-                                  Icons.business,
-                                  'Vendor',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildTextField(
-                                  'Payable Amount',
-                                  _payableController,
-                                  Icons.attach_money,
-                                  'Payable Amount',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                  isNumeric: true,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTextField(
-                                  'Received Amount',
-                                  _receivedController,
-                                  Icons.account_balance_wallet,
-                                  'Received Amount',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                  isNumeric: true,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildTextField(
-                                  'Profit',
-                                  _profitController,
-                                  Icons.attach_money,
-                                  'Profit',
-                                  inputBg,
-                                  secondaryTextColor,
-                                  primaryTextColor,
-                                  isNumeric: true,
-                                  isEnabled: false,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-
-                        const SizedBox(height: 24),
-                        // Add Booking Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _saveBooking,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text(
-                                    '+ Add Booking',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Add, view, and manage your Umrah booking records.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: secondaryTextColor,
                           ),
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 20),
 
-                  const SizedBox(height: 20),
+                    // Add New Booking Card
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: formBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? const Color(0x1AFFFFFF)
+                              : const Color(0x1F000000),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add New Booking',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: primaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                  // Find a Booking panel
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: formBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDarkMode
-                            ? const Color(0x1AFFFFFF)
-                            : const Color(0x1F000000),
+                          // Form Layout
+                          if (isMobile) ...[
+                            _buildTextField(
+                              'Full Name',
+                              _fullNameController,
+                              Icons.person,
+                              'Full Name',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Phone Number',
+                              _phoneController,
+                              Icons.phone,
+                              'Phone Number',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Customer Email',
+                              _emailController,
+                              Icons.email,
+                              'Customer Email (for confirmation) — optional',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Passport Number',
+                              _passportNoController,
+                              Icons.card_membership,
+                              'Passport Number',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Visa Number',
+                              _visaNoController,
+                              Icons.verified,
+                              'Visa Number',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                          ] else ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Full Name',
+                                    _fullNameController,
+                                    Icons.person,
+                                    'Full Name',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Phone Number',
+                                    _phoneController,
+                                    Icons.phone,
+                                    'Phone Number',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Customer Email',
+                                    _emailController,
+                                    Icons.email,
+                                    'Customer Email (for confirmation) — optional',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Passport Number',
+                                    _passportNoController,
+                                    Icons.card_membership,
+                                    'Passport Number',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Visa Number',
+                              _visaNoController,
+                              Icons.verified,
+                              'Visa Number',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                          ],
+
+                          const SizedBox(height: 20),
+
+                          // ── Sub-section: Makkah Hotel ──
+                          _buildSectionHeader(
+                            'Makkah Hotel Details',
+                            Colors.amber[700]!,
+                            primaryTextColor,
+                          ),
+                          const SizedBox(height: 10),
+                          _buildHotelSection(
+                            1,
+                            _makkahHotelController,
+                            _makkahCheckIn,
+                            _makkahCheckOut,
+                            _makkahNightsController,
+                            inputBg,
+                            secondaryTextColor,
+                            primaryTextColor,
+                            isMobile,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // ── Sub-section: Madinah Hotel ──
+                          _buildSectionHeader(
+                            'Madinah Hotel Details',
+                            Colors.green[700]!,
+                            primaryTextColor,
+                          ),
+                          const SizedBox(height: 10),
+                          _buildHotelSection(
+                            2,
+                            _madinahHotelController,
+                            _madinahCheckIn,
+                            _madinahCheckOut,
+                            _madinahNightsController,
+                            inputBg,
+                            secondaryTextColor,
+                            primaryTextColor,
+                            isMobile,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // ── Sub-section: 2nd Makkah Hotel ──
+                          _buildSectionHeader(
+                            '2nd Makkah Hotel (If applicable)',
+                            Colors.blue[700]!,
+                            primaryTextColor,
+                          ),
+                          const SizedBox(height: 10),
+                          _buildHotelSection(
+                            3,
+                            _secondMakkahHotelController,
+                            _secondMakkahCheckIn,
+                            _secondMakkahCheckOut,
+                            _secondMakkahNightsController,
+                            inputBg,
+                            secondaryTextColor,
+                            primaryTextColor,
+                            isMobile,
+                            isRequired: false,
+                          ),
+
+                          const SizedBox(height: 24),
+                          const Divider(height: 1),
+                          const SizedBox(height: 20),
+
+                          // Financials
+                          if (isMobile) ...[
+                            _buildTextField(
+                              'Vendor',
+                              _vendorController,
+                              Icons.business,
+                              'Vendor',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Payable Amount',
+                              _payableController,
+                              Icons.attach_money,
+                              'Payable Amount',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Received Amount',
+                              _receivedController,
+                              Icons.account_balance_wallet,
+                              'Received Amount',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Profit',
+                              _profitController,
+                              Icons.attach_money,
+                              'Profit',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                              isEnabled: false,
+                            ),
+                          ] else ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Vendor',
+                                    _vendorController,
+                                    Icons.business,
+                                    'Vendor',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Payable Amount',
+                                    _payableController,
+                                    Icons.attach_money,
+                                    'Payable Amount',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Received Amount',
+                                    _receivedController,
+                                    Icons.account_balance_wallet,
+                                    'Received Amount',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Profit',
+                                    _profitController,
+                                    Icons.attach_money,
+                                    'Profit',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                    isEnabled: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+
+                          const SizedBox(height: 24),
+                          // Add Booking Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _saveBooking,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      '+ Add Booking',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Find a Booking',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: primaryTextColor,
-                          ),
+
+                    const SizedBox(height: 20),
+
+                    // Find a Booking panel
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: formBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? const Color(0x1AFFFFFF)
+                              : const Color(0x1F000000),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: _searchController,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: primaryTextColor,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Search by Name, Passport, or Phone...',
-                                  hintStyle: TextStyle(
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Find a Booking',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: primaryTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _searchController,
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: secondaryTextColor.withValues(
-                                      alpha: 0.6,
-                                    ),
+                                    color: primaryTextColor,
                                   ),
-                                  filled: true,
-                                  fillColor: inputBg,
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    size: 16,
-                                    color: secondaryTextColor,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 12,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Search by Name, Passport, or Phone...',
+                                    hintStyle: TextStyle(
+                                      fontSize: 12,
                                       color: secondaryTextColor.withValues(
-                                        alpha: 0.2,
+                                        alpha: 0.6,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: inputBg,
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      size: 16,
+                                      color: secondaryTextColor,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(
+                                        color: secondaryTextColor.withValues(
+                                          alpha: 0.2,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            ElevatedButton(
+                              const SizedBox(width: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const UmrahPage(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF3B82F6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Search',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 60,
+                            child: ElevatedButton(
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -762,56 +791,27 @@ class _EmployeeUmrahBookingPageState
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF3B82F6),
+                                backgroundColor: const Color(0xFF334155),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                               child: const Text(
-                                'Search',
+                                'View All Bookings',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 60,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const UmrahPage(),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF334155),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'View All Bookings',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           ),
         ),
       ),

@@ -1,10 +1,10 @@
+import 'package:data_dash/features/dashboard/presentation/providers/bookings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/insurance_provider.dart';
-import '../providers/bookings_provider.dart';
 
 class InsurancePage extends ConsumerStatefulWidget {
   const InsurancePage({super.key});
@@ -68,7 +68,8 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
             children: [
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  onRefresh: () =>
+                      ref.read(bookingsProvider.notifier).refresh(),
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
@@ -76,61 +77,61 @@ class _InsurancePageState extends ConsumerState<InsurancePage> {
                       vertical: 12,
                     ),
                     children: [
-                    // ──── HEADER ────
-                    _buildHeader(primaryTextColor, secondaryTextColor),
-                    const SizedBox(height: 16),
+                      // ──── HEADER ────
+                      _buildHeader(primaryTextColor, secondaryTextColor),
+                      const SizedBox(height: 16),
 
-                    // ──── STATS CARDS (TOTAL RECEIVED, PAYABLE, PROFIT) ────
-                    _buildStatsRow(stats, isDarkMode),
-                    const SizedBox(height: 16),
+                      // ──── STATS CARDS (TOTAL RECEIVED, PAYABLE, PROFIT) ────
+                      _buildStatsRow(stats, isDarkMode),
+                      const SizedBox(height: 16),
 
-                    // ──── SEARCH & DATE FILTERS ROW ────
-                    _buildSearchAndFilters(
-                      cardBg,
-                      borderColor,
-                      primaryTextColor,
-                      secondaryTextColor,
-                      isDarkMode,
-                      filter,
-                    ),
-                    const SizedBox(height: 14),
+                      // ──── SEARCH & DATE FILTERS ROW ────
+                      _buildSearchAndFilters(
+                        cardBg,
+                        borderColor,
+                        primaryTextColor,
+                        secondaryTextColor,
+                        isDarkMode,
+                        filter,
+                      ),
+                      const SizedBox(height: 14),
 
-                    // ──── BOOKINGS BY COMPANY CHIPS ────
-                    _buildCompanyChips(
-                      primaryTextColor,
-                      secondaryTextColor,
-                      isDarkMode,
-                      filter,
-                      borderColor,
-                    ),
-                    const SizedBox(height: 14),
+                      // ──── BOOKINGS BY COMPANY CHIPS ────
+                      _buildCompanyChips(
+                        primaryTextColor,
+                        secondaryTextColor,
+                        isDarkMode,
+                        filter,
+                        borderColor,
+                      ),
+                      const SizedBox(height: 14),
 
-                    // ──── CHARTS ────
-                    _buildChartsSection(
-                      cardBg,
-                      borderColor,
-                      primaryTextColor,
-                      secondaryTextColor,
-                      isDarkMode,
-                      filteredList,
-                    ),
-                    const SizedBox(height: 14),
+                      // ──── CHARTS ────
+                      _buildChartsSection(
+                        cardBg,
+                        borderColor,
+                        primaryTextColor,
+                        secondaryTextColor,
+                        isDarkMode,
+                        filteredList,
+                      ),
+                      const SizedBox(height: 14),
 
-                    // ──── RECORDS TABLE LIST ────
-                    _buildTableCard(
-                      context,
-                      cardBg,
-                      borderColor,
-                      primaryTextColor,
-                      secondaryTextColor,
-                      isDarkMode,
-                      displayedList,
-                      filteredList.length,
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      // ──── RECORDS TABLE LIST ────
+                      _buildTableCard(
+                        context,
+                        cardBg,
+                        borderColor,
+                        primaryTextColor,
+                        secondaryTextColor,
+                        isDarkMode,
+                        displayedList,
+                        filteredList.length,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ],
           ),

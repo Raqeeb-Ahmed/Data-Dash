@@ -205,514 +205,530 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
               padding: const EdgeInsets.all(AppConstants.defaultPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.bar_chart,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'View Analytics',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: primaryTextColor,
-                            ),
-                          ),
-                          Text(
-                            'Live charts across all services',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Quick Date Filters Chips
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: ['7 Days', '30 Days', '90 Days', 'YTD', 'All']
-                        .map((time) {
-                          final isSelected = _selectedTimeFilter == time;
-                          return Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(time),
-                              selected: isSelected,
-                              selectedColor: const Color(0xFF4F46E5),
-                              backgroundColor: isDarkMode
-                                  ? const Color(0x330F172A)
-                                  : Colors.grey[200],
-                              labelStyle: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : secondaryTextColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              onSelected: (val) {
-                                if (val) {
-                                  setState(() {
-                                    _selectedTimeFilter = time;
-                                    _fromDate = null;
-                                    _toDate = null;
-                                  });
-                                }
-                              },
-                            ),
-                          );
-                        })
-                        .toList(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Custom Date Range Selector (Card)
-                Container(
-                  decoration: BoxDecoration(
-                    color: cardBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: borderColor),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Section
+                  Row(
                     children: [
-                      Text(
-                        'Custom Date Range',
-                        style: TextStyle(
-                          color: primaryTextColor,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.bar_chart,
+                          color: Colors.white,
+                          size: 24,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isDarkMode
-                                      ? const Color(0xFF334155)
-                                      : Colors.grey[400]!,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'View Analytics',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: primaryTextColor,
                               ),
-                              icon: Icon(
-                                Icons.calendar_today,
-                                size: 14,
-                                color: isDarkMode
-                                    ? Colors.white70
-                                    : Colors.black87,
-                              ),
-                              label: Text(
-                                _fromDate == null
-                                    ? 'From'
-                                    : '${_fromDate!.day}/${_fromDate!.month}/${_fromDate!.year}',
-                                style: TextStyle(
-                                  color: isDarkMode
-                                      ? Colors.white70
-                                      : Colors.black87,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              onPressed: () => _selectDate(context, true),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isDarkMode
-                                      ? const Color(0xFF334155)
-                                      : Colors.grey[400]!,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
+                            Text(
+                              'Live charts across all services',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: secondaryTextColor,
                               ),
-                              icon: Icon(
-                                Icons.calendar_today,
-                                size: 14,
-                                color: isDarkMode
-                                    ? Colors.white70
-                                    : Colors.black87,
-                              ),
-                              label: Text(
-                                _toDate == null
-                                    ? 'To'
-                                    : '${_toDate!.day}/${_toDate!.month}/${_toDate!.year}',
-                                style: TextStyle(
-                                  color: isDarkMode
-                                      ? Colors.white70
-                                      : Colors.black87,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              onPressed: () => _selectDate(context, false),
                             ),
-                          ),
-                        ],
-                      ),
-                      if (_fromDate != null || _toDate != null) ...[
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _fromDate = null;
-                                _toDate = null;
-                              });
-                            },
-                            child: const Text(
-                              'Clear Dates',
-                              style: TextStyle(color: Colors.redAccent),
-                            ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                // Stat Summary Cards Grid (2x2)
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 1.35,
-                  children: [
-                    _buildStatCard(
-                      'Total Records',
-                      _formatNum(totalRecords.toDouble()),
-                      Icons.folder_open,
-                      const Color(0xFF6366F1),
-                      isDarkMode,
+                  // Quick Date Filters Chips
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ['7 Days', '30 Days', '90 Days', 'YTD', 'All']
+                          .map((time) {
+                            final isSelected = _selectedTimeFilter == time;
+                            return Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(time),
+                                selected: isSelected,
+                                selectedColor: const Color(0xFF4F46E5),
+                                backgroundColor: isDarkMode
+                                    ? const Color(0x330F172A)
+                                    : Colors.grey[200],
+                                labelStyle: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : secondaryTextColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                onSelected: (val) {
+                                  if (val) {
+                                    setState(() {
+                                      _selectedTimeFilter = time;
+                                      _fromDate = null;
+                                      _toDate = null;
+                                    });
+                                  }
+                                },
+                              ),
+                            );
+                          })
+                          .toList(),
                     ),
-                    _buildStatCard(
-                      'Total Received',
-                      _formatNum(totalReceived),
-                      Icons.payments_outlined,
-                      const Color(0xFF10B981),
-                      isDarkMode,
-                    ),
-                    _buildStatCard(
-                      'Net Profit',
-                      _formatNum(totalNetProfit),
-                      Icons.trending_up,
-                      const Color(0xFF0EA5E9),
-                      isDarkMode,
-                    ),
-                    _buildStatCard(
-                      'Pending Amount',
-                      _formatNum(totalPending),
-                      Icons.hourglass_empty,
-                      const Color(0xFFF59E0B),
-                      isDarkMode,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // All Services Breakdown (Pie Chart Card)
-                _buildChartCard(
-                  title: 'All Services Breakdown',
-                  subtitle: 'Distribution of document bookings',
-                  cardBg: cardBg,
-                  borderColor: borderColor,
-                  child: SizedBox(
-                    height: 160,
-                    child: totalRecords == 0
-                        ? Center(
-                            child: Text(
-                              'No data for this range',
-                              style: TextStyle(color: secondaryTextColor),
-                            ),
-                          )
-                        : PieChart(
-                            PieChartData(
-                              sectionsSpace: 3,
-                              centerSpaceRadius: 40,
-                              sections: [
-                                if (visaCount > 0)
-                                  PieChartSectionData(
-                                    value: visaCount.toDouble(),
-                                    title:
-                                        '${((visaCount / totalRecords) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFF6366F1),
-                                    radius: 18,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                if (hotelCount > 0)
-                                  PieChartSectionData(
-                                    value: hotelCount.toDouble(),
-                                    title:
-                                        '${((hotelCount / totalRecords) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFF0EA5E9),
-                                    radius: 18,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                if (umrahCount > 0)
-                                  PieChartSectionData(
-                                    value: umrahCount.toDouble(),
-                                    title:
-                                        '${((umrahCount / totalRecords) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFFF59E0B),
-                                    radius: 18,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                if (ticketCount > 0)
-                                  PieChartSectionData(
-                                    value: ticketCount.toDouble(),
-                                    title:
-                                        '${((ticketCount / totalRecords) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFF10B981),
-                                    radius: 18,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                if (insuranceCount > 0)
-                                  PieChartSectionData(
-                                    value: insuranceCount.toDouble(),
-                                    title:
-                                        '${((insuranceCount / totalRecords) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFFEC4899),
-                                    radius: 18,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
                   ),
-                  legends: [
-                    _buildLegend('Visas', const Color(0xFF6366F1), isDarkMode),
-                    _buildLegend('Hotels', const Color(0xFF0EA5E9), isDarkMode),
-                    _buildLegend('Umrah', const Color(0xFFF59E0B), isDarkMode),
-                    _buildLegend(
-                      'Tickets',
-                      const Color(0xFF10B981),
-                      isDarkMode,
-                    ),
-                    if (insuranceCount > 0)
-                      _buildLegend(
-                        'Insurance',
-                        const Color(0xFFEC4899),
-                        isDarkMode,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                // Visa Status Breakdown (Pie Chart Card)
-                _buildChartCard(
-                  title: 'Visa Application Status',
-                  subtitle: 'Approval vs Processing trends',
-                  cardBg: cardBg,
-                  borderColor: borderColor,
-                  child: SizedBox(
-                    height: 160,
-                    child: totalVisaFiltered == 0
-                        ? Center(
-                            child: Text(
-                              'No visa data for this range',
-                              style: TextStyle(color: secondaryTextColor),
-                            ),
-                          )
-                        : PieChart(
-                            PieChartData(
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 36,
-                              sections: [
-                                if (approvedVisa > 0)
-                                  PieChartSectionData(
-                                    value: approvedVisa.toDouble(),
-                                    title:
-                                        '${((approvedVisa / totalVisaFiltered) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFF10B981),
-                                    radius: 16,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                if (processingVisa > 0)
-                                  PieChartSectionData(
-                                    value: processingVisa.toDouble(),
-                                    title:
-                                        '${((processingVisa / totalVisaFiltered) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFFF59E0B),
-                                    radius: 16,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                if (rejectedVisa > 0)
-                                  PieChartSectionData(
-                                    value: rejectedVisa.toDouble(),
-                                    title:
-                                        '${((rejectedVisa / totalVisaFiltered) * 100).toStringAsFixed(0)}%',
-                                    color: const Color(0xFFEF4444),
-                                    radius: 16,
-                                    titleStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                  ),
-                  legends: [
-                    _buildLegend(
-                      'Approved',
-                      const Color(0xFF10B981),
-                      isDarkMode,
+                  // Custom Date Range Selector (Card)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderColor),
                     ),
-                    _buildLegend(
-                      'Processing',
-                      const Color(0xFFF59E0B),
-                      isDarkMode,
-                    ),
-                    _buildLegend(
-                      'Rejected',
-                      const Color(0xFFEF4444),
-                      isDarkMode,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Monthly Performance (Bar Chart Card)
-                _buildChartCard(
-                  title: 'Monthly Financials (PKR Millions)',
-                  subtitle: 'Trends over last 6 months',
-                  cardBg: cardBg,
-                  borderColor: borderColor,
-                  child: SizedBox(
-                    height: 200,
-                    child: BarChart(
-                      BarChartData(
-                        borderData: FlBorderData(show: false),
-                        gridData: const FlGridData(show: false),
-                        titlesData: FlTitlesData(
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                final index = value.toInt();
-                                if (index >= 0 && index < months.length) {
-                                  final m = months[index];
-                                  const monthNames = [
-                                    'Jan',
-                                    'Feb',
-                                    'Mar',
-                                    'Apr',
-                                    'May',
-                                    'Jun',
-                                    'Jul',
-                                    'Aug',
-                                    'Sep',
-                                    'Oct',
-                                    'Nov',
-                                    'Dec',
-                                  ];
-                                  return Text(
-                                    monthNames[m.month - 1],
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: isDarkMode
-                                          ? Colors.white70
-                                          : Colors.black87,
-                                    ),
-                                  );
-                                }
-                                return const Text('');
-                              },
-                            ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Custom Date Range',
+                          style: TextStyle(
+                            color: primaryTextColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        barGroups: barGroups,
-                      ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDarkMode
+                                        ? const Color(0xFF334155)
+                                        : Colors.grey[400]!,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                ),
+                                icon: Icon(
+                                  Icons.calendar_today,
+                                  size: 14,
+                                  color: isDarkMode
+                                      ? Colors.white70
+                                      : Colors.black87,
+                                ),
+                                label: Text(
+                                  _fromDate == null
+                                      ? 'From'
+                                      : '${_fromDate!.day}/${_fromDate!.month}/${_fromDate!.year}',
+                                  style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                onPressed: () => _selectDate(context, true),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDarkMode
+                                        ? const Color(0xFF334155)
+                                        : Colors.grey[400]!,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                ),
+                                icon: Icon(
+                                  Icons.calendar_today,
+                                  size: 14,
+                                  color: isDarkMode
+                                      ? Colors.white70
+                                      : Colors.black87,
+                                ),
+                                label: Text(
+                                  _toDate == null
+                                      ? 'To'
+                                      : '${_toDate!.day}/${_toDate!.month}/${_toDate!.year}',
+                                  style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                onPressed: () => _selectDate(context, false),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_fromDate != null || _toDate != null) ...[
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _fromDate = null;
+                                  _toDate = null;
+                                });
+                              },
+                              child: const Text(
+                                'Clear Dates',
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  legends: [
-                    _buildLegend('Received', AppColors.primary, isDarkMode),
-                    _buildLegend('Net Profit', AppColors.secondary, isDarkMode),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 24),
+
+                  // Stat Summary Cards Grid (2x2)
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: 1.35,
+                    children: [
+                      _buildStatCard(
+                        'Total Records',
+                        _formatNum(totalRecords.toDouble()),
+                        Icons.folder_open,
+                        const Color(0xFF6366F1),
+                        isDarkMode,
+                      ),
+                      _buildStatCard(
+                        'Total Received',
+                        _formatNum(totalReceived),
+                        Icons.payments_outlined,
+                        const Color(0xFF10B981),
+                        isDarkMode,
+                      ),
+                      _buildStatCard(
+                        'Net Profit',
+                        _formatNum(totalNetProfit),
+                        Icons.trending_up,
+                        const Color(0xFF0EA5E9),
+                        isDarkMode,
+                      ),
+                      _buildStatCard(
+                        'Pending Amount',
+                        _formatNum(totalPending),
+                        Icons.hourglass_empty,
+                        const Color(0xFFF59E0B),
+                        isDarkMode,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // All Services Breakdown (Pie Chart Card)
+                  _buildChartCard(
+                    title: 'All Services Breakdown',
+                    subtitle: 'Distribution of document bookings',
+                    cardBg: cardBg,
+                    borderColor: borderColor,
+                    child: SizedBox(
+                      height: 160,
+                      child: totalRecords == 0
+                          ? Center(
+                              child: Text(
+                                'No data for this range',
+                                style: TextStyle(color: secondaryTextColor),
+                              ),
+                            )
+                          : PieChart(
+                              PieChartData(
+                                sectionsSpace: 3,
+                                centerSpaceRadius: 40,
+                                sections: [
+                                  if (visaCount > 0)
+                                    PieChartSectionData(
+                                      value: visaCount.toDouble(),
+                                      title:
+                                          '${((visaCount / totalRecords) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFF6366F1),
+                                      radius: 18,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (hotelCount > 0)
+                                    PieChartSectionData(
+                                      value: hotelCount.toDouble(),
+                                      title:
+                                          '${((hotelCount / totalRecords) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFF0EA5E9),
+                                      radius: 18,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (umrahCount > 0)
+                                    PieChartSectionData(
+                                      value: umrahCount.toDouble(),
+                                      title:
+                                          '${((umrahCount / totalRecords) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFFF59E0B),
+                                      radius: 18,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (ticketCount > 0)
+                                    PieChartSectionData(
+                                      value: ticketCount.toDouble(),
+                                      title:
+                                          '${((ticketCount / totalRecords) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFF10B981),
+                                      radius: 18,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (insuranceCount > 0)
+                                    PieChartSectionData(
+                                      value: insuranceCount.toDouble(),
+                                      title:
+                                          '${((insuranceCount / totalRecords) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFFEC4899),
+                                      radius: 18,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                    ),
+                    legends: [
+                      _buildLegend(
+                        'Visas',
+                        const Color(0xFF6366F1),
+                        isDarkMode,
+                      ),
+                      _buildLegend(
+                        'Hotels',
+                        const Color(0xFF0EA5E9),
+                        isDarkMode,
+                      ),
+                      _buildLegend(
+                        'Umrah',
+                        const Color(0xFFF59E0B),
+                        isDarkMode,
+                      ),
+                      _buildLegend(
+                        'Tickets',
+                        const Color(0xFF10B981),
+                        isDarkMode,
+                      ),
+                      if (insuranceCount > 0)
+                        _buildLegend(
+                          'Insurance',
+                          const Color(0xFFEC4899),
+                          isDarkMode,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Visa Status Breakdown (Pie Chart Card)
+                  _buildChartCard(
+                    title: 'Visa Application Status',
+                    subtitle: 'Approval vs Processing trends',
+                    cardBg: cardBg,
+                    borderColor: borderColor,
+                    child: SizedBox(
+                      height: 160,
+                      child: totalVisaFiltered == 0
+                          ? Center(
+                              child: Text(
+                                'No visa data for this range',
+                                style: TextStyle(color: secondaryTextColor),
+                              ),
+                            )
+                          : PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 36,
+                                sections: [
+                                  if (approvedVisa > 0)
+                                    PieChartSectionData(
+                                      value: approvedVisa.toDouble(),
+                                      title:
+                                          '${((approvedVisa / totalVisaFiltered) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFF10B981),
+                                      radius: 16,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (processingVisa > 0)
+                                    PieChartSectionData(
+                                      value: processingVisa.toDouble(),
+                                      title:
+                                          '${((processingVisa / totalVisaFiltered) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFFF59E0B),
+                                      radius: 16,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  if (rejectedVisa > 0)
+                                    PieChartSectionData(
+                                      value: rejectedVisa.toDouble(),
+                                      title:
+                                          '${((rejectedVisa / totalVisaFiltered) * 100).toStringAsFixed(0)}%',
+                                      color: const Color(0xFFEF4444),
+                                      radius: 16,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                    ),
+                    legends: [
+                      _buildLegend(
+                        'Approved',
+                        const Color(0xFF10B981),
+                        isDarkMode,
+                      ),
+                      _buildLegend(
+                        'Processing',
+                        const Color(0xFFF59E0B),
+                        isDarkMode,
+                      ),
+                      _buildLegend(
+                        'Rejected',
+                        const Color(0xFFEF4444),
+                        isDarkMode,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Monthly Performance (Bar Chart Card)
+                  _buildChartCard(
+                    title: 'Monthly Financials (PKR Millions)',
+                    subtitle: 'Trends over last 6 months',
+                    cardBg: cardBg,
+                    borderColor: borderColor,
+                    child: SizedBox(
+                      height: 200,
+                      child: BarChart(
+                        BarChartData(
+                          borderData: FlBorderData(show: false),
+                          gridData: const FlGridData(show: false),
+                          titlesData: FlTitlesData(
+                            leftTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                getTitlesWidget: (value, meta) {
+                                  final index = value.toInt();
+                                  if (index >= 0 && index < months.length) {
+                                    final m = months[index];
+                                    const monthNames = [
+                                      'Jan',
+                                      'Feb',
+                                      'Mar',
+                                      'Apr',
+                                      'May',
+                                      'Jun',
+                                      'Jul',
+                                      'Aug',
+                                      'Sep',
+                                      'Oct',
+                                      'Nov',
+                                      'Dec',
+                                    ];
+                                    return Text(
+                                      monthNames[m.month - 1],
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: isDarkMode
+                                            ? Colors.white70
+                                            : Colors.black87,
+                                      ),
+                                    );
+                                  }
+                                  return const Text('');
+                                },
+                              ),
+                            ),
+                          ),
+                          barGroups: barGroups,
+                        ),
+                      ),
+                    ),
+                    legends: [
+                      _buildLegend('Received', AppColors.primary, isDarkMode),
+                      _buildLegend(
+                        'Net Profit',
+                        AppColors.secondary,
+                        isDarkMode,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ),

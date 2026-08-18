@@ -1,10 +1,10 @@
+import 'package:data_dash/features/dashboard/presentation/providers/bookings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../providers/bookings_provider.dart';
 import 'insurance_page.dart';
 
 class EmployeeMedicalInsurancePage extends ConsumerStatefulWidget {
@@ -64,8 +64,10 @@ class _EmployeeMedicalInsurancePageState
   }
 
   void _calculateProfit() {
-    final double received = double.tryParse(_receivedAmountController.text) ?? 0.0;
-    final double payable = double.tryParse(_payableAmountController.text) ?? 0.0;
+    final double received =
+        double.tryParse(_receivedAmountController.text) ?? 0.0;
+    final double payable =
+        double.tryParse(_payableAmountController.text) ?? 0.0;
     final double profit = received - payable;
     _profitController.text = profit.toStringAsFixed(0);
   }
@@ -82,7 +84,8 @@ class _EmployeeMedicalInsurancePageState
   }
 
   Future<void> _selectDate(BuildContext context, bool isEffective) async {
-    final DateTime initial = (isEffective ? _effectiveDate : _expiryDate) ?? DateTime.now();
+    final DateTime initial =
+        (isEffective ? _effectiveDate : _expiryDate) ?? DateTime.now();
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -146,8 +149,10 @@ class _EmployeeMedicalInsurancePageState
         'effectiveDate': _effectiveDate!.toIso8601String(),
         'expiryDate': _expiryDate!.toIso8601String(),
         'issuedAt': _issuedAtController.text,
-        'totalReceivedAmount': double.tryParse(_receivedAmountController.text) ?? 0.0,
-        'totalPayableAmount': double.tryParse(_payableAmountController.text) ?? 0.0,
+        'totalReceivedAmount':
+            double.tryParse(_receivedAmountController.text) ?? 0.0,
+        'totalPayableAmount':
+            double.tryParse(_payableAmountController.text) ?? 0.0,
         'totalProfit': double.tryParse(_profitController.text) ?? 0.0,
         'createdByUid': currentUser?.uid ?? '',
         'userEmail': currentUser?.email ?? 'Unassigned',
@@ -198,10 +203,18 @@ class _EmployeeMedicalInsurancePageState
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDarkMode ? Colors.white : AppColors.textPrimaryLight;
-    final secondaryTextColor = isDarkMode ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight;
-    final formBg = isDarkMode ? const Color(0xFF0B0F19).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.95);
-    final inputBg = isDarkMode ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.grey[100]!;
+    final primaryTextColor = isDarkMode
+        ? Colors.white
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : AppColors.textSecondaryLight;
+    final formBg = isDarkMode
+        ? const Color(0xFF0B0F19).withValues(alpha: 0.6)
+        : Colors.white.withValues(alpha: 0.95);
+    final inputBg = isDarkMode
+        ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+        : Colors.grey[100]!;
     final isMobile = MediaQuery.of(context).size.width < 750;
 
     return Scaffold(
@@ -209,7 +222,11 @@ class _EmployeeMedicalInsurancePageState
         backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
         title: Text(
           'Medical Insurance',
-          style: TextStyle(color: primaryTextColor, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: primaryTextColor,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         iconTheme: IconThemeData(color: primaryTextColor),
         elevation: 1,
@@ -223,214 +240,515 @@ class _EmployeeMedicalInsurancePageState
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Header
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF00B4D8).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Icon(Icons.business, color: Color(0xFF00B4D8), size: 20),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Medical Insurance Form',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: primaryTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // View All Button (top as shown in mockups)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const InsurancePage()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1D3557),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'View All Medical Bookings',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Form Container
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: formBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDarkMode ? const Color(0x1AFFFFFF) : const Color(0x1F000000),
-                      ),
-                    ),
-                    child: Column(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Form Fields
-                        if (isMobile) ...[
-                          _buildTextField('Company Name *', _companyNameController, Icons.business, 'Enter Company Name', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Insured\'s Name *', _insuredNameController, Icons.person, 'Enter Name of Insured', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Client Email', _emailController, Icons.email, 'Enter Email Address', inputBg, secondaryTextColor, primaryTextColor, isRequired: false),
-                          const SizedBox(height: 12),
-                          _buildTextField('Age *', _ageController, Icons.badge, 'Enter Age', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Passport Number', _passportNoController, Icons.card_membership, 'Enter Passport Number', inputBg, secondaryTextColor, primaryTextColor, isRequired: false),
-                          const SizedBox(height: 12),
-                          _buildTextField('NIC', _nicController, Icons.credit_card, 'Enter NIC', inputBg, secondaryTextColor, primaryTextColor, isRequired: false),
-                          const SizedBox(height: 12),
-                          _buildTextField('Country of Travel *', _countryController, Icons.public, 'Enter Country of Travel', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Contact Number *', _contactController, Icons.phone, 'Enter Contact Number', inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Number of Days *', _daysController, Icons.calendar_today, 'Enter No of days', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildDateField('Effective Date *', _effectiveDate, () => _selectDate(context, true), inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildDateField('Expiry Date *', _expiryDate, () => _selectDate(context, false), inputBg, secondaryTextColor, primaryTextColor),
-                          const SizedBox(height: 12),
-                          _buildTextField('Issued At', _issuedAtController, Icons.public, 'e.g., Lahore', inputBg, secondaryTextColor, primaryTextColor, isRequired: false),
-                          const SizedBox(height: 12),
-                          _buildTextField('Total Received Amount *', _receivedAmountController, Icons.attach_money, 'Enter Received Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Total Payable Amount *', _payableAmountController, Icons.attach_money, 'Enter Payable Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true),
-                          const SizedBox(height: 12),
-                          _buildTextField('Total Profit', _profitController, Icons.attach_money, 'Auto Calculated', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true, isEnabled: false),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Company Name *', _companyNameController, Icons.business, 'Enter Company Name', inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Insured\'s Name *', _insuredNameController, Icons.person, 'Enter Name of Insured', inputBg, secondaryTextColor, primaryTextColor)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Client Email', _emailController, Icons.email, 'Enter Email Address', inputBg, secondaryTextColor, primaryTextColor, isRequired: false)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Age *', _ageController, Icons.badge, 'Enter Age', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Passport Number', _passportNoController, Icons.card_membership, 'Enter Passport Number', inputBg, secondaryTextColor, primaryTextColor, isRequired: false)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('NIC', _nicController, Icons.credit_card, 'Enter NIC', inputBg, secondaryTextColor, primaryTextColor, isRequired: false)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Country of Travel *', _countryController, Icons.public, 'Enter Country of Travel', inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Contact Number *', _contactController, Icons.phone, 'Enter Contact Number', inputBg, secondaryTextColor, primaryTextColor)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Number of Days *', _daysController, Icons.calendar_today, 'Enter No of days', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildDateField('Effective Date *', _effectiveDate, () => _selectDate(context, true), inputBg, secondaryTextColor, primaryTextColor)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildDateField('Expiry Date *', _expiryDate, () => _selectDate(context, false), inputBg, secondaryTextColor, primaryTextColor)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Issued At', _issuedAtController, Icons.public, 'e.g., Lahore', inputBg, secondaryTextColor, primaryTextColor, isRequired: false)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(child: _buildTextField('Total Received Amount *', _receivedAmountController, Icons.attach_money, 'Enter Received Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                              const SizedBox(width: 16),
-                              Expanded(child: _buildTextField('Total Payable Amount *', _payableAmountController, Icons.attach_money, 'Enter Payable Amount', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          _buildTextField('Total Profit', _profitController, Icons.attach_money, 'Auto Calculated', inputBg, secondaryTextColor, primaryTextColor, isNumeric: true, isEnabled: false),
-                        ],
-
-                        const SizedBox(height: 24),
-
-                        // Save Record Button
-                        Container(
-                          width: double.infinity,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF00B4D8), Color(0xFF0077B6)],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _saveBooking,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF00B4D8,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.business,
+                                color: Color(0xFF00B4D8),
+                                size: 20,
                               ),
                             ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                  )
-                                : const Text(
-                                    'Save Record',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                          ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Medical Insurance Form',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: primaryTextColor,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+
+                    // View All Button (top as shown in mockups)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const InsurancePage(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1D3557),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'View All Medical Bookings',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Form Container
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: formBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? const Color(0x1AFFFFFF)
+                              : const Color(0x1F000000),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Form Fields
+                          if (isMobile) ...[
+                            _buildTextField(
+                              'Company Name *',
+                              _companyNameController,
+                              Icons.business,
+                              'Enter Company Name',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Insured\'s Name *',
+                              _insuredNameController,
+                              Icons.person,
+                              'Enter Name of Insured',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Client Email',
+                              _emailController,
+                              Icons.email,
+                              'Enter Email Address',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Age *',
+                              _ageController,
+                              Icons.badge,
+                              'Enter Age',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Passport Number',
+                              _passportNoController,
+                              Icons.card_membership,
+                              'Enter Passport Number',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'NIC',
+                              _nicController,
+                              Icons.credit_card,
+                              'Enter NIC',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Country of Travel *',
+                              _countryController,
+                              Icons.public,
+                              'Enter Country of Travel',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Contact Number *',
+                              _contactController,
+                              Icons.phone,
+                              'Enter Contact Number',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Number of Days *',
+                              _daysController,
+                              Icons.calendar_today,
+                              'Enter No of days',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildDateField(
+                              'Effective Date *',
+                              _effectiveDate,
+                              () => _selectDate(context, true),
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildDateField(
+                              'Expiry Date *',
+                              _expiryDate,
+                              () => _selectDate(context, false),
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Issued At',
+                              _issuedAtController,
+                              Icons.public,
+                              'e.g., Lahore',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isRequired: false,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Total Received Amount *',
+                              _receivedAmountController,
+                              Icons.attach_money,
+                              'Enter Received Amount',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Total Payable Amount *',
+                              _payableAmountController,
+                              Icons.attach_money,
+                              'Enter Payable Amount',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Total Profit',
+                              _profitController,
+                              Icons.attach_money,
+                              'Auto Calculated',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                              isEnabled: false,
+                            ),
+                          ] else ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Company Name *',
+                                    _companyNameController,
+                                    Icons.business,
+                                    'Enter Company Name',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Insured\'s Name *',
+                                    _insuredNameController,
+                                    Icons.person,
+                                    'Enter Name of Insured',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Client Email',
+                                    _emailController,
+                                    Icons.email,
+                                    'Enter Email Address',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Age *',
+                                    _ageController,
+                                    Icons.badge,
+                                    'Enter Age',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Passport Number',
+                                    _passportNoController,
+                                    Icons.card_membership,
+                                    'Enter Passport Number',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'NIC',
+                                    _nicController,
+                                    Icons.credit_card,
+                                    'Enter NIC',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Country of Travel *',
+                                    _countryController,
+                                    Icons.public,
+                                    'Enter Country of Travel',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Contact Number *',
+                                    _contactController,
+                                    Icons.phone,
+                                    'Enter Contact Number',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Number of Days *',
+                                    _daysController,
+                                    Icons.calendar_today,
+                                    'Enter No of days',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildDateField(
+                                    'Effective Date *',
+                                    _effectiveDate,
+                                    () => _selectDate(context, true),
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildDateField(
+                                    'Expiry Date *',
+                                    _expiryDate,
+                                    () => _selectDate(context, false),
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Issued At',
+                                    _issuedAtController,
+                                    Icons.public,
+                                    'e.g., Lahore',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isRequired: false,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Total Received Amount *',
+                                    _receivedAmountController,
+                                    Icons.attach_money,
+                                    'Enter Received Amount',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildTextField(
+                                    'Total Payable Amount *',
+                                    _payableAmountController,
+                                    Icons.attach_money,
+                                    'Enter Payable Amount',
+                                    inputBg,
+                                    secondaryTextColor,
+                                    primaryTextColor,
+                                    isNumeric: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              'Total Profit',
+                              _profitController,
+                              Icons.attach_money,
+                              'Auto Calculated',
+                              inputBg,
+                              secondaryTextColor,
+                              primaryTextColor,
+                              isNumeric: true,
+                              isEnabled: false,
+                            ),
+                          ],
+
+                          const SizedBox(height: 24),
+
+                          // Save Record Button
+                          Container(
+                            width: double.infinity,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF00B4D8), Color(0xFF0077B6)],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _saveBooking,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Save Record',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
           ),
         ),
       ),
@@ -454,7 +772,11 @@ class _EmployeeMedicalInsurancePageState
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondary),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: secondary,
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -465,10 +787,16 @@ class _EmployeeMedicalInsurancePageState
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 16, color: secondary),
             hintText: hint,
-            hintStyle: TextStyle(fontSize: 12, color: secondary.withValues(alpha: 0.6)),
+            hintStyle: TextStyle(
+              fontSize: 12,
+              color: secondary.withValues(alpha: 0.6),
+            ),
             filled: true,
             fillColor: isEnabled ? inputBg : inputBg.withValues(alpha: 0.5),
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: secondary.withValues(alpha: 0.2)),
@@ -498,7 +826,11 @@ class _EmployeeMedicalInsurancePageState
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondary),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: secondary,
+          ),
         ),
         const SizedBox(height: 6),
         GestureDetector(
@@ -508,13 +840,22 @@ class _EmployeeMedicalInsurancePageState
               controller: TextEditingController(text: _formatDate(value)),
               style: TextStyle(fontSize: 12, color: primary),
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.calendar_today_outlined, size: 16, color: secondary),
+                prefixIcon: Icon(
+                  Icons.calendar_today_outlined,
+                  size: 16,
+                  color: secondary,
+                ),
                 filled: true,
                 fillColor: inputBg,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: secondary.withValues(alpha: 0.2)),
+                  borderSide: BorderSide(
+                    color: secondary.withValues(alpha: 0.2),
+                  ),
                 ),
               ),
             ),

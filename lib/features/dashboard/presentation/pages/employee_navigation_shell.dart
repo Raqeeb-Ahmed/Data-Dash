@@ -72,13 +72,23 @@ class _EmployeeNavigationShellState
                   ? const Color(0xFF0F172A)
                   : Colors.white,
               elevation: 1,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.menu,
-                  color: isDarkMode ? Colors.white : Colors.black87,
-                ),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              ),
+              leading: selectedIndex == 0
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.menu,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    )
+                  : IconButton(
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      onPressed: () {
+                        ref.read(navigationProvider.notifier).state = 0;
+                      },
+                    ),
               title: Row(
                 children: [
                   Container(
@@ -108,6 +118,17 @@ class _EmployeeNavigationShellState
                 ],
               ),
               actions: [
+                // if (selectedIndex != 0)
+                //   IconButton(
+                //     icon: Icon(
+                //       Icons.home_outlined,
+                //       color: isDarkMode ? Colors.white : Colors.black87,
+                //     ),
+                //     tooltip: 'Go to Home',
+                //     onPressed: () {
+                //       ref.read(navigationProvider.notifier).state = 0;
+                //     },
+                //   ),
                 // User Avatar Indicator
                 Container(
                   margin: const EdgeInsets.only(right: 16),
@@ -638,11 +659,7 @@ class _EmployeeCountriesPageState extends ConsumerState<EmployeeCountriesPage> {
     final List<Map<String, dynamic>> displayList = mockupCountries.map((c) {
       final String countryName = c['name'] as String;
       final matchedCount = activeCounts[countryName.toLowerCase()] ?? 0;
-      return {
-        'name': countryName,
-        'flag': c['flag'],
-        'count': matchedCount,
-      };
+      return {'name': countryName, 'flag': c['flag'], 'count': matchedCount};
     }).toList();
 
     // Check if there are other countries in activeCounts that aren't in the mockup list, and append them

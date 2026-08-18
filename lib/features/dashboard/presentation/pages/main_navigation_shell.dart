@@ -67,11 +67,27 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: selectedIndex != 0
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    ref.read(navigationProvider.notifier).state = 0;
+                  },
+                )
+              : null,
           title: Text(
             _titles[selectedIndex],
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           actions: [
+            // if (selectedIndex != 0)
+            //   IconButton(
+            //     icon: const Icon(Icons.home_outlined),
+            //     tooltip: 'Go to Home',
+            //     onPressed: () {
+            //       ref.read(navigationProvider.notifier).state = 0;
+            //     },
+            //   ),
             IconButton(
               icon: const Icon(Icons.notifications_none_outlined),
               onPressed: () {},

@@ -1,10 +1,10 @@
+import 'package:data_dash/features/dashboard/presentation/providers/bookings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/animated_world_map_background.dart';
 import '../providers/marketing_provider.dart';
-import '../providers/bookings_provider.dart';
 
 class MarketingPage extends ConsumerStatefulWidget {
   const MarketingPage({super.key});
