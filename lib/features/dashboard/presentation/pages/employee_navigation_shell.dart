@@ -465,29 +465,74 @@ class _EmployeeNavigationShellState
       backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
       child: Column(
         children: [
-          // Drawer Profile Header
-          UserAccountsDrawerHeader(
+          // Beautiful Custom Header with Gradient and Glow
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
             decoration: BoxDecoration(
-              color: isDarkMode ? const Color(0xFF1E293B) : AppColors.primary,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDarkMode
+                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                    : [AppColors.primary, const Color(0xFF4F46E5)],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomRight: Radius.circular(24),
+              ),
             ),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 36, color: AppColors.primary),
-            ),
-            accountName: Text(
-              user?.displayName ?? 'Employee AFTAB',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            accountEmail: Text(
-              user?.email ?? 'employee@gmail.com',
-              style: const TextStyle(color: Colors.white70),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      color: isDarkMode ? const Color(0xFF1E293B) : AppColors.primary,
+                      size: 30,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  user?.displayName ?? 'Employee AFTAB',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user?.email ?? 'employee@gmail.com',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
             ),
           ),
 
           // Drawer Navigation Items List
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               children: [
                 _buildDrawerTile('Home', Icons.home_outlined, 0, selectedIndex),
                 _buildDrawerTile(
@@ -526,36 +571,44 @@ class _EmployeeNavigationShellState
                   6,
                   selectedIndex,
                 ),
-                const Divider(),
               ],
             ),
           ),
-
+          const Divider(),
           // Drawer Footer Logout Button
           Padding(
             padding: const EdgeInsets.all(20),
-            child: ListTile(
-              leading: const Icon(
-                Icons.logout_outlined,
-                color: AppColors.error,
-              ),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.bold,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDarkMode ? const Color(0xFF1E293B) : Colors.red.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDarkMode ? Colors.transparent : Colors.red.withValues(alpha: 0.1),
                 ),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.logout_outlined,
+                  color: AppColors.error,
+                ),
+                title: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await ref.read(authControllerProvider.notifier).logout();
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  }
+                },
               ),
-              onTap: () async {
-                Navigator.pop(context);
-                await ref.read(authControllerProvider.notifier).logout();
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/login');
-                }
-              },
             ),
           ),
         ],
@@ -570,20 +623,45 @@ class _EmployeeNavigationShellState
     int selectedIndex,
   ) {
     final isSelected = selectedIndex == index;
-    return ListTile(
-      leading: Icon(icon, color: isSelected ? AppColors.primary : Colors.grey),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppColors.primary : null,
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? (isDarkMode 
+                ? AppColors.primary.withValues(alpha: 0.15) 
+                : AppColors.primary.withValues(alpha: 0.08))
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? (isDarkMode 
+                  ? AppColors.primary.withValues(alpha: 0.3) 
+                  : AppColors.primary.withValues(alpha: 0.15))
+              : Colors.transparent,
         ),
       ),
-      selected: isSelected,
-      onTap: () {
-        Navigator.pop(context);
-        _onTabSelected(index);
-      },
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? AppColors.primary : (isDarkMode ? Colors.white60 : Colors.black54),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected 
+                ? AppColors.primary 
+                : (isDarkMode ? Colors.white70 : Colors.black87),
+          ),
+        ),
+        selected: isSelected,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        onTap: () {
+          Navigator.pop(context);
+          _onTabSelected(index);
+        },
+      ),
     );
   }
 }

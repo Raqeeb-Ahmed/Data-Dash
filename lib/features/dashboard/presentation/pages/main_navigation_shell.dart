@@ -102,36 +102,77 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           ],
         ),
         drawer: Drawer(
+          backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
           child: Column(
             children: [
-              UserAccountsDrawerHeader(
-                decoration: const BoxDecoration(
+              // Beautiful Custom Header with Gradient and Glow
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppColors.primary, Color(0xFF4F46E5)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDarkMode
+                        ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                        : [AppColors.primary, const Color(0xFF4F46E5)],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(24),
                   ),
                 ),
-                currentAccountPicture: const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.flash_on,
-                    color: AppColors.primary,
-                    size: 36,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: const CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.flash_on,
+                          color: AppColors.primary,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'DATADASH ADMIN',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'admin@ostravel.com',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
                 ),
-                accountName: const Text(
-                  'DATADASH ADMIN',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                accountEmail: const Text('admin@ostravel.com'),
               ),
 
               // Navigation Sidebar List (All 9 Navbar Pages)
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.zero,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   children: [
                     _buildSidebarItem(
                       index: 0,
@@ -191,25 +232,41 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 ),
               ),
               const Divider(),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout_outlined,
-                  color: AppColors.error,
-                ),
-                title: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: AppColors.error,
-                    fontWeight: FontWeight.bold,
+              // Logout Option styled beautifully
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? const Color(0xFF1E293B) : Colors.red.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDarkMode ? Colors.transparent : Colors.red.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.logout_outlined,
+                      color: AppColors.error,
+                    ),
+                    title: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context); // Close drawer
+                      await ref.read(authControllerProvider.notifier).logout();
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    },
                   ),
                 ),
-                onTap: () async {
-                  Navigator.pop(context); // Close drawer
-                  await ref.read(authControllerProvider.notifier).logout();
-                  if (context.mounted) {
-                    Navigator.pushReplacementNamed(context, '/login');
-                  }
-                },
               ),
               const SizedBox(height: 16),
             ],
@@ -265,20 +322,45 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     required int selectedIndex,
   }) {
     final isSelected = selectedIndex == index;
-    return ListTile(
-      leading: Icon(icon, color: isSelected ? AppColors.primary : null),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppColors.primary : null,
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? (isDarkMode 
+                ? AppColors.primary.withValues(alpha: 0.15) 
+                : AppColors.primary.withValues(alpha: 0.08))
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? (isDarkMode 
+                  ? AppColors.primary.withValues(alpha: 0.3) 
+                  : AppColors.primary.withValues(alpha: 0.15))
+              : Colors.transparent,
         ),
       ),
-      selected: isSelected,
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-        ref.read(navigationProvider.notifier).state = index;
-      },
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? AppColors.primary : (isDarkMode ? Colors.white60 : Colors.black54),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected 
+                ? AppColors.primary 
+                : (isDarkMode ? Colors.white70 : Colors.black87),
+          ),
+        ),
+        selected: isSelected,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        onTap: () {
+          Navigator.pop(context); // Close drawer
+          ref.read(navigationProvider.notifier).state = index;
+        },
+      ),
     );
   }
 }

@@ -32,286 +32,287 @@ class EmployeeHomePage extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 48),
+                children: [
+                  const SizedBox(height: 48),
 
-                // ── 1. HERO SECTION ──
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 38,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                            fontFamily: 'Inter',
-                            color: primaryTextColor,
+                  // ── 1. HERO SECTION ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 38,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                              fontFamily: 'Inter',
+                              color: primaryTextColor,
+                            ),
+                            children: [
+                              const TextSpan(text: 'Travel '),
+                              const TextSpan(
+                                text: 'Simplified',
+                                style: TextStyle(color: Color(0xFF3B82F6)),
+                              ),
+                              const TextSpan(text: ',\nBookings '),
+                              const TextSpan(
+                                text: 'Managed',
+                                style: TextStyle(color: Color(0xFF10B981)),
+                              ),
+                              const TextSpan(text: '.'),
+                            ],
                           ),
-                          children: [
-                            const TextSpan(text: 'Travel '),
-                            const TextSpan(
-                              text: 'Simplified',
-                              style: TextStyle(color: Color(0xFF3B82F6)),
-                            ),
-                            const TextSpan(text: ',\nBookings '),
-                            const TextSpan(
-                              text: 'Managed',
-                              style: TextStyle(color: Color(0xFF10B981)),
-                            ),
-                            const TextSpan(text: '.'),
-                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Your all-in-one platform for visas, flights, and travel services.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: secondaryTextColor,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          // Scroll down or switch to search
-                          ref.read(navigationProvider.notifier).state =
-                              5; // Search Tab
-                        },
-                        icon: const Icon(
-                          Icons.rocket_launch,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                        label: const Text(
-                          'Get Started',
+                        const SizedBox(height: 16),
+                        Text(
+                          'Your all-in-one platform for visas, flights, and travel services.',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 15,
+                            color: secondaryTextColor,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            // Scroll down or switch to search
+                            ref.read(navigationProvider.notifier).state =
+                                5; // Search Tab
+                          },
+                          icon: const Icon(
+                            Icons.rocket_launch,
+                            size: 16,
                             color: Colors.white,
                           ),
+                          label: const Text(
+                            'Get Started',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B82F6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            elevation: 4,
+                          ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 4,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 48),
-                // ── 2. QUICK ACCESS SECTION ──
-                Text(
-                  'Quick Access',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: primaryTextColor,
+                  const SizedBox(height: 48),
+                  // ── 2. QUICK ACCESS SECTION ──
+                  Text(
+                    'Quick Access',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: primaryTextColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Manage your bookings and view live reports',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: secondaryTextColor,
+                  const SizedBox(height: 8),
+                  Text(
+                    'Manage your bookings and view live reports',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final double width = constraints.maxWidth;
-                      int crossAxisCount = 2;
-                      if (width >= 900) {
-                        crossAxisCount = 4;
-                      } else if (width >= 600) {
-                        crossAxisCount = 3;
-                      }
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double width = constraints.maxWidth;
+                        int crossAxisCount = 2;
+                        if (width >= 900) {
+                          crossAxisCount = 4;
+                        } else if (width >= 600) {
+                          crossAxisCount = 3;
+                        }
 
-                      return GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 2.2,
-                        children: [
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.flight_takeoff_outlined,
-                            title: 'My Bookings',
-                            subtitle: 'Form & application',
-                            color: const Color(0xFF3B82F6),
-                            onTap: () {
-                              ref.read(navigationProvider.notifier).state = 1;
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.check_circle_outline,
-                            title: 'Approved Visas',
-                            subtitle: 'Track confirmations',
-                            color: const Color(0xFF10B981),
-                            onTap: () {
-                              ref.read(bookingsFilterProvider.notifier).updateService('visa');
-                              ref.read(bookingsFilterProvider.notifier).updateStatus('Approved');
-                              ref.read(navigationProvider.notifier).state = 2;
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.public_outlined,
-                            title: 'Countries',
-                            subtitle: 'Supported destinations',
-                            color: const Color(0xFFF59E0B),
-                            onTap: () {
-                              ref.read(navigationProvider.notifier).state = 4;
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.search_outlined,
-                            title: 'Search',
-                            subtitle: 'Find travelers instantly',
-                            color: const Color(0xFF8B5CF6),
-                            onTap: () {
-                              ref.read(navigationProvider.notifier).state = 5;
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.bar_chart_outlined,
-                            title: 'Reports',
-                            subtitle: 'Visa & travel reports',
-                            color: const Color(0xFFEC4899),
-                            onTap: () {
-                              ref.read(navigationProvider.notifier).state = 6;
-                            },
-                          ),
-                        ],
-                      );
-                    },
+                        return GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 2.2,
+                          children: [
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.flight_takeoff_outlined,
+                              title: 'My Bookings',
+                              subtitle: 'Form & application',
+                              color: const Color(0xFF3B82F6),
+                              onTap: () {
+                                ref.read(navigationProvider.notifier).state = 1;
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.check_circle_outline,
+                              title: 'Approved Visas',
+                              subtitle: 'Track confirmations',
+                              color: const Color(0xFF10B981),
+                              onTap: () {
+                                ref
+                                    .read(bookingsFilterProvider.notifier)
+                                    .updateService('visa');
+                                ref
+                                    .read(bookingsFilterProvider.notifier)
+                                    .updateStatus('Approved');
+                                ref.read(navigationProvider.notifier).state = 2;
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.public_outlined,
+                              title: 'Countries',
+                              subtitle: 'Supported destinations',
+                              color: const Color(0xFFF59E0B),
+                              onTap: () {
+                                ref.read(navigationProvider.notifier).state = 4;
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.search_outlined,
+                              title: 'Search',
+                              subtitle: 'Find travelers instantly',
+                              color: const Color(0xFF8B5CF6),
+                              onTap: () {
+                                ref.read(navigationProvider.notifier).state = 5;
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.bar_chart_outlined,
+                              title: 'Reports',
+                              subtitle: 'Visa & travel reports',
+                              color: const Color(0xFFEC4899),
+                              onTap: () {
+                                ref.read(navigationProvider.notifier).state = 6;
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 48),
+                  const SizedBox(height: 48),
 
-                // ── 3. OUR SERVICES SECTION ──
-                Text(
-                  'Our Services',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: primaryTextColor,
+                  // ── 3. OUR SERVICES SECTION ──
+                  Text(
+                    'Our Services',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: primaryTextColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Quick options to book and manage client travel',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: secondaryTextColor,
+                  const SizedBox(height: 8),
+                  Text(
+                    'Quick options to book and manage client travel',
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final double width = constraints.maxWidth;
-                      int crossAxisCount = 2;
-                      if (width >= 900) {
-                        crossAxisCount = 4;
-                      } else if (width >= 600) {
-                        crossAxisCount = 3;
-                      }
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double width = constraints.maxWidth;
+                        int crossAxisCount = 2;
+                        if (width >= 900) {
+                          crossAxisCount = 4;
+                        } else if (width >= 600) {
+                          crossAxisCount = 3;
+                        }
 
-                      return GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 2.2,
-                        children: [
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.flight_takeoff,
-                            title: 'Flight Ticketing',
-                            subtitle: 'Air ticket reservation',
-                            color: const Color(0xFF3B82F6),
-                            onTap: () {
-                              ref.read(navigationProvider.notifier).state = 3;
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.mosque,
-                            title: 'Umrah Bookings',
-                            subtitle: 'Umrah & packages',
-                            color: const Color(0xFF10B981),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const EmployeeUmrahBookingPage(),
-                                ),
-                              );
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.hotel,
-                            title: 'Hotel Booking',
-                            subtitle: 'Reserve accommodations',
-                            color: const Color(0xFFF59E0B),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const EmployeeHotelBookingPage(),
-                                ),
-                              );
-                            },
-                          ),
-                          _buildQuickAccessCard(
-                            context: context,
-                            icon: Icons.verified_user,
-                            title: 'Medical Insurance',
-                            subtitle: 'Travel health plans',
-                            color: const Color(0xFFEC4899),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const EmployeeMedicalInsurancePage(),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
+                        return GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 2.2,
+                          children: [
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.flight_takeoff,
+                              title: 'Flight Ticketing',
+                              subtitle: 'Air ticket reservation',
+                              color: const Color(0xFF3B82F6),
+                              onTap: () {
+                                ref.read(navigationProvider.notifier).state = 3;
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.mosque,
+                              title: 'Umrah Bookings',
+                              subtitle: 'Umrah & packages',
+                              color: const Color(0xFF10B981),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const EmployeeUmrahBookingPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.hotel,
+                              title: 'Hotel Booking',
+                              subtitle: 'Reserve accommodations',
+                              color: const Color(0xFFF59E0B),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const EmployeeHotelBookingPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildQuickAccessCard(
+                              context: context,
+                              icon: Icons.verified_user,
+                              title: 'Medical Insurance',
+                              subtitle: 'Travel health plans',
+                              color: const Color(0xFFEC4899),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const EmployeeMedicalInsurancePage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 48),
-              ],
+                  const SizedBox(height: 48),
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ),
@@ -363,7 +364,9 @@ class EmployeeHomePage extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white : AppColors.textPrimaryLight,
+                      color: isDarkMode
+                          ? Colors.white
+                          : AppColors.textPrimaryLight,
                     ),
                   ),
                   Text(
