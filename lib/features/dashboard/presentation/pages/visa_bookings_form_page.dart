@@ -83,7 +83,7 @@ class _VisaBookingsFormPageState extends ConsumerState<VisaBookingsFormPage> {
     final double vendorFee = double.tryParse(_vendorFeeController.text) ?? 0.0;
 
     // 1. Remaining Fee calculation
-    final double remainingFee = totalFee - receivedFee;
+    final double remainingFee = (totalFee - receivedFee) < 0 ? 0.0 : (totalFee - receivedFee);
     _remainingFeeController.text = remainingFee.toStringAsFixed(0);
 
     // 2. Profit calculation

@@ -213,9 +213,30 @@ class BookingsRemoteDataSource {
 
   BookingModel _mapVisa(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
-    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
-    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price']);
+    final payable = _parseNum(
+      data['payable'] ??
+          data['payableAmount'] ??
+          data['payable_amount'] ??
+          data['remainingFee'] ??
+          data['remaining_fee'],
+    );
+    final received = _parseNum(
+      data['received'] ??
+          data['receivedAmount'] ??
+          data['received_amount'] ??
+          data['totalReceivedAmount'] ??
+          data['total_received_amount'] ??
+          data['receivedFee'] ??
+          data['received_fee'],
+    );
+    final total = _parseNum(
+      data['total'] ??
+          data['totalPrice'] ??
+          data['total_price'] ??
+          data['totalFee'] ??
+          data['total_fee'] ??
+          data['price'],
+    );
     final embassy = _parseNum(data['embassyFee'] ?? data['embassy_fee']);
     final vendor = _parseNum(data['vendorFee'] ?? data['vendor_fee']);
 
@@ -263,20 +284,61 @@ class BookingsRemoteDataSource {
       sentToEmbassyDate: _parseString(data['sentToEmbassy']),
       receivedFromEmbassyDate: _parseString(data['receivedFromEmbassy']),
       remarks: _parseString(data['remarks']),
-      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address']),
+      email: _parseString(
+        data['email'] ??
+            data['clientEmail'] ??
+            data['userEmail'] ??
+            data['emailAddress'] ??
+            data['email_address'],
+      ),
       reference: _parseString(data['reference']),
     );
   }
 
   BookingModel _mapHotel(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
-    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
-    var profit = _parseNum(data['profit'] ?? data['netProfit'] ?? data['net_profit'] ?? data['margin'] ?? data['totalProfit'] ?? data['total_profit']);
+    final payable = _parseNum(
+      data['payable'] ??
+          data['payableAmount'] ??
+          data['payable_amount'] ??
+          data['totalPayableAmount'] ??
+          data['total_payable_amount'] ??
+          data['remainingFee'] ??
+          data['remaining_fee'],
+    );
+    final received = _parseNum(
+      data['received'] ??
+          data['receivedAmount'] ??
+          data['received_amount'] ??
+          data['totalReceivedAmount'] ??
+          data['total_received_amount'] ??
+          data['receivedFee'] ??
+          data['received_fee'],
+    );
+    final total = _parseNum(
+      data['total'] ??
+          data['totalPrice'] ??
+          data['total_price'] ??
+          data['totalFee'] ??
+          data['total_fee'] ??
+          data['price'],
+    );
+    var profit = _parseNum(
+      data['profit'] ??
+          data['netProfit'] ??
+          data['net_profit'] ??
+          data['margin'] ??
+          data['totalProfit'] ??
+          data['total_profit'],
+    );
     if (profit == 0) {
-      profit = received - payable;
+      if (total > 0) {
+        profit = total - payable;
+      } else {
+        profit = received - payable;
+      }
     }
-    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price'] ?? (payable + profit));
+    final finalTotal = total > 0 ? total : (payable + profit);
     return BookingModel(
       id: doc.id,
       serviceType: 'hotel',
@@ -286,12 +348,12 @@ class BookingsRemoteDataSource {
       destination: _parseString(data['property'] ?? 'Hotel'),
       dateCreated: _parseDateTime(data['createdAt']),
       status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= total
+      paymentStatus: received >= finalTotal
           ? 'Paid'
           : (received > 0 ? 'Partially Paid' : 'Unpaid'),
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['userEmail'] ?? 'Unassigned'),
-      totalPrice: total,
+      totalPrice: finalTotal,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
@@ -300,19 +362,60 @@ class BookingsRemoteDataSource {
       travellersAdults: _parseInt(data['numberOfAdults']),
       travellersChildren: _parseInt(data['numberOfChildren']),
       cabinClass: _parseString(data['numberOfRooms']),
-      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address']),
+      email: _parseString(
+        data['email'] ??
+            data['clientEmail'] ??
+            data['userEmail'] ??
+            data['emailAddress'] ??
+            data['email_address'],
+      ),
     );
   }
 
   BookingModel _mapUmrah(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
-    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
-    var profit = _parseNum(data['profit'] ?? data['netProfit'] ?? data['net_profit'] ?? data['margin'] ?? data['totalProfit'] ?? data['total_profit']);
+    final payable = _parseNum(
+      data['payable'] ??
+          data['payableAmount'] ??
+          data['payable_amount'] ??
+          data['totalPayableAmount'] ??
+          data['total_payable_amount'] ??
+          data['remainingFee'] ??
+          data['remaining_fee'],
+    );
+    final received = _parseNum(
+      data['received'] ??
+          data['receivedAmount'] ??
+          data['received_amount'] ??
+          data['totalReceivedAmount'] ??
+          data['total_received_amount'] ??
+          data['receivedFee'] ??
+          data['received_fee'],
+    );
+    final total = _parseNum(
+      data['total'] ??
+          data['totalPrice'] ??
+          data['total_price'] ??
+          data['totalFee'] ??
+          data['total_fee'] ??
+          data['price'],
+    );
+    var profit = _parseNum(
+      data['profit'] ??
+          data['netProfit'] ??
+          data['net_profit'] ??
+          data['margin'] ??
+          data['totalProfit'] ??
+          data['total_profit'],
+    );
     if (profit == 0) {
-      profit = received - payable;
+      if (total > 0) {
+        profit = total - payable;
+      } else {
+        profit = received - payable;
+      }
     }
-    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price'] ?? (payable + profit));
+    final finalTotal = total > 0 ? total : (payable + profit);
     return BookingModel(
       id: doc.id,
       serviceType: 'umrah',
@@ -322,23 +425,192 @@ class BookingsRemoteDataSource {
       destination: _parseString(data['makkahHotel'] ?? 'Makkah'),
       dateCreated: _parseDateTime(data['createdAt']),
       status: _parseString(data['status'] ?? 'Approved'),
-      paymentStatus: received >= total
+      paymentStatus: received >= finalTotal
           ? 'Paid'
           : (received > 0 ? 'Partially Paid' : 'Unpaid'),
       employeeId: _parseString(data['createdByUid']),
       employeeName: _parseString(data['createdByEmail'] ?? 'Unassigned'),
-      totalPrice: total,
+      totalPrice: finalTotal,
       receivedAmount: received,
       payableAmount: payable,
       netProfit: profit,
       vendorName: _parseString(data['vendor']),
-      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address'] ?? data['createdByEmail']),
+      email: _parseString(
+        data['email'] ??
+            data['clientEmail'] ??
+            data['userEmail'] ??
+            data['emailAddress'] ??
+            data['email_address'] ??
+            data['createdByEmail'],
+      ),
     );
   }
 
   BookingModel _mapTicket(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
+    
+    // Parse nested passenger map if exists
+    final passengerMap = data['passenger'] is Map ? data['passenger'] as Map<String, dynamic> : null;
+    
+    final payable = _parseNum(
+      passengerMap != null
+          ? passengerMap['payable']
+          : (data['payable'] ??
+              data['payableAmount'] ??
+              data['payable_amount'] ??
+              data['totalPayableAmount'] ??
+              data['total_payable_amount'] ??
+              data['remainingFee'] ??
+              data['remaining_fee']),
+    );
+    final total = _parseNum(
+      passengerMap != null
+          ? (passengerMap['price'] ?? passengerMap['total'])
+          : (data['total'] ??
+              data['totalPrice'] ??
+              data['total_price'] ??
+              data['totalFee'] ??
+              data['total_fee'] ??
+              data['price']),
+    );
+    double received = _parseNum(
+      passengerMap != null
+          ? passengerMap['received']
+          : (data['received'] ??
+              data['receivedAmount'] ??
+              data['received_amount'] ??
+              data['totalReceivedAmount'] ??
+              data['total_received_amount'] ??
+              data['receivedFee'] ??
+              data['received_fee']),
+    );
+    if (received == 0) {
+      received = total;
+    }
+    var profit = _parseNum(
+      passengerMap != null
+          ? passengerMap['profit']
+          : (data['profit'] ??
+              data['netProfit'] ??
+              data['net_profit'] ??
+              data['margin'] ??
+              data['totalProfit'] ??
+              data['total_profit']),
+    );
+    if (profit == 0) {
+      if (total > 0) {
+        profit = total - payable;
+      } else {
+        profit = received - payable;
+      }
+    }
+    final finalTotal = total > 0 ? total : (payable + profit);
+    
+    // Extracted passenger details
+    final name = passengerMap != null
+        ? _parseName(passengerMap['fullName'] ?? passengerMap['name'] ?? passengerMap['passengerName'])
+        : _parseName(data['fullName'] ?? data['clientName'] ?? data['passengerName'] ?? data['passenger'] ?? data['Name']);
+
+    final phone = passengerMap != null
+        ? _parseString(passengerMap['phone'] ?? passengerMap['contactNumber'])
+        : _parseString(data['phone'] ?? data['contactNumber'] ?? data['phoneNo']);
+
+    final passport = passengerMap != null
+        ? _parseString(passengerMap['passport'] ?? passengerMap['passportNumber'])
+        : _parseString(data['passportNumber'] ?? data['passport']);
+
+    final cnicVal = passengerMap != null
+        ? _parseString(passengerMap['cnic'])
+        : (data['cnic'] != null && data['cnic'].toString().isNotEmpty ? _parseString(data['cnic']) : null);
+
+    final emailVal = passengerMap != null
+        ? _parseString(passengerMap['email'] ?? passengerMap['emailAddress'])
+        : _parseString(
+            data['email'] ??
+                data['clientEmail'] ??
+                data['userEmail'] ??
+                data['emailAddress'] ??
+                data['email_address'] ??
+                data['createdByEmail'],
+          );
+
+    return BookingModel(
+      id: doc.id,
+      serviceType: 'ticket',
+      customerName: name,
+      customerPhone: phone,
+      passportNumber: passport,
+      destination: _parseString(
+        data['destination'] ?? data['to'] ?? data['toDestination'] ?? data['route'],
+      ),
+      dateCreated: _parseDateTime(data['departure'] ?? data['createdAt'] ?? data['date']),
+      status: _parseString(
+        data['status'] ?? data['ticketStatus'] ?? 'Approved',
+      ),
+      paymentStatus: received >= finalTotal
+          ? 'Paid'
+          : (received > 0 ? 'Partially Paid' : 'Unpaid'),
+      employeeId: _parseString(data['createdByUid'] ?? data['userId']),
+      employeeName: _parseString(
+        data['userEmail'] ??
+            data['createdByEmail'] ??
+            data['employee'] ??
+            data['employeeEmail'] ??
+            'Unassigned',
+      ),
+      totalPrice: finalTotal,
+      receivedAmount: received,
+      payableAmount: payable,
+      netProfit: profit,
+      fromDestination: data['fromDestination'] != null || data['from'] != null
+          ? _parseString(data['fromDestination'] ?? data['from'])
+          : null,
+      returnDate: data['returnDate'] != null && data['returnDate'].toString().isNotEmpty
+          ? _parseString(data['returnDate'])
+          : null,
+      travellersAdults: data['travellersAdults'] != null || data['numberOfAdults'] != null || data['adults'] != null
+          ? _parseInt(data['travellersAdults'] ?? data['numberOfAdults'] ?? data['adults'])
+          : null,
+      travellersChildren: data['travellersChildren'] != null || data['numberOfChildren'] != null || data['children'] != null
+          ? _parseInt(data['travellersChildren'] ?? data['numberOfChildren'] ?? data['children'])
+          : null,
+      travellersInfants: data['travellersInfants'] != null || data['infants'] != null
+          ? _parseInt(data['travellersInfants'] ?? data['infants'])
+          : null,
+      cabinClass: data['cabinClass'] != null || data['class'] != null || data['travelClass'] != null
+          ? _parseString(data['cabinClass'] ?? data['class'] ?? data['travelClass'])
+          : null,
+      cnic: cnicVal,
+      pnr: data['pnr'] != null || data['PNR'] != null
+          ? _parseString(data['pnr'] ?? data['PNR'])
+          : null,
+      vendor: data['vendor'] != null
+          ? _parseString(data['vendor'])
+          : null,
+      email: emailVal,
+      airlinePreference: data['airlinePreference'] != null || data['airlinePref'] != null
+          ? _parseString(data['airlinePreference'] ?? data['airlinePref'])
+          : null,
+      promoCode: data['promoCode'] != null || data['promo'] != null
+          ? _parseString(data['promoCode'] ?? data['promo'])
+          : null,
+      notes: data['notes'] != null || data['note'] != null
+          ? _parseString(data['notes'] ?? data['note'])
+          : null,
+    );
+  }
+
+  BookingModel _mapInsurance(QueryDocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    final payable = _parseNum(
+      data['payable'] ??
+          data['payableAmount'] ??
+          data['payable_amount'] ??
+          data['totalPayableAmount'] ??
+          data['total_payable_amount'] ??
+          data['remainingFee'] ??
+          data['remaining_fee'],
+    );
     final received = _parseNum(
       data['received'] ??
           data['receivedAmount'] ??
@@ -365,73 +637,9 @@ class BookingsRemoteDataSource {
           data['total_price'] ??
           data['totalFee'] ??
           data['total_fee'] ??
+          data['price'] ??
           (payable + profit),
     );
-    return BookingModel(
-      id: doc.id,
-      serviceType: 'ticket',
-      customerName: _parseName(
-        data['fullName'] ??
-            data['clientName'] ??
-            data['passengerName'] ??
-            data['passenger'] ??
-            data['Name'],
-      ),
-      customerPhone: _parseString(
-        data['phone'] ?? data['contactNumber'] ?? data['phoneNo'],
-      ),
-      passportNumber: _parseString(data['passportNumber'] ?? data['passport']),
-      destination: _parseString(
-        data['destination'] ?? data['toDestination'] ?? data['route'],
-      ),
-      dateCreated: _parseDateTime(data['createdAt'] ?? data['date']),
-      status: _parseString(
-        data['status'] ?? data['ticketStatus'] ?? 'Approved',
-      ),
-      paymentStatus: received >= total
-          ? 'Paid'
-          : (received > 0 ? 'Partially Paid' : 'Unpaid'),
-      employeeId: _parseString(data['createdByUid'] ?? data['userId']),
-      employeeName: _parseString(
-        data['userEmail'] ??
-            data['createdByEmail'] ??
-            data['employee'] ??
-            data['employeeEmail'] ??
-            'Unassigned',
-      ),
-      totalPrice: total,
-      receivedAmount: received,
-      payableAmount: payable,
-      netProfit: profit,
-      fromDestination: _parseString(data['fromDestination'] ?? data['from']),
-      returnDate: _parseString(data['returnDate']),
-      travellersAdults: _parseInt(
-        data['travellersAdults'] ?? data['numberOfAdults'],
-      ),
-      travellersChildren: _parseInt(
-        data['travellersChildren'] ?? data['numberOfChildren'],
-      ),
-      travellersInfants: _parseInt(data['travellersInfants']),
-      cabinClass: _parseString(data['cabinClass'] ?? data['class']),
-      cnic: _parseString(data['cnic']),
-      pnr: _parseString(data['pnr'] ?? data['PNR']),
-      vendor: _parseString(data['vendor']),
-      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address'] ?? data['createdByEmail']),
-      airlinePreference: _parseString(data['airlinePreference']),
-      promoCode: _parseString(data['promoCode']),
-      notes: _parseString(data['notes']),
-    );
-  }
-
-  BookingModel _mapInsurance(QueryDocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    final payable = _parseNum(data['payable'] ?? data['payableAmount'] ?? data['payable_amount'] ?? data['totalPayableAmount'] ?? data['total_payable_amount'] ?? data['remainingFee'] ?? data['remaining_fee']);
-    final received = _parseNum(data['received'] ?? data['receivedAmount'] ?? data['received_amount'] ?? data['totalReceivedAmount'] ?? data['total_received_amount'] ?? data['receivedFee'] ?? data['received_fee']);
-    var profit = _parseNum(data['profit'] ?? data['netProfit'] ?? data['net_profit'] ?? data['margin'] ?? data['totalProfit'] ?? data['total_profit']);
-    if (profit == 0) {
-      profit = received - payable;
-    }
-    final total = _parseNum(data['total'] ?? data['totalPrice'] ?? data['total_price'] ?? data['totalFee'] ?? data['total_fee'] ?? data['price'] ?? (payable + profit));
     return BookingModel(
       id: doc.id,
       serviceType: 'insurance',
@@ -449,7 +657,13 @@ class BookingsRemoteDataSource {
       payableAmount: payable,
       netProfit: profit,
       vendorName: _parseString(data['NameofCompany']),
-      email: _parseString(data['email'] ?? data['clientEmail'] ?? data['userEmail'] ?? data['emailAddress'] ?? data['email_address']),
+      email: _parseString(
+        data['email'] ??
+            data['clientEmail'] ??
+            data['userEmail'] ??
+            data['emailAddress'] ??
+            data['email_address'],
+      ),
     );
   }
 
@@ -561,6 +775,9 @@ class BookingsRemoteDataSource {
           'received': b.receivedAmount,
           'payable': b.payableAmount,
           'profit': b.netProfit,
+          'price': b.totalPrice,
+          'totalPrice': b.totalPrice,
+          'total_price': b.totalPrice,
           'fromDestination': b.fromDestination,
           'returnDate': b.returnDate,
           'travellersAdults': b.travellersAdults,

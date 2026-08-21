@@ -374,456 +374,464 @@ class _RecordsDashboardPageState extends ConsumerState<RecordsDashboardPage> {
               // ──────────────── Scrollable Content ────────────────
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => ref.read(bookingsProvider.notifier).refresh(),
+                  onRefresh: () =>
+                      ref.read(bookingsProvider.notifier).refresh(),
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(14),
                     children: [
-                    // ── STAT METRICS GRID (RESPONSIVE) ──
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isDesktop = constraints.maxWidth >= 800;
+                      // ── STAT METRICS GRID (RESPONSIVE) ──
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isDesktop = constraints.maxWidth >= 800;
 
-                        if (isDesktop) {
-                          // Desktop/Tablet layout: 2 Rows of 4 equal columns
-                          return Column(
-                            children: [
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(child: cardTotalBookings),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardAllServices),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardTotalReceivable),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardNetProfit),
-                                  ],
+                          if (isDesktop) {
+                            // Desktop/Tablet layout: 2 Rows of 4 equal columns
+                            return Column(
+                              children: [
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cardTotalBookings),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardAllServices),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardTotalReceivable),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardNetProfit),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(child: cardPaid),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardUnpaid),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardEmployees),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardPending),
-                                  ],
+                                const SizedBox(height: 10),
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cardPaid),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardUnpaid),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardEmployees),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardPending),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        } else {
-                          // Mobile layout: 4 Rows of 2 equal columns (keeps layout readable)
-                          return Column(
-                            children: [
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(child: cardTotalBookings),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardAllServices),
-                                  ],
+                              ],
+                            );
+                          } else {
+                            // Mobile layout: 4 Rows of 2 equal columns (keeps layout readable)
+                            return Column(
+                              children: [
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cardTotalBookings),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardAllServices),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(child: cardTotalReceivable),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardNetProfit),
-                                  ],
+                                const SizedBox(height: 10),
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cardTotalReceivable),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardNetProfit),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(child: cardPaid),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardUnpaid),
-                                  ],
+                                const SizedBox(height: 10),
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cardPaid),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardUnpaid),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(child: cardEmployees),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: cardPending),
-                                  ],
+                                const SizedBox(height: 10),
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cardEmployees),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: cardPending),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // ── SEARCH & FILTER BAR ──
-                    Container(
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: border),
+                              ],
+                            );
+                          }
+                        },
                       ),
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Search
-                          Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: isDarkMode
-                                  ? const Color(0xFF1E293B)
-                                  : Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
+                      const SizedBox(height: 16),
+
+                      // ── SEARCH & FILTER BAR ──
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: border),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Search
+                            Container(
+                              height: 40,
+                              decoration: BoxDecoration(
                                 color: isDarkMode
-                                    ? const Color(0xFF334155)
-                                    : Colors.grey[300]!,
+                                    ? const Color(0xFF1E293B)
+                                    : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isDarkMode
+                                      ? const Color(0xFF334155)
+                                      : Colors.grey[300]!,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.search,
+                                    size: 16,
+                                    color: secondary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: TextField(
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: primary,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            'Search by name, passport, destination...',
+                                        hintStyle: TextStyle(
+                                          fontSize: 12,
+                                          color: secondary,
+                                        ),
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        disabledBorder: InputBorder.none,
+                                        filled: false,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 10,
+                                            ),
+
+                                        isDense: true,
+                                      ),
+                                      onChanged: (v) {
+                                        _searchQuery = v;
+                                        _applyFilters();
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Row(
+                            const SizedBox(height: 10),
+                            // Date pickers row
+                            Row(
                               children: [
-                                Icon(Icons.search, size: 16, color: secondary),
-                                const SizedBox(width: 8),
                                 Expanded(
-                                  child: TextField(
-                                    textAlignVertical: TextAlignVertical.center,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: primary,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          'Search by name, passport, destination...',
-                                      hintStyle: TextStyle(
-                                        fontSize: 12,
-                                        color: secondary,
+                                  child: GestureDetector(
+                                    onTap: () => _pickDate(true),
+                                    child: Container(
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: isDarkMode
+                                              ? const Color(0xFF334155)
+                                              : Colors.grey[300]!,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      border: InputBorder.none,
-                                      enabledBorder: InputBorder.none,
-                                      focusedBorder: InputBorder.none,
-                                      disabledBorder: InputBorder.none,
-                                      filled: false,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            vertical: 10,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.calendar_today,
+                                            size: 12,
+                                            color: secondary,
                                           ),
-
-                                      isDense: true,
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _fromDate == null
+                                                ? 'From'
+                                                : '${_fromDate!.day}/${_fromDate!.month}/${_fromDate!.year}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: secondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    onChanged: (v) {
-                                      _searchQuery = v;
-                                      _applyFilters();
-                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => _pickDate(false),
+                                    child: Container(
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: isDarkMode
+                                              ? const Color(0xFF334155)
+                                              : Colors.grey[300]!,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.calendar_today,
+                                            size: 12,
+                                            color: secondary,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _toDate == null
+                                                ? 'To'
+                                                : '${_toDate!.day}/${_toDate!.month}/${_toDate!.year}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: secondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          // Date pickers row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => _pickDate(true),
+                            const SizedBox(height: 10),
+                            // Dropdowns row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _dropdown(
+                                    value: _selectedService,
+                                    items: [
+                                      'All Services',
+                                      'visa',
+                                      'ticket',
+                                      'umrah',
+                                      'hotel',
+                                      'insurance',
+                                    ],
+                                    onChanged: (v) {
+                                      _selectedService = v!;
+                                      _applyFilters();
+                                    },
+                                    isDarkMode: isDarkMode,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: _dropdown(
+                                    value: _selectedStatus,
+                                    items: [
+                                      'All Status',
+                                      'Approved',
+                                      'Processing',
+                                      'Rejected',
+                                    ],
+                                    onChanged: (v) {
+                                      _selectedStatus = v!;
+                                      _applyFilters();
+                                    },
+                                    isDarkMode: isDarkMode,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: _dropdown(
+                                    value: _selectedPayment,
+                                    items: ['All Payments', 'Paid', 'Unpaid'],
+                                    onChanged: (v) {
+                                      _selectedPayment = v!;
+                                      _applyFilters();
+                                    },
+                                    isDarkMode: isDarkMode,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: _resetFilters,
                                   child: Container(
                                     height: 36,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                    ),
                                     decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: isDarkMode
-                                            ? const Color(0xFF334155)
-                                            : Colors.grey[300]!,
-                                      ),
+                                      color: const Color(0xFF6366F1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_today,
-                                          size: 12,
-                                          color: secondary,
+                                    child: const Center(
+                                      child: Text(
+                                        'Reset',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _fromDate == null
-                                              ? 'From'
-                                              : '${_fromDate!.day}/${_fromDate!.month}/${_fromDate!.year}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: secondary,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => _pickDate(false),
-                                  child: Container(
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: isDarkMode
-                                            ? const Color(0xFF334155)
-                                            : Colors.grey[300]!,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_today,
-                                          size: 12,
-                                          color: secondary,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _toDate == null
-                                              ? 'To'
-                                              : '${_toDate!.day}/${_toDate!.month}/${_toDate!.year}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: secondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── RECORDS COUNT ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Showing ${pagedBookings.length} of ${filteredBookings.length} records',
+                            style: TextStyle(fontSize: 11, color: secondary),
                           ),
-                          const SizedBox(height: 10),
-                          // Dropdowns row
                           Row(
                             children: [
-                              Expanded(
-                                child: _dropdown(
-                                  value: _selectedService,
-                                  items: [
-                                    'All Services',
-                                    'visa',
-                                    'ticket',
-                                    'umrah',
-                                    'hotel',
-                                    'insurance',
-                                  ],
-                                  onChanged: (v) {
-                                    _selectedService = v!;
-                                    _applyFilters();
-                                  },
-                                  isDarkMode: isDarkMode,
-                                ),
+                              _exportBtn(
+                                'PDF',
+                                const Color(0xFFEF4444),
+                                Icons.picture_as_pdf_outlined,
                               ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: _dropdown(
-                                  value: _selectedStatus,
-                                  items: [
-                                    'All Status',
-                                    'Approved',
-                                    'Processing',
-                                    'Rejected',
-                                  ],
-                                  onChanged: (v) {
-                                    _selectedStatus = v!;
-                                    _applyFilters();
-                                  },
-                                  isDarkMode: isDarkMode,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: _dropdown(
-                                  value: _selectedPayment,
-                                  items: ['All Payments', 'Paid', 'Unpaid'],
-                                  onChanged: (v) {
-                                    _selectedPayment = v!;
-                                    _applyFilters();
-                                  },
-                                  isDarkMode: isDarkMode,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              GestureDetector(
-                                onTap: _resetFilters,
-                                child: Container(
-                                  height: 36,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF6366F1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Reset',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                              const SizedBox(width: 8),
+                              _exportBtn(
+                                'CSV',
+                                const Color(0xFF10B981),
+                                Icons.table_view_outlined,
                               ),
                             ],
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
-                    // ── RECORDS COUNT ──
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Showing ${pagedBookings.length} of ${filteredBookings.length} records',
-                          style: TextStyle(fontSize: 11, color: secondary),
-                        ),
+                      // ── BOOKING CARDS LIST ──
+                      ...pagedBookings.asMap().entries.map((e) {
+                        final i = e.key;
+                        final b = e.value;
+                        return _buildRecordCard(
+                          b,
+                          _currentPage * _perPage + i + 1,
+                          isDarkMode,
+                          primary,
+                          secondary,
+                        );
+                      }),
+
+                      // ── PAGINATION ──
+                      if (totalPages > 1) ...[
+                        const SizedBox(height: 16),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _exportBtn(
-                              'PDF',
-                              const Color(0xFFEF4444),
-                              Icons.picture_as_pdf_outlined,
+                            _pageBtn(
+                              'Prev',
+                              _currentPage > 0,
+                              () => setState(() => _currentPage--),
+                              isDarkMode,
                             ),
-                            const SizedBox(width: 8),
-                            _exportBtn(
-                              'CSV',
-                              const Color(0xFF10B981),
-                              Icons.table_view_outlined,
+                            const SizedBox(width: 6),
+                            ...List.generate(totalPages.clamp(0, 5), (i) {
+                              final isActive = i == _currentPage;
+                              return GestureDetector(
+                                onTap: () => setState(() => _currentPage = i),
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 3,
+                                  ),
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? const Color(0xFF6366F1)
+                                        : (isDarkMode
+                                              ? const Color(0x330F172A)
+                                              : Colors.white),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isActive
+                                          ? Colors.transparent
+                                          : border,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: isActive
+                                            ? Colors.white
+                                            : secondary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            const SizedBox(width: 6),
+                            _pageBtn(
+                              'Next',
+                              _currentPage < totalPages - 1,
+                              () => setState(() => _currentPage++),
+                              isDarkMode,
                             ),
                           ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // ── BOOKING CARDS LIST ──
-                    ...pagedBookings.asMap().entries.map((e) {
-                      final i = e.key;
-                      final b = e.value;
-                      return _buildRecordCard(
-                        b,
-                        _currentPage * _perPage + i + 1,
-                        isDarkMode,
-                        primary,
-                        secondary,
-                      );
-                    }),
-
-                    // ── PAGINATION ──
-                    if (totalPages > 1) ...[
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _pageBtn(
-                            'Prev',
-                            _currentPage > 0,
-                            () => setState(() => _currentPage--),
-                            isDarkMode,
-                          ),
-                          const SizedBox(width: 6),
-                          ...List.generate(totalPages.clamp(0, 5), (i) {
-                            final isActive = i == _currentPage;
-                            return GestureDetector(
-                              onTap: () => setState(() => _currentPage = i),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                ),
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? const Color(0xFF6366F1)
-                                      : (isDarkMode
-                                            ? const Color(0x330F172A)
-                                            : Colors.white),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isActive
-                                        ? Colors.transparent
-                                        : border,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${i + 1}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: isActive
-                                          ? Colors.white
-                                          : secondary,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                          const SizedBox(width: 6),
-                          _pageBtn(
-                            'Next',
-                            _currentPage < totalPages - 1,
-                            () => setState(() => _currentPage++),
-                            isDarkMode,
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 20),
                     ],
-                    const SizedBox(height: 20),
-                  ],
+                  ),
                 ),
-              ),
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () {},
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: AppColors.primary,
+      //   onPressed: () {},
+      //   child: const Icon(Icons.add, color: Colors.white),
+      // ),
     );
   }
 

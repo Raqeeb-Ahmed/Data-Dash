@@ -93,6 +93,7 @@ class BookingsNotifier extends StateNotifier<List<BookingModel>> {
     _init();
     await Future.delayed(const Duration(milliseconds: 1000));
   }
+
   void _init() {
     print(
       'BookingsNotifier _init: remoteDataSource is ${_remoteDataSource != null ? 'NOT null' : 'NULL'}',
@@ -103,7 +104,10 @@ class BookingsNotifier extends StateNotifier<List<BookingModel>> {
           print(
             'BookingsNotifier: Received ${list.length} merged bookings from remote datasource',
           );
-          final activeList = list;
+          final activeList = list.where((b) {
+            final s = b.status.toLowerCase().trim();
+            return s != 'deleted' && s != 'trash';
+          }).toList();
 
           if (_currentUser != null && _currentUser!.role == 'employee') {
             final filtered = activeList.where((b) {
@@ -274,20 +278,46 @@ class BookingStats {
 final bookingStatsProvider = Provider<BookingStats>((ref) {
   final bookings = ref.watch(bookingsProvider);
 
+  final visaBookings = bookings
+      .where((b) => b.serviceType.toLowerCase().trim() == 'visa')
+      .toList();
   final totalBookings = bookings.length;
-  final visaCount = bookings.where((b) => b.serviceType == 'visa').length;
-  final hotelCount = bookings.where((b) => b.serviceType == 'hotel').length;
-  final umrahCount = bookings.where((b) => b.serviceType == 'umrah').length;
-  final ticketCount = bookings.where((b) => b.serviceType == 'ticket').length;
+  final visaCount = visaBookings.length;
+  final hotelCount = bookings
+      .where((b) => b.serviceType.toLowerCase().trim() == 'hotel')
+      .length;
+  final umrahCount = bookings
+      .where((b) => b.serviceType.toLowerCase().trim() == 'umrah')
+      .length;
+  final ticketCount = bookings
+      .where((b) => b.serviceType.toLowerCase().trim() == 'ticket')
+      .length;
 
-  final totalApproved = bookings
-      .where((b) => b.serviceType == 'visa' && b.status.toLowerCase() == 'approved')
+  final totalApproved = visaBookings
+      .where(
+        (b) =>
+            b.status.toLowerCase() == 'approved' ||
+            b.status.toLowerCase() == 'confirmed' ||
+            b.status.toLowerCase() == 'completed' ||
+            b.status.toLowerCase() == 'active' ||
+            b.status.toLowerCase() == 'success',
+      )
       .length;
-  final totalProcessing = bookings
-      .where((b) => b.serviceType == 'visa' && b.status.toLowerCase() == 'processing')
+  final totalProcessing = visaBookings
+      .where(
+        (b) =>
+            b.status.toLowerCase() == 'processing' ||
+            b.status.toLowerCase() == 'pending' ||
+            b.status.toLowerCase() == 'sent to embassy' ||
+            b.status.toLowerCase() == 'submitted',
+      )
       .length;
-  final totalRejected = bookings
-      .where((b) => b.serviceType == 'visa' && b.status.toLowerCase() == 'rejected')
+  final totalRejected = visaBookings
+      .where(
+        (b) =>
+            b.status.toLowerCase() == 'rejected' ||
+            b.status.toLowerCase() == 'cancelled',
+      )
       .length;
 
   double totalReceived = 0;
@@ -297,24 +327,21 @@ final bookingStatsProvider = Provider<BookingStats>((ref) {
   int totalUnpaid = 0;
 
   for (final b in bookings) {
+    final type = b.serviceType.toLowerCase().trim();
+
     totalReceived += b.receivedAmount;
     totalNetProfit += b.netProfit;
 
-    final type = b.serviceType.toLowerCase().trim();
-
-    // Pending: Only Visa remainingFee (stored as payableAmount).
-    // Umrah, Ticket, Hotels & Insurance do NOT contribute to pending.
     if (type == 'visa') {
       if (b.payableAmount > 0) {
         totalPending += b.payableAmount;
       }
-    }
 
-    // Paid/Unpaid: Visa bookings only (only Visa has paymentStatus in Firestore)
-    if (type == 'visa') {
-      if (b.paymentStatus.toLowerCase() == 'paid') {
+      final paymentStatus = b.paymentStatus.toLowerCase().trim();
+      if (paymentStatus == 'paid') {
         totalPaid++;
-      } else if (b.paymentStatus.toLowerCase() == 'unpaid') {
+      } else if (paymentStatus == 'unpaid' ||
+          paymentStatus == 'partially paid') {
         totalUnpaid++;
       }
     }

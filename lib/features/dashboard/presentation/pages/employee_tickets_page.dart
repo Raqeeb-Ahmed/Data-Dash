@@ -172,7 +172,7 @@ class _EmployeeTicketsPageState extends ConsumerState<EmployeeTicketsPage> {
         employeeId: user?.uid ?? 'emp_unassigned',
         employeeName: user?.displayName ?? 'AFTAB',
         totalPrice: price,
-        receivedAmount: price - payable,
+        receivedAmount: price,
         payableAmount: payable,
         netProfit: profit,
         // Ticket-specific fields
@@ -1510,369 +1510,419 @@ class _EmployeeTicketsPageState extends ConsumerState<EmployeeTicketsPage> {
           ),
           const SizedBox(height: 24),
 
-          // Bookings Records Table
-          Container(
-            decoration: BoxDecoration(
-              color: cardBg,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: borderColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  color: isDarkMode
-                      ? const Color(0xFF0F172A).withValues(alpha: 0.3)
-                      : Colors.grey[100],
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 30,
-                        child: Text(
-                          '#',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'PNR / Airline',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          'Route / Dates',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          'Passenger',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'Cabin / Travellers',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'Financials',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          'Status',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          // Bookings Records List (Vertical Cards - No horizontal scroll)
+          if (pagedList.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: borderColor),
+              ),
+              child: Center(
+                child: Text(
+                  'No bookings found for the selected criteria.',
+                  style: TextStyle(fontSize: 13, color: secondaryColor),
                 ),
-                const Divider(height: 1),
+              ),
+            )
+          else ...[
+            ...List.generate(pagedList.length, (idx) {
+              final b = pagedList[idx];
+              final num = start + idx + 1;
 
-                if (pagedList.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(
-                      child: Text(
-                        'No bookings found for the selected criteria.',
-                        style: TextStyle(fontSize: 13, color: secondaryColor),
-                      ),
+              // Date formatting
+              final String depDateStr = _formatDate(b.dateCreated);
+              final String retDateStr = b.returnDate ?? '';
+              final String datesText = retDateStr.isNotEmpty 
+                  ? '$depDateStr • $retDateStr' 
+                  : depDateStr;
+
+              // Pax calculation
+              final int paxCount = (b.travellersAdults ?? 1) + (b.travellersChildren ?? 0) + (b.travellersInfants ?? 0);
+
+              // Trip Type
+              final String tripType = (b.returnDate != null && b.returnDate!.isNotEmpty) ? 'Round' : 'Oneway';
+
+              // Status Badge Colors (matches website's amber for Booked)
+              Color statusColor;
+              Color statusBg;
+              final String status = b.status;
+              if (status.toLowerCase() == 'booked' || status.toLowerCase() == 'confirmed' || status.toLowerCase() == 'approved') {
+                statusColor = const Color(0xFFF59E0B); // Amber
+                statusBg = const Color(0x22F59E0B);
+              } else if (status.toLowerCase() == 'rejected' || status.toLowerCase() == 'cancelled') {
+                statusColor = const Color(0xFFEF4444); // Red
+                statusBg = const Color(0x22EF4444);
+              } else {
+                statusColor = const Color(0xFF3B82F6); // Blue
+                statusBg = const Color(0x223B82F6);
+              }
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: borderColor),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDarkMode ? 0.2 : 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                  )
-                else
-                  ...List.generate(pagedList.length, (idx) {
-                    final b = pagedList[idx];
-                    final num = start + idx + 1;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: borderColor)),
-                      ),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 30,
-                            child: Text(
-                              '$num',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: secondaryColor,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  b.pnr ?? '-',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                Text(
-                                  b.airlinePreference ?? 'Any Airline',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: secondaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${b.fromDestination ?? "Karachi"} -> ${b.destination}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                Text(
-                                  'Dep: ${_formatDate(b.dateCreated)}',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: secondaryColor,
-                                  ),
-                                ),
-                                if (b.returnDate != null)
-                                  Text(
-                                    'Ret: ${b.returnDate}',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: secondaryColor,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  b.customerName,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                Text(
-                                  'Passport: ${b.passportNumber}',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: secondaryColor,
-                                  ),
-                                ),
-                                if (b.cnic != null)
-                                  Text(
-                                    'CNIC: ${b.cnic}',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: secondaryColor,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  b.cabinClass ?? 'Economy',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                Text(
-                                  'Adults: ${b.travellersAdults ?? 1}',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: secondaryColor,
-                                  ),
-                                ),
-                                if (b.travellersChildren != null &&
-                                    b.travellersChildren! > 0)
-                                  Text(
-                                    'Child: ${b.travellersChildren}',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: secondaryColor,
-                                    ),
-                                  ),
-                                if (b.travellersInfants != null &&
-                                    b.travellersInfants! > 0)
-                                  Text(
-                                    'Infant: ${b.travellersInfants}',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: secondaryColor,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Price: ${b.totalPrice.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF10B981),
-                                  ),
-                                ),
-                                Text(
-                                  'Payable: ${b.payableAmount.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    color: Color(0xFFEF4444),
-                                  ),
-                                ),
-                                Text(
-                                  'Profit: ${b.netProfit.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    color: Color(0xFF3B82F6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: b.status == 'Approved'
-                                    ? const Color(0x3310B981)
-                                    : const Color(0x33EF4444),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                b.status,
-                                style: TextStyle(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: b.status == 'Approved'
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFEF4444),
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-
-                if (totalPages > 1)
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top row: Ticket Number (#), PNR and Status
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Showing ${(start + 1)}-$end of ${filtered.length}',
-                          style: TextStyle(fontSize: 10, color: secondaryColor),
-                        ),
                         Row(
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.chevron_left, size: 16),
-                              onPressed: _currentPage > 0
-                                  ? () => setState(() => _currentPage--)
-                                  : null,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '#$num',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
-                              'Page ${_currentPage + 1} of $totalPages',
+                              'PNR: ',
                               style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
                                 color: secondaryColor,
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.chevron_right, size: 16),
-                              onPressed: _currentPage < totalPages - 1
-                                  ? () => setState(() => _currentPage++)
-                                  : null,
+                            Text(
+                              b.pnr ?? '-',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
                             ),
                           ],
                         ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: statusBg,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            status,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-              ],
-            ),
-          ),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1),
+                    const SizedBox(height: 12),
+
+                    // Passenger name and Document info
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.person_outline, size: 16, color: secondaryColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                b.customerName,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                [
+                                  if (b.passportNumber.isNotEmpty && b.passportNumber != '.')
+                                    'Passport: ${b.passportNumber}',
+                                  if (b.cnic != null && b.cnic!.isNotEmpty)
+                                    'CNIC: ${b.cnic!}',
+                                ].join(' | '),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Route & Trip Type info
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.flight_takeoff, size: 16, color: secondaryColor),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Route',
+                                      style: TextStyle(fontSize: 10, color: secondaryColor),
+                                    ),
+                                    Text(
+                                      '${b.fromDestination ?? "Karachi"} → ${b.destination}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, size: 16, color: secondaryColor),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Trip Type & Class',
+                                      style: TextStyle(fontSize: 10, color: secondaryColor),
+                                    ),
+                                    Text(
+                                      '$tripType • ${b.cabinClass ?? "Economy"}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Dates & Pax info
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: 16, color: secondaryColor),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Dates',
+                                      style: TextStyle(fontSize: 10, color: secondaryColor),
+                                    ),
+                                    Text(
+                                      datesText,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.people_outline, size: 16, color: secondaryColor),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Passengers',
+                                      style: TextStyle(fontSize: 10, color: secondaryColor),
+                                    ),
+                                    Text(
+                                      '$paxCount Pax',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Financial details card-in-card
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? const Color(0xFF1E293B).withValues(alpha: 0.3)
+                            : Colors.grey[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'PRICE',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${b.totalPrice.toStringAsFixed(0)} PKR',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'PAYABLE',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${b.payableAmount.toStringAsFixed(0)} PKR',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFEF4444),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'PROFIT',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: secondaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${b.netProfit.toStringAsFixed(0)} PKR',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3B82F6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            // Pagination footer
+            if (totalPages > 1)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Showing ${(start + 1)}-$end of ${filtered.length}',
+                      style: TextStyle(fontSize: 11, color: secondaryColor),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left, size: 18),
+                          onPressed: _currentPage > 0
+                              ? () => setState(() => _currentPage--)
+                              : null,
+                        ),
+                        Text(
+                          'Page ${_currentPage + 1} of $totalPages',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: secondaryColor,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right, size: 18),
+                          onPressed: _currentPage < totalPages - 1
+                              ? () => setState(() => _currentPage++)
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ],
       ),
     );

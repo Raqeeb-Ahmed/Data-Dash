@@ -108,7 +108,12 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               // Beautiful Custom Header with Gradient and Glow
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
+                padding: const EdgeInsets.only(
+                  top: 60,
+                  left: 24,
+                  right: 24,
+                  bottom: 24,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -134,7 +139,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                             color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                       ),
                       child: const CircleAvatar(
@@ -160,10 +165,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                     const SizedBox(height: 4),
                     const Text(
                       'admin@ostravel.com',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -172,7 +174,10 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               // Navigation Sidebar List (All 9 Navbar Pages)
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
+                  ),
                   children: [
                     _buildSidebarItem(
                       index: 0,
@@ -237,10 +242,14 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 padding: const EdgeInsets.all(20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDarkMode ? const Color(0xFF1E293B) : Colors.red.withValues(alpha: 0.05),
+                    color: isDarkMode
+                        ? const Color(0xFF1E293B)
+                        : Colors.red.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDarkMode ? Colors.transparent : Colors.red.withValues(alpha: 0.1),
+                      color: isDarkMode
+                          ? Colors.transparent
+                          : Colors.red.withValues(alpha: 0.1),
                     ),
                   ),
                   child: ListTile(
@@ -305,9 +314,9 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               label: 'Tickets',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.people_alt_outlined),
-              activeIcon: Icon(Icons.people),
-              label: 'Staff',
+              icon: Icon(Icons.mosque_outlined),
+              activeIcon: Icon(Icons.mosque),
+              label: 'Umrah',
             ),
           ],
         ),
@@ -327,30 +336,32 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
         color: isSelected
-            ? (isDarkMode 
-                ? AppColors.primary.withValues(alpha: 0.15) 
-                : AppColors.primary.withValues(alpha: 0.08))
+            ? (isDarkMode
+                  ? AppColors.primary.withValues(alpha: 0.15)
+                  : AppColors.primary.withValues(alpha: 0.08))
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isSelected
-              ? (isDarkMode 
-                  ? AppColors.primary.withValues(alpha: 0.3) 
-                  : AppColors.primary.withValues(alpha: 0.15))
+              ? (isDarkMode
+                    ? AppColors.primary.withValues(alpha: 0.3)
+                    : AppColors.primary.withValues(alpha: 0.15))
               : Colors.transparent,
         ),
       ),
       child: ListTile(
         leading: Icon(
           icon,
-          color: isSelected ? AppColors.primary : (isDarkMode ? Colors.white60 : Colors.black54),
+          color: isSelected
+              ? AppColors.primary
+              : (isDarkMode ? Colors.white60 : Colors.black54),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected 
-                ? AppColors.primary 
+            color: isSelected
+                ? AppColors.primary
                 : (isDarkMode ? Colors.white70 : Colors.black87),
           ),
         ),

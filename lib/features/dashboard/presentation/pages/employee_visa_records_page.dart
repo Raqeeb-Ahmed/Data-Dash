@@ -2114,7 +2114,7 @@ class _EmployeeVisaRecordsPageState
       final double embassy = double.tryParse(embassyFeeController.text) ?? 0.0;
       final double vendor = double.tryParse(vendorFeeController.text) ?? 0.0;
 
-      final double remaining = total - received;
+      final double remaining = (total - received) < 0 ? 0.0 : (total - received);
       remainingFeeController.text = remaining.toStringAsFixed(0);
 
       final double profit = total - embassy - vendor;

@@ -170,43 +170,77 @@ class _EmployeeNavigationShellState
               user,
             ),
             body: IndexedStack(index: selectedIndex, children: _pages),
-            bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: isDarkMode
-                  ? const Color(0xFF0F172A)
-                  : Colors.white,
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: isDarkMode ? Colors.white60 : Colors.black54,
-              type: BottomNavigationBarType.fixed,
-              currentIndex: selectedIndex < 4 ? selectedIndex : 4,
-              onTap: (index) {
-                if (index == 4) {
-                  _scaffoldKey.currentState?.openDrawer();
-                } else {
-                  _onTabSelected(index);
-                }
-              },
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Home',
+            bottomNavigationBar: SafeArea(
+              child: Container(
+                margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 4),
+                height: 72,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDarkMode
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.05),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.add_box_outlined),
-                  label: 'Apply',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(
+                        index: 0,
+                        icon: Icons.home_outlined,
+                        activeIcon: Icons.home,
+                        label: 'Home',
+                        selectedIndex: selectedIndex,
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildNavItem(
+                        index: 1,
+                        icon: Icons.add_box_outlined,
+                        activeIcon: Icons.add_box,
+                        label: 'Apply',
+                        selectedIndex: selectedIndex,
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildNavItem(
+                        index: 2,
+                        icon: Icons.folder_shared_outlined,
+                        activeIcon: Icons.folder_shared,
+                        label: 'Visas',
+                        selectedIndex: selectedIndex,
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildNavItem(
+                        index: 3,
+                        icon: Icons.airplane_ticket_outlined,
+                        activeIcon: Icons.airplane_ticket,
+                        label: 'Tickets',
+                        selectedIndex: selectedIndex,
+                        isDarkMode: isDarkMode,
+                      ),
+                      _buildNavItem(
+                        index: 4,
+                        icon: Icons.more_horiz,
+                        activeIcon: Icons.more_horiz,
+                        label: 'More',
+                        selectedIndex: selectedIndex,
+                        isDarkMode: isDarkMode,
+                        isMore: true,
+                      ),
+                    ],
+                  ),
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.folder_shared_outlined),
-                  label: 'Visas',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.airplane_ticket_outlined),
-                  label: 'Tickets',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.more_horiz),
-                  label: 'More',
-                ),
-              ],
+              ),
             ),
           )
         : Scaffold(
@@ -468,7 +502,12 @@ class _EmployeeNavigationShellState
           // Beautiful Custom Header with Gradient and Glow
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
+            padding: const EdgeInsets.only(
+              top: 60,
+              left: 24,
+              right: 24,
+              bottom: 24,
+            ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -494,7 +533,7 @@ class _EmployeeNavigationShellState
                         color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: CircleAvatar(
@@ -502,7 +541,9 @@ class _EmployeeNavigationShellState
                     backgroundColor: Colors.white,
                     child: Icon(
                       Icons.person,
-                      color: isDarkMode ? const Color(0xFF1E293B) : AppColors.primary,
+                      color: isDarkMode
+                          ? const Color(0xFF1E293B)
+                          : AppColors.primary,
                       size: 30,
                     ),
                   ),
@@ -520,10 +561,7 @@ class _EmployeeNavigationShellState
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? 'employee@gmail.com',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white70,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
                 ),
               ],
             ),
@@ -580,10 +618,14 @@ class _EmployeeNavigationShellState
             padding: const EdgeInsets.all(20),
             child: Container(
               decoration: BoxDecoration(
-                color: isDarkMode ? const Color(0xFF1E293B) : Colors.red.withValues(alpha: 0.05),
+                color: isDarkMode
+                    ? const Color(0xFF1E293B)
+                    : Colors.red.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDarkMode ? Colors.transparent : Colors.red.withValues(alpha: 0.1),
+                  color: isDarkMode
+                      ? Colors.transparent
+                      : Colors.red.withValues(alpha: 0.1),
                 ),
               ),
               child: ListTile(
@@ -628,30 +670,32 @@ class _EmployeeNavigationShellState
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
         color: isSelected
-            ? (isDarkMode 
-                ? AppColors.primary.withValues(alpha: 0.15) 
-                : AppColors.primary.withValues(alpha: 0.08))
+            ? (isDarkMode
+                  ? AppColors.primary.withValues(alpha: 0.15)
+                  : AppColors.primary.withValues(alpha: 0.08))
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isSelected
-              ? (isDarkMode 
-                  ? AppColors.primary.withValues(alpha: 0.3) 
-                  : AppColors.primary.withValues(alpha: 0.15))
+              ? (isDarkMode
+                    ? AppColors.primary.withValues(alpha: 0.3)
+                    : AppColors.primary.withValues(alpha: 0.15))
               : Colors.transparent,
         ),
       ),
       child: ListTile(
         leading: Icon(
           icon,
-          color: isSelected ? AppColors.primary : (isDarkMode ? Colors.white60 : Colors.black54),
+          color: isSelected
+              ? AppColors.primary
+              : (isDarkMode ? Colors.white60 : Colors.black54),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected 
-                ? AppColors.primary 
+            color: isSelected
+                ? AppColors.primary
                 : (isDarkMode ? Colors.white70 : Colors.black87),
           ),
         ),
@@ -661,6 +705,71 @@ class _EmployeeNavigationShellState
           Navigator.pop(context);
           _onTabSelected(index);
         },
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int selectedIndex,
+    required bool isDarkMode,
+    bool isMore = false,
+  }) {
+    final barIndex = selectedIndex < 4 ? selectedIndex : 4;
+    final isSelected = barIndex == index;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          if (isMore) {
+            _scaffoldKey.currentState?.openDrawer();
+          } else {
+            _onTabSelected(index);
+          }
+        },
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: isSelected ? 1.15 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutBack,
+              child: Icon(
+                isSelected ? activeIcon : icon,
+                color: isSelected
+                    ? AppColors.primary
+                    : (isDarkMode ? Colors.white60 : Colors.black45),
+                size: 22,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected
+                    ? AppColors.primary
+                    : (isDarkMode ? Colors.white60 : Colors.black54),
+              ),
+            ),
+            const SizedBox(height: 2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isSelected ? 16 : 0,
+              height: 3,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
